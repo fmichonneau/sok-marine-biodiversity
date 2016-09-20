@@ -1,0 +1,14 @@
+sources:
+  - R/
+
+packages:
+  - readxl
+  - dplyr
+
+targets:
+  all:
+    depends:
+      - irl_checklist
+
+  irl_checklist:
+    command: read_irl_checklist(file="data-raw/Species List Database Post V1.xlsx")
