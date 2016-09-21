@@ -1,0 +1,4 @@
+data-raw/BOLD/
+.remake
+data/*.sqlite
+data/synonym_storr/

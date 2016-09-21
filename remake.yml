@@ -3,12 +3,43 @@ sources:
 
 packages:
   - readxl
+  - readr
   - dplyr
+  - ggplot2
+  - RSQLite
+  - taxizesoap
+  - storr
 
 targets:
   all:
     depends:
       - irl_checklist
+      - data/bold_database.sqlite
+      - joined_data
+      - species_list
+      - fill_store_synonyms
+      - synonym_list
 
   irl_checklist:
     command: read_irl_checklist(file="data-raw/Species List Database Post V1.xlsx")
+
+  data/bold_database.sqlite:
+    command: create_bold_db(path=I("data-raw/BOLD"))
+
+  joined_data:
+    command: create_joined_data(irl_checklist, "data/bold_database.sqlite")
+
+  species_list:
+    command: join_species("data/bold_database.sqlite")
+    depends: joined_data
+
+  fill_store_synonyms:
+    command: store_synonyms(irl_checklist)
+
+  synonym_table:
+    command: make_synonym_table(store_path=I("data/synonym_storr"), database_path=I("data/bold_database.sqlite"))
+    depends: fill_store_synonyms
+
+  synonym_list:
+    command: join_synonyms("data/bold_database.sqlite")
+    depends: synonym_table

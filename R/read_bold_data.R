@@ -39,16 +39,18 @@ CREATE TABLE bold_table
 );
 '
 
-read_bold_data_raw <- function(path, db_file = "data/bold_database.sqlite") {
+create_bold_db <- function(path, db_file = "data/bold_database.sqlite") {
     bold_files <- list.files(path = path, pattern = "\\.tsv\\.zip$",
                              full.names = TRUE)
 
     ## create database from scratch (delete if it already exists)
-    if (file.exists(db_file))
-        file.remove(db_file)
+    ##  let's trust remake to do the right thing...
+    ##if (file.exists(db_file))
+    ##    file.remove(db_file)
+
     con <- dbConnect(RSQLite::SQLite(), db_file)
     dbSendQuery(con, create_bold_table_statement)
-    dbDisconnect(con)
+    dbDisconnect(con) ## disconnecting now, and inside to avoid running out of memory
 
     ## create tables
     for (i in seq_along(bold_files)) {
@@ -77,6 +79,25 @@ read_bold_data_raw <- function(path, db_file = "data/bold_database.sqlite") {
     }
 }
 
+create_joined_data <- function(irl_checklist, bold_db_file) {
+    con <- dbConnect(RSQLite::SQLite(), bold_db_file)
+    dbWriteTable(con, "irl_checklist", irl_checklist)
+    dbDisconnect(con)
+}
+
+
+join_species <- function(bold_db) {
+    db <- src_sqlite(bold_db)
+    joined <- tbl(db, sql("SELECT bold_table.*, irl_checklist.* FROM bold_table JOIN irl_checklist ON bold_table.species_reg=irl_checklist.`SCIENTIFIC NAME`"))
+    collect(joined)
+
+}
+
+join_synonyms <- function(bold_db) {
+    db <- src_sqlite(bold_db)
+    joined <- tbl(db, sql("SELECT * FROM bold_table JOIN synonyms ON bold_table.species_reg=synonyms.synonyms"))
+    collect(joined)
+}
 
 summary_field_table <- function(db = "data/bold_database.sqlite") {
     con <- dbConnect(RSQLite::SQLite(), db)
@@ -91,7 +112,7 @@ summary_field_table <- function(db = "data/bold_database.sqlite") {
 select_records <- function(db = "data/bold_database.sqlite")  {
     my_db <- src_sqlite(db)
 
-    ## only the marine phyla
+    ## only the marine phyla from the US and around it
     select_phyla <- tbl(my_db, sql(paste0("SELECT * FROM bold_table WHERE phylum_reg IN (",
                                           paste0("'", phylum_list(), "'", collapse = ", "),
                                           ")",
@@ -100,7 +121,6 @@ select_records <- function(db = "data/bold_database.sqlite")  {
                                           " (lon > -95 AND lon < -56) AND (lat > 5 AND lat < 45))")
                                    )
                         )
-    ## remove the insects
 
     collect(select_phyla)
 
