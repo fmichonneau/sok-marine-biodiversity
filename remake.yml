@@ -9,6 +9,7 @@ packages:
   - RSQLite
   - taxizesoap
   - storr
+  - bold
 
 targets:
   all:
@@ -43,3 +44,6 @@ targets:
   synonym_list:
     command: join_synonyms("data/bold_database.sqlite")
     depends: synonym_table
+
+  fill_bold_specimen_store:
+    command: store_bold_specimens(irl_checklist)
