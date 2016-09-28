@@ -14,12 +14,7 @@ packages:
 targets:
   all:
     depends:
-      - irl_checklist
-      - data/bold_database.sqlite
-      - joined_data
-      - species_list
-      - fill_store_synonyms
-      - synonym_list
+      - irl_species_in_bold
 
   irl_checklist:
     command: read_irl_checklist(file="data-raw/Species List Database Post V1.xlsx")
@@ -34,16 +29,26 @@ targets:
     command: join_species("data/bold_database.sqlite")
     depends: joined_data
 
-  fill_store_synonyms:
-    command: get_store_synonyms(irl_checklist)
+  fill_synonym_store:
+    command: get_synonym_store(irl_checklist)
+
+  fill_classification_store:
+    command: get_classification_store(irl_checklist)
 
   synonym_table:
     command: make_synonym_table(store_path=I("data/synonym_storr"), database_path=I("data/bold_database.sqlite"))
-    depends: fill_store_synonyms
+    depends: fill_synonym_store
 
   synonym_list:
     command: join_synonyms("data/bold_database.sqlite")
     depends: synonym_table
 
   fill_bold_specimen_store:
-    command: get_store_bold_specimens(irl_checklist)
+    command: get_bold_specimens_store(irl_checklist)
+
+  irl_species_in_bold:
+    command: get_irl_species_in_bold()
+    depends:
+      - fill_synonym_store
+      - fill_classification_store
+      - fill_bold_specimen_store

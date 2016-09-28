@@ -13,7 +13,7 @@ store_bold_specimens <- function(store_path = "data/bold_specimens") {
                              fetch_hook_bold_specimens))
 }
 
-get_store_bold_specimens <- function(irl_checklist, store = store_bold_specimens()) {
+get_bold_specimens_store <- function(irl_checklist, store = store_bold_specimens()) {
     species <- irl_checklist$`SCIENTIFIC NAME`
     lapply(species, function(x) store$get(x))
     invisible(store)
