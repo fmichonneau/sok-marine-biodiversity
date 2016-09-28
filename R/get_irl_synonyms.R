@@ -47,7 +47,7 @@ fetch_hook_worms_classification <- function(key, namespace) {
 
 store_worms_classification <- function(store_path = "data/worms_classification_storr") {
     invisible(storr_external(driver_rds(store_path),
-                             fetch_hook_classification))
+                             fetch_hook_worms_classification))
 }
 
 get_store_classification <- function(irl_checklist) {
