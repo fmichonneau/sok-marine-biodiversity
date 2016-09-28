@@ -19,21 +19,48 @@ store_worms_ids <- function(store_path = "data/worms_ids_storr") {
                              fetch_hook_worms_ids))
 }
 
+
+## Storr for the WoRMS synonyms: given a WoRMS id, what are the synonyms? ------
+fetch_hook_worms_synonyms <- function(key, namespace) {
+    worms_synonyms(key)$scientificname
+}
+
 store_synonyms <- function(store_path = "data/synonym_storr") {
     invisible(storr_external(driver_rds(store_path),
                              fetch_hook_worms_synonyms))
 }
 
-get_store_synonyms <- function(irl_checklist, store = store_synonyms()) {
+## Fill the two storrs to get all the synonyms from the IRL species list
+get_store_synonyms <- function(irl_checklist) {
     species <- irl_checklist$`SCIENTIFIC NAME`
     lapply(species, function(x) {
         wid <- store_worms_ids()$get(x)
-        store$get(wid)
+        store_synonyms()$get(wid)
     })
-    invisible(store)
+}
+
+## Storr for the higher classification: given a WoRMS id, what is the
+## higher classification
+fetch_hook_worms_classification <- function(key, namespace) {
+    taxizesoap:::classification_s.wormsid(key)
+}
+
+store_worms_classification <- function(store_path = "data/worms_classification_storr") {
+    invisible(storr_external(driver_rds(store_path),
+                             fetch_hook_classification))
+}
+
+get_store_classification <- function(irl_checklist) {
+    species <- irl_checklist$`SCIENTIFIC NAME`
+    lapply(species, function(x) {
+        wid <- store_worms_ids()$get(x)
+        store_worms_classification()$get(wid)
+    })
 }
 
 
+## Add a table in the SQLite database to include all the synonyms for
+## the IRL species
 make_synonym_table <- function(store = store_synonyms(),
                                database_path = "data/bold_database.sqlite") {
     sp_nm <- store$list()
