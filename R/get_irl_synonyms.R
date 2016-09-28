@@ -1,11 +1,20 @@
 
 fetch_hook_worms_synonyms <- function(key, namespace) {
+    worms_synonyms(key)$scientificname
+}
+
+fetch_hook_worms_ids <- function(key, namespace) {
     wid <- get_wormsid(searchterm = key, ask = FALSE)
     if (is.na(wid)) {
         message(key, " not found or multiple matches found.")
         return(NA)
     }
-    worms_synonyms(wid)$scientificname
+    wid
+}
+
+store_worms_ids <- function(store_path = "data/worms_ids_storr") {
+    invisible(storr_external(driver_rds(store_path),
+                             fetch_hook_worms_ids))
 }
 
 store_synonyms <- function(store_path = "data/synonym_storr") {
@@ -15,7 +24,10 @@ store_synonyms <- function(store_path = "data/synonym_storr") {
 
 get_store_synonyms <- function(irl_checklist, store = store_synonyms()) {
     species <- irl_checklist$`SCIENTIFIC NAME`
-    lapply(species, function(x) store$get(x))
+    lapply(species, function(x) {
+        wid <- store_worms_ids()$get(x)
+        store$get(wid)
+    })
     invisible(store)
 }
 
@@ -31,7 +43,7 @@ make_synonym_table <- function(store = store_synonyms(),
     res <- res[complete.cases(res), ]
     ## for our purpose we don't want the subgenera
     res$synonyms <- gsub("\\(.*\\)", "", res$synonyms)
-    ## we can also remove the var.
+    ## we can also remove the varieties/subspecies
     res$synonyms <- gsub("(\\svar\\. .+)$", "", res$synonyms)
 
     res <- res[!duplicated(res$synonyms), ]
