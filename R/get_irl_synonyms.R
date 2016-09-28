@@ -8,20 +8,22 @@ fetch_hook_worms_synonyms <- function(key, namespace) {
     worms_synonyms(wid)$scientificname
 }
 
-store_synonyms <- function(irl_checklist, store_path = "data/synonym_storr") {
+store_synonyms <- function(store_path = "data/synonym_storr") {
+    invisible(storr_external(driver_rds(store_path),
+                             fetch_hook_worms_synonyms))
+}
+
+get_store_synonyms <- function(irl_checklist, store = store_synonyms()) {
     species <- irl_checklist$`SCIENTIFIC NAME`
-    st <- storr_external(driver_rds(store_path),
-                         fetch_hook_worms_synonyms)
-    lapply(species, function(x) st$get(x))
-    invisible(st)
+    lapply(species, function(x) store$get(x))
+    invisible(store)
 }
 
 
-make_synonym_table <- function(store_path = "data/synonym_storr",
+make_synonym_table <- function(store = store_synonyms(),
                                database_path = "data/bold_database.sqlite") {
-    st <- storr_rds(store_path)
-    sp_nm <- st$list()
-    sp_syn <- lapply(sp_nm, function(x) st$get(x))
+    sp_nm <- store$list()
+    sp_syn <- lapply(sp_nm, function(x) store$get(x))
     sp_len <- vapply(sp_syn, length, integer(1))
     sp_nm_rep <- rep(sp_nm, sp_len)
     res <- data.frame(scientificname = sp_nm_rep,

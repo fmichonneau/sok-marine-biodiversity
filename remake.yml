@@ -35,7 +35,7 @@ targets:
     depends: joined_data
 
   fill_store_synonyms:
-    command: store_synonyms(irl_checklist)
+    command: get_store_synonyms(irl_checklist)
 
   synonym_table:
     command: make_synonym_table(store_path=I("data/synonym_storr"), database_path=I("data/bold_database.sqlite"))
@@ -46,4 +46,4 @@ targets:
     depends: synonym_table
 
   fill_bold_specimen_store:
-    command: store_bold_specimens(irl_checklist)
+    command: get_store_bold_specimens(irl_checklist)
