@@ -1,15 +1,17 @@
-
-fetch_hook_worms_synonyms <- function(key, namespace) {
-    worms_synonyms(key)$scientificname
-}
-
+## Storr for the WoRMS ids: given a taxon name, what is its WoRMS id? ----------
 fetch_hook_worms_ids <- function(key, namespace) {
     wid <- get_wormsid(searchterm = key, ask = FALSE)
-    if (is.na(wid)) {
-        message(key, " not found or multiple matches found.")
+    if (identical(attr(wid, "match"), "found")) {
+        return(wid)
+    } else if (identical(attr(wid, "match"), "not found")) {
+        message(key, " not found.")
         return(NA)
-    }
-    wid
+    } else if (identical(attr(wid, "match"), "multi match")) {
+        wid <- get_wormsid(searchterm = key, ask = FALSE, accepted = FALSE)
+        res <- worms_records(ids = wid)$valid_AphiaID
+        if (length(res) != 1) stop("More than one record for ", key)
+        res
+    } else stop("I don't know what to do ", attr(wid, "match"))
 }
 
 store_worms_ids <- function(store_path = "data/worms_ids_storr") {
