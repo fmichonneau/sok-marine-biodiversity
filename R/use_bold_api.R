@@ -23,7 +23,7 @@ get_irl_species_in_bold <- function(store = store_bold_specimens()) {
     st <- store
     sp_nm <- st$list()
     sp_match <- lapply(sp_nm, function(x) st$get(x))
-    in_bold <- vapply(sp_match, function(x) !any(is.na(x)), logical(1))
+    in_bold <- vapply(sp_match, function(x) !is.null(nrow(x)), logical(1))
     data.frame(species = sp_nm,
                in_bold = in_bold)
 }
