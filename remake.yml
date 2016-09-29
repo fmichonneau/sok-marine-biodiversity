@@ -52,3 +52,10 @@ targets:
       - fill_synonym_store
       - fill_classification_store
       - fill_bold_specimen_store
+
+  barcode_data:
+    command: assemble_barcode_data(worms="data-raw/20160929_worms_stats.csv", bold="data-raw/20160929_bold_bin_stats.csv", other="data-raw/20160929_other_taxa_stats.csv")
+
+  figures/plot_barcode_data.pdf:
+    command: plot_barcoded_species(barcode_data)
+    plot: true
