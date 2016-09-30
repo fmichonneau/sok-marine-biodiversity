@@ -10,6 +10,8 @@ packages:
   - taxizesoap
   - storr
   - bold
+  - tibble
+  - tidyr
 
 targets:
   all:
