@@ -47,6 +47,7 @@ species_list_from_idigbio <- function(idig) {
     res <- res[!grepl("sp\\.|[0-9]+", res)]
     res <- gsub("cf\\.|aff\\.", "", res)
     res <- gsub("\\([^)]*\\)", "", res)
+    res <- gsub("var\\. .+$", "", res)
     res <- gsub("\\s+$", "", res)
     res <- gsub("\\s{2,}", " ", res)
     res <- res[grepl(" ", res)]
