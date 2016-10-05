@@ -14,7 +14,7 @@ n_binomial_species <- function(bold_raw_nm) {
     nm <- nm[!grepl("[0-9]|(sp\\.|aff\\.|cf\\.)", nm)]
 
     ## is it a binomial name?
-    binom <- vapply(strsplit(nm, " "), function(x) length(x) == 2, logical(1))
+    binom <- is_binomial(nm)
 
     res <- length(nm)
     attr(res, "species_names") <- nm
@@ -70,6 +70,7 @@ show_non_binomial <- function(binom) {
 }
 
 get_level_identification <- function(bold) {
+    ## for this to be accurate, it needs to be aggregated by BIN
     bold %>%
         mutate(taxon = ifelse(phylum_name == "Chordata", class_name, phylum_name)) %>%
         group_by(taxon) %>%
