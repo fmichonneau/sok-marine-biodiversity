@@ -195,3 +195,13 @@ targets:
   figures/proportion_level_identification.pdf:
     command: plot_level_identification(level_identification)
     plot: true
+
+  ### get species list from the US using iDigBio
+  idigbio_records:
+    command: assemble_idigbio_records()
+
+  idigbio_species_list:
+    command: assemble_idigbio_species_list(idigbio_records)
+
+  bold_records_for_idigbio_species:
+    command: assemble_bold_specimens_per_species(idigbio_species_list)
