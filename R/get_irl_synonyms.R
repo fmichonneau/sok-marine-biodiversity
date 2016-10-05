@@ -3,11 +3,13 @@ fetch_hook_worms_ids <- function(key, namespace) {
     wid <- get_wormsid(searchterm = key, ask = FALSE)
     if (identical(attr(wid, "match"), "found")) {
         return(wid)
-    } else if (identical(attr(wid, "match"), "not found")) {
-        message(key, " not found.")
-        return(NA)
-    } else if (identical(attr(wid, "match"), "multi match")) {
+    } else if (identical(attr(wid, "match"), "not found") ||
+               identical(attr(wid, "match"), "multi match")) {
         wid <- get_wormsid(searchterm = key, ask = FALSE, accepted = FALSE)
+        if (identical(attr(wid, "match"), "not found")) {
+            message(key, " not found.")
+            return(NA)
+        }
         res <- worms_records(ids = wid)$valid_AphiaID
         if (length(res) != 1) stop("More than one record for ", key)
         res
