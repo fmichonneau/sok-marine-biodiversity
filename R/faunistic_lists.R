@@ -7,12 +7,33 @@ assemble_idigbio_records <- function(phyla = c("Echinodermata", "Nemertea", "Pho
 
 get_idigbio_records <- function(phylum) {
     message("Looking for ", phylum)
-    res <- idig_search_records(rq = list(phylum = phylum, basisofrecord = "PreservedSpecimen",
-                                         scientificname = list(type = "exists"),
-                                         geopoint = list(type = "geo_bounding_box",
-                                                         top_left = list(lat = 51, lon = -133),
-                                                         bottom_right = list(lat = 23, lon = -51))),
-                               limit = 10000)
+    res <- vector("list", 100)
+    qry <- list(`data.dwc:phylum` = phylum,
+                basisofrecord = "PreservedSpecimen",
+                scientificname = list(type = "exists"),
+                geopoint = list(type = "geo_bounding_box",
+                                top_left = list(lat = 51, lon = -133),
+                                bottom_right = list(lat = 23, lon = -51))
+                )
+    res_1 <- idig_search_records(rq = qry, limit = 10000, fields = c('uuid',
+                     'catalognumber',
+                     'data.dwc:phylum',
+                     'family',
+                     'genus',
+                     'scientificname',
+                     'country',
+                     'geopoint'))
+    res[[1]] <- res_1
+    ## paging doesn't work in iDigBio for now
+    ## page <- 1
+    ## while (nrow(res_1) == 4999) {
+    ##     message("   page ", page)
+    ##     res_1 <- idig_search_records(rq = qry, limit = 4999, offset = page * 4999 + 1)
+    ##     page <- page + 1
+    ##     res[[page]] <- res_1
+    ## }
+    res <- res[vapply(res, function(x) !is.null(x), logical(1))]
+    bind_rows(res)
 }
 
 assemble_idigbio_species_list <- function(idig_records) {
