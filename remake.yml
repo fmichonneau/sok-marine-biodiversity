@@ -12,6 +12,7 @@ packages:
   - bold
   - tibble
   - tidyr
+  - ridigbio
 
 targets:
   all:
