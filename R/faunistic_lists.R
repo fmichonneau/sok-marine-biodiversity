@@ -44,12 +44,20 @@ assemble_idigbio_species_list <- function(idig_records) {
 
 species_list_from_idigbio <- function(idig) {
     res <- na.omit(unique(idig$scientificname))
+    ## remove sp. and numbered species
     res <- res[!grepl("sp\\.|[0-9]+", res)]
+    ## remove species with a single letter word
+    res <- res[vapply(res, function(x) !any(nchar(unlist(strsplit(x, " "))) < 2), logical(1))]
+    ## remove cf. and aff. from the species names
     res <- gsub("cf\\.|aff\\.", "", res)
+    ## remove subgenus
     res <- gsub("\\([^)]*\\)", "", res)
+    ## remove everything that comes after varieties
     res <- gsub("var\\. .+$", "", res)
+    ## remove extra spaces at the end or in the middle
     res <- gsub("\\s+$", "", res)
     res <- gsub("\\s{2,}", " ", res)
+    ## only keep the names with a space in it (more likely it's binomial)
     res <- res[grepl(" ", res)]
     is_binom <- is_binomial(res)
     if (!all(is_binom)) {
