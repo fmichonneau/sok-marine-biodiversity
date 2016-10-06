@@ -1,12 +1,22 @@
-assemble_idigbio_records <- function(phyla = c("Echinodermata", "Nemertea", "Phoronida",
-                                               "Ctenophora", "Chaetognatha")) {
-    res <- lapply(phyla, get_idigbio_records)
-    names(res) <- phyla
+fetch_hook_idigbio_records <- function(key, namespace) {
+    key_parts <- unlist(strsplit(key, "-"))
+    taxon_level <- key_parts[1]
+    taxon_name <- key_parts[2]
+    res <- get_idigbio_records(taxon_name, taxon_level)
     res
 }
 
+store_idigbio_records <- function(store_path = "data/idigbio_records") {
+    storr_external(driver_rds(store_path),
+                   fetch_hook_idigbio_records)
+}
+
+assemble_idigbio_records <- function(taxon_name, taxon_level) {
+    invisible(store_idigbio_records()$get(paste(taxon_level, taxon_name, sep = "-")))
+}
+
 get_idigbio_records <- function(taxon_name, taxon_level) {
-    message("Looking for ", taxon_name)
+    message("Looking for ", taxon_name, " ... ", appendLF = FALSE)
     taxon_level <- match.arg(taxon_level, c("phylum", "class", "order", "family", "genus"))
     qry <- list(basisofrecord = "PreservedSpecimen",
                 scientificname = list(type = "exists"),
@@ -29,6 +39,7 @@ get_idigbio_records <- function(taxon_name, taxon_level) {
                                    'scientificname',
                                    'country',
                                    'geopoint'))
+    message("found ", nrow(res), " records.")
     res
 }
 
@@ -40,12 +51,12 @@ assemble_idigbio_species_list <- function(idig_records) {
 
 species_list_from_idigbio <- function(idig) {
     res <- na.omit(unique(idig$scientificname))
-    ## remove sp. and numbered species
-    res <- res[!grepl("sp\\.|[0-9]+", res)]
+    ## remove sp., spp., and numbered species
+    res <- res[!grepl("spp?\\.|[0-9]+", res)]
     ## remove species with a single letter word
     res <- res[vapply(res, function(x) !any(nchar(unlist(strsplit(x, " "))) < 2), logical(1))]
-    ## remove cf. and aff. from the species names
-    res <- gsub("cf\\.|aff\\.", "", res)
+    ## remove cf., aff. and ? from the species names
+    res <- gsub("cf\\.|aff\\.|\\?", "", res)
     ## remove subgenus
     res <- gsub("\\([^)]*\\)", "", res)
     ## remove everything that comes after varieties
@@ -55,6 +66,8 @@ species_list_from_idigbio <- function(idig) {
     res <- gsub("\\s{2,}", " ", res)
     ## only keep the names with a space in it (more likely it's binomial)
     res <- res[grepl(" ", res)]
+    ## deduplicate again
+    res <- unique(res)
     is_binom <- is_binomial(res)
     if (!all(is_binom)) {
         message("Not binomial: ",
@@ -70,7 +83,7 @@ fetch_hook_bold_specimens_per_species <- function(key, namespace) {
         wid <- store_worms_ids()$get(key)
         if (is.na(wid)) {
             message("Can't find a valid WoRMS ID")
-            return(NULL)
+            return("not in worms")
         } else {
             syn <- store_synonyms()$get(wid)
             res <- try(bold_specimens(taxon = paste0("'", syn, "'", collapse = "|")),
@@ -108,9 +121,14 @@ make_table_records_per_species <- function(store = store_bold_specimens_per_spec
     res <- lapply(phyla, function(p) {
         sp <- st$list(namespace = p)
         t <- lapply(sp, function(s) {
+            ## TODO -- also check that BOLD taxonomy also indicates
+            ## that it's the correct phylum. Some iDigBio records seem
+            ## to have the wrong phylum listed for some taxa.
             r <- st$get(s, namespace = p)
             if (is.null(r))
                 n <- 0
+            else if (identical(r, "not in worms"))
+                n <- NA
             else
                 n <- NROW(r)
             data.frame(phylum = p,
