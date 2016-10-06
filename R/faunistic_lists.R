@@ -80,7 +80,7 @@ species_list_from_idigbio <- function(idig) {
 fetch_hook_bold_specimens_per_species <- function(key, namespace) {
     res <- try(bold_specimens(taxon = paste0("'", key, "'")), silent = TRUE)
     if (inherits(res, "try-error")) {
-        message("No record for ", key, ". Trying to look for synonyms.")
+        message("No record for ", key, ". Trying to look for synonyms ...", appendLF = FALSE)
         wid <- store_worms_ids()$get(key)
         if (is.na(wid)) {
             message("Can't find a valid WoRMS ID")
@@ -94,6 +94,7 @@ fetch_hook_bold_specimens_per_species <- function(key, namespace) {
                         paste(syn, collapse = ", "))
                 return(NULL)
             }
+            message(" found ", nrow(res), " records for synonyms")
         }
     }
     message(nrow(res), " record(s) for ", key)
