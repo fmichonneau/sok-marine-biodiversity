@@ -23,17 +23,7 @@ get_idigbio_records <- function(phylum) {
                      'scientificname',
                      'country',
                      'geopoint'))
-    res[[1]] <- res_1
-    ## paging doesn't work in iDigBio for now
-    ## page <- 1
-    ## while (nrow(res_1) == 4999) {
-    ##     message("   page ", page)
-    ##     res_1 <- idig_search_records(rq = qry, limit = 4999, offset = page * 4999 + 1)
-    ##     page <- page + 1
-    ##     res[[page]] <- res_1
-    ## }
-    res <- res[vapply(res, function(x) !is.null(x), logical(1))]
-    bind_rows(res)
+    res
 }
 
 assemble_idigbio_species_list <- function(idig_records) {
