@@ -70,8 +70,21 @@ species_list_from_idigbio <- function(idig) {
 fetch_hook_bold_specimens_per_species <- function(key, namespace) {
     res <- try(bold_specimens(taxon = paste0("'", key, "'")), silent = TRUE)
     if (inherits(res, "try-error")) {
-        message("No record for ", key)
-        return(NULL)
+        message("No record for ", key, ". Trying to look for synonyms.")
+        wid <- store_worms_ids()$get(key)
+        if (is.na(wid)) {
+            message("Can't find a valid WoRMS ID")
+            return(NULL)
+        } else {
+            syn <- store_synonyms()$get(wid)
+            res <- try(bold_specimens(taxon = paste0("'", syn, "'", collapse = "|")),
+                       silent = TRUE)
+            if (inherits(res, "try-error")) {
+                message("No record for any of the synonyms ",
+                        paste(syn, collapse = ", "))
+                return(NULL)
+            }
+        }
     }
     message(nrow(res), " record(s) for ", key)
     res
