@@ -16,7 +16,7 @@ fetch_hook_worms_ids <- function(key, namespace) {
             return(NA)
         }
         if (length(res) > 1) stop("More than one record for ", key)
-        res
+        return(res)
     } else stop("I don't know what to do ", attr(wid, "match"))
 }
 
@@ -25,6 +25,16 @@ store_worms_ids <- function(store_path = "data/worms_ids_storr") {
                              fetch_hook_worms_ids))
 }
 
+## storr for the WoRMS info: given a WoRMS id, what does WoRM know about it ----
+fetch_hook_worms_info <- function(key, namespace) {
+    if (is.na(key)) return(NA)
+    worms_records(ids = key)
+}
+
+store_worms_info <- function(store_path = "data/worms_info") {
+    invisible(storr_external(driver_rds(store_path),
+                             fetch_hook_worms_info))
+}
 
 ## Storr for the WoRMS synonyms: given a WoRMS id, what are the synonyms? ------
 fetch_hook_worms_synonyms <- function(key, namespace) {

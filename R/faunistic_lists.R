@@ -47,15 +47,19 @@ assemble_idigbio_species_list <- function(idig_store = store_idigbio_records()) 
     groups <- idig_store$list()
     res <- lapply(groups, function(x) species_list_from_idigbio(idig_store$get(x)))
     names(res) <- groups
-    res
+    res <- bind_rows(res, .id = "taxon")
+    tidyr::extract_(res, "taxon", c("rank", "taxon_name"), "([[:alnum:]]+)-([[:alnum:]]+)")
 }
 
+
 species_list_from_idigbio <- function(idig) {
-    res <- na.omit(unique(idig$scientificname))
+    res <- idig$scientificname
+    ## Criteria that make the name invalid
     ## remove sp., spp., / and numbered species
-    res <- res[!grepl("spp?\\.|[0-9]+|\\/", res)]
+    res[grepl("spp?\\.|[0-9]+|\\/", res)] <- NA
     ## remove species with a single letter word
-    res <- res[vapply(res, function(x) !any(nchar(unlist(strsplit(x, " "))) < 2), logical(1))]
+    res[vapply(res, function(x) any(nchar(unlist(strsplit(x, " "))) < 2), logical(1))] <- NA
+    ## Name modifications
     ## remove cf., aff. and ? from the species names
     res <- gsub("cf\\.|aff\\.|\\?", "", res)
     ## remove subgenus
@@ -65,17 +69,62 @@ species_list_from_idigbio <- function(idig) {
     ## remove extra spaces at the end or in the middle
     res <- gsub("\\s+$", "", res)
     res <- gsub("\\s{2,}", " ", res)
-    ## only keep the names with a space in it (more likely it's binomial)
-    res <- res[grepl(" ", res)]
-    ## deduplicate again
-    res <- unique(res)
     is_binom <- is_binomial(res)
-    if (!all(is_binom)) {
-        message("Not binomial: ",
-                paste(res[!is_binom], collapse = ", "))
+
+    data.frame(verbatim_scientificname = idig$scientificname,
+               cleaned_scientificname = res,
+               is_binomial = is_binom,
+               stringsAsFactors = FALSE)
+}
+
+add_worms_info <- function(sp_list_idig) {
+    res <- sp_list_idig %>%
+        filter(is_binomial == TRUE)  %>%
+        select(cleaned_scientificname) %>%
+        unique
+    wid <- valid_name <- vector("character", nrow(res))
+    marine <- vector("logical", nrow(res))
+    for (i in seq_len(nrow(res))) {
+        wid[i] <- store_worms_ids()$get(res[i, 1])
+        if (!is.na(wid[i])) {
+            w_info <- store_worms_info()$get(wid[i])
+            if (nrow(w_info) > 1) browser()
+            marine[i] <- (identical(w_info$isMarine, "1") | identical(w_info$isBrackish, "1"))
+            valid_name[i] <- w_info$valid_name
+        } else {
+            marine[i] <- NA
+            valid_name[i] <- NA
+        }
     }
+    to_add <- data.frame(
+        cleaned_scientificname = res,
+        worms_id = wid,
+        is_marine = marine,
+        worms_valid_name = valid_name,
+        stringsAsFactors = FALSE
+    )
+    left_join(sp_list_idig, to_add, by = "cleaned_scientificname")
+}
+
+add_bold_info <- function(worms_idig) {
+    res <- worms_idig %>%
+        filter(!is.na(is_marine), is_marine == TRUE) %>%
+        select(worms_valid_name) %>%
+        unique
+
+    bold_rcrd <- numeric(nrow(res))
+
+    for (i in seq_len(nrow(res))) {
+        bold <- store_bold_specimens_per_species()$get(res$worms_valid_name[i])
+        bold_rcrd[i] <- ifelse(is.null(bold), 0, nrow(bold))
+    }
+    res <- data.frame(worms_valid_name = res,
+                      n_bold_records = bold_rcrd,
+                      stringsAsFactors = FALSE)
+    ##left_join(worms_idig, res)
     res
 }
+
 
 fetch_hook_bold_specimens_per_species <- function(key, namespace) {
     res <- try(bold_specimens(taxon = paste0("'", key, "'")), silent = TRUE)

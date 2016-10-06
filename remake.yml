@@ -253,16 +253,16 @@ targets:
     command: assemble_idigbio_records(I("Polychaeta"), I("class"))
 
   porifera_idigbio_records:
-    command: assemble_idigbio_records(I("Porifera"), I("class"))
+    command: assemble_idigbio_records(I("Porifera"), I("phylum"))
 
   entoprocta_idigbio_records:
-    command: assemble_idigbio_records(I("Entoprocta"), I("class"))
+    command: assemble_idigbio_records(I("Entoprocta"), I("phylum"))
 
   bryozoa_idigbio_records:
-    command: assemble_idigbio_records(I("Bryozoa"), I("class"))
+    command: assemble_idigbio_records(I("Bryozoa"), I("phylum"))
 
   gnathostomulida_idigbio_records:
-    command: assemble_idigbio_records(I("Gnathostomulida"), I("class"))
+    command: assemble_idigbio_records(I("Gnathostomulida"), I("phylum"))
 
   #_idigbio_records:
   #  command: assemble_idigbio_records(I(""), I("class"))
@@ -289,9 +289,12 @@ targets:
     command: assemble_idigbio_species_list()
     depends: idigbio_records
 
-  bold_records_for_idigbio_species:
-    command: assemble_bold_specimens_per_species(idigbio_species_list)
+  idigbio_species_with_worms_info:
+    command: add_worms_info(idigbio_species_list)
 
-  table_records_per_species:
-    command: make_table_records_per_species()
-    depends: bold_records_for_idigbio_species
+  idigbio_species_with_bold_info:
+    command: add_bold_info(idigbio_species_with_worms_info)
+
+  # table_records_per_species:
+  #   command: make_table_records_per_species()
+  #   depends: bold_records_for_idigbio_species
