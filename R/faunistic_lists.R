@@ -142,3 +142,16 @@ make_table_records_per_species <- function(store = store_bold_specimens_per_spec
     })
     bind_rows(res)
 }
+
+make_map_idigibio_records <- function(idig_records) {
+    sp_list <- species_list_from_idigbio(idig_records)
+    states <- map_data("state")
+    idig_records %>%
+        filter(scientificname %in% sp_list) %>%
+        ggplot(.) +
+        annotation_map(states, fill = "gray40") +
+        geom_point(aes(x = geopoint.lon, y = geopoint.lat), position = "jitter", colour = "red", alpha = .2) +
+        coord_map(projection = "mercator") +
+        xlab("longitude") + ylab("latitude") + ggtitle(unique(tolower(idig_records$`data.dwc:phylum`)))
+
+}
