@@ -5,24 +5,30 @@ assemble_idigbio_records <- function(phyla = c("Echinodermata", "Nemertea", "Pho
     res
 }
 
-get_idigbio_records <- function(phylum) {
-    message("Looking for ", phylum)
-    res <- vector("list", 100)
-    qry <- list(`data.dwc:phylum` = phylum,
-                basisofrecord = "PreservedSpecimen",
+get_idigbio_records <- function(taxon_name, taxon_level) {
+    message("Looking for ", taxon_name)
+    taxon_level <- match.arg(taxon_level, c("phylum", "class", "order", "family", "genus"))
+    qry <- list(basisofrecord = "PreservedSpecimen",
                 scientificname = list(type = "exists"),
                 geopoint = list(type = "geo_bounding_box",
                                 top_left = list(lat = 51, lon = -133),
                                 bottom_right = list(lat = 23, lon = -51))
                 )
-    res_1 <- idig_search_records(rq = qry, limit = 10000, fields = c('uuid',
-                     'catalognumber',
-                     'data.dwc:phylum',
-                     'family',
-                     'genus',
-                     'scientificname',
-                     'country',
-                     'geopoint'))
+    taxon_level <- paste0("data.dwc:", taxon_level)
+    qry <- c(setNames(taxon_name, taxon_level), qry)
+    res <- idig_search_records(rq = qry, limit = 100000,
+                               fields = c(
+                                   'uuid',
+                                   'catalognumber',
+                                   'institutioncode',
+                                   'data.dwc:phylum',
+                                   'data.dwc:class',
+                                   'data.dwc:order',
+                                   'data.dwc:family',
+                                   'data.dwc:genus',
+                                   'scientificname',
+                                   'country',
+                                   'geopoint'))
     res
 }
 
