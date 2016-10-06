@@ -11,7 +11,11 @@ fetch_hook_worms_ids <- function(key, namespace) {
             return(NA)
         }
         res <- worms_records(ids = wid)$valid_AphiaID
-        if (length(res) != 1) stop("More than one record for ", key)
+        if (is.null(res)) {
+            message("Can't find synonyms for: ", key)
+            return(NA)
+        }
+        if (length(res) > 1) stop("More than one record for ", key)
         res
     } else stop("I don't know what to do ", attr(wid, "match"))
 }
