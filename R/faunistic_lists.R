@@ -43,9 +43,10 @@ get_idigbio_records <- function(taxon_name, taxon_level) {
     res
 }
 
-assemble_idigbio_species_list <- function(idig_records) {
-    res <- lapply(idig_records, species_list_from_idigbio)
-    names(res) <- names(idig_records)
+assemble_idigbio_species_list <- function(idig_store = store_idigbio_records()) {
+    groups <- idig_store$list()
+    res <- lapply(groups, function(x) species_list_from_idigbio(idig_store$get(x)))
+    names(res) <- groups
     res
 }
 

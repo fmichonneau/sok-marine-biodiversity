@@ -198,10 +198,39 @@ targets:
 
   ### get species list from the US using iDigBio
   idigbio_records:
-    command: assemble_idigbio_records()
+    depends:
+      - echinodermata_idigbio_records
+      - nemertea_idigbio_records
+      - phoronida_idigbio_records
+      - ctenophora_idigbio_records
+      - chaetognatha_idigbio_records
+      - cnidaria_idigbio_records
+
+  echinodermata_idigbio_records:
+    command: assemble_idigbio_records(I("Echinodermata"), I("phylum"))
+
+  nemertea_idigbio_records:
+    command: assemble_idigbio_records(I("Nemertea"), I("phylum"))
+
+  phoronida_idigbio_records:
+    command: assemble_idigbio_records(I("Phoronida"), I("phylum"))
+
+  ctenophora_idigbio_records:
+    command: assemble_idigbio_records(I("Ctenophora"), I("phylum"))
+
+  chaetognatha_idigbio_records:
+    command: assemble_idigbio_records(I("Chaetognatha"), I("phylum"))
+
+  cnidaria_idigbio_records:
+    command: assemble_idigbio_records(I("Cnidaria"), I("phylum"))
 
   idigbio_species_list:
-    command: assemble_idigbio_species_list(idigbio_records)
+    command: assemble_idigbio_species_list()
+    depends: idigbio_records
 
   bold_records_for_idigbio_species:
     command: assemble_bold_specimens_per_species(idigbio_species_list)
+
+  table_records_per_species:
+    command: make_table_records_per_species()
+    depends: bold_records_for_idigbio_species
