@@ -52,8 +52,8 @@ assemble_idigbio_species_list <- function(idig_store = store_idigbio_records()) 
 
 species_list_from_idigbio <- function(idig) {
     res <- na.omit(unique(idig$scientificname))
-    ## remove sp., spp., and numbered species
-    res <- res[!grepl("spp?\\.|[0-9]+", res)]
+    ## remove sp., spp., / and numbered species
+    res <- res[!grepl("spp?\\.|[0-9]+|\\/", res)]
     ## remove species with a single letter word
     res <- res[vapply(res, function(x) !any(nchar(unlist(strsplit(x, " "))) < 2), logical(1))]
     ## remove cf., aff. and ? from the species names
