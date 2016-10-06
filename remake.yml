@@ -199,12 +199,73 @@ targets:
   ### get species list from the US using iDigBio
   idigbio_records:
     depends:
+      - acanthocephala_idigbio_records
+      - brachiopoda_idigbio_records
+      - cephalorhyncha_idigbio_records
+      - cycliophora_idigbio_records
+      - dicyemida_idigbio_records
+      - hemichordata_idigbio_records
+      - orthonectida_idigbio_records
+      - platyhelminthes_idigbio_records
+      - xenacoelomorpha_idigbio_records
+      - polychaeta_idigbio_records
+      - porifera_idigbio_records
+      # TODO - malacostraca_idigbio_records
+      - entoprocta_idigbio_records
+      - bryozoa_idigbio_records
+      - gnathostomulida_idigbio_records
       - echinodermata_idigbio_records
       - nemertea_idigbio_records
       - phoronida_idigbio_records
       - ctenophora_idigbio_records
       - chaetognatha_idigbio_records
       - cnidaria_idigbio_records
+
+
+  acanthocephala_idigbio_records:
+    command: assemble_idigbio_records(I("Acanthocephala"), I("phylum"))
+
+  brachiopoda_idigbio_records:
+    command: assemble_idigbio_records(I("Brachiopoda"), I("phylum"))
+
+  cephalorhyncha_idigbio_records:
+    command: assemble_idigbio_records(I("Cephalorhyncha"), I("phylum"))
+
+  cycliophora_idigbio_records:
+    command: assemble_idigbio_records(I("Cycliophora"), I("phylum"))
+
+  dicyemida_idigbio_records:
+    command: assemble_idigbio_records(I("Dicyemida"), I("phylum"))
+
+  hemichordata_idigbio_records:
+    command: assemble_idigbio_records(I("Hemichordata"), I("phylum"))
+
+  orthonectida_idigbio_records:
+    command: assemble_idigbio_records(I("Orthonectida"), I("phylum"))
+
+  platyhelminthes_idigbio_records:
+    command: assemble_idigbio_records(I("Platyhelminthes"), I("phylum"))
+
+  xenacoelomorpha_idigbio_records:
+    command: assemble_idigbio_records(I("Xenacoelomorpha"), I("phylum"))
+
+  polychaeta_idigbio_records:
+    command: assemble_idigbio_records(I("Polychaeta"), I("class"))
+
+  porifera_idigbio_records:
+    command: assemble_idigbio_records(I("Porifera"), I("class"))
+
+  entoprocta_idigbio_records:
+    command: assemble_idigbio_records(I("Entoprocta"), I("class"))
+
+  bryozoa_idigbio_records:
+    command: assemble_idigbio_records(I("Bryozoa"), I("class"))
+
+  gnathostomulida_idigbio_records:
+    command: assemble_idigbio_records(I("Gnathostomulida"), I("class"))
+
+  #_idigbio_records:
+  #  command: assemble_idigbio_records(I(""), I("class"))
 
   echinodermata_idigbio_records:
     command: assemble_idigbio_records(I("Echinodermata"), I("phylum"))
