@@ -18,28 +18,52 @@ assemble_idigbio_records <- function(taxon_name, taxon_level) {
 get_idigbio_records <- function(taxon_name, taxon_level) {
     message("Looking for ", taxon_name, " ... ", appendLF = FALSE)
     taxon_level <- match.arg(taxon_level, c("phylum", "class", "order", "family", "genus"))
+    fields <- c('uuid',
+                'catalognumber',
+                'datecollected',
+                'institutioncode',
+                'phylum',
+                'data.dwc:phylum',
+                'data.dwc:class',
+                'data.dwc:order',
+                'data.dwc:family',
+                'data.dwc:genus',
+                'scientificname',
+                'datecollected',
+                'country',
+                'geopoint')
     qry <- list(basisofrecord = "PreservedSpecimen",
                 scientificname = list(type = "exists"),
                 geopoint = list(type = "geo_bounding_box",
                                 top_left = list(lat = 51, lon = -133),
                                 bottom_right = list(lat = 23, lon = -51))
                 )
+    ## apparently, we don't provide the dwc.data:phylum fields so our records
+    ## are not included. Using `phylum` to do the query brings in too much crap.
+    flmnh_qry <- c(setNames(taxon_name, taxon_level),
+                   setNames("flmnh", "institutioncode"),
+                   qry)
     taxon_level <- paste0("data.dwc:", taxon_level)
     qry <- c(setNames(taxon_name, taxon_level), qry)
     res <- idig_search_records(rq = qry, limit = 100000,
-                               fields = c(
-                                   'uuid',
-                                   'catalognumber',
-                                   'institutioncode',
-                                   'data.dwc:phylum',
-                                   'data.dwc:class',
-                                   'data.dwc:order',
-                                   'data.dwc:family',
-                                   'data.dwc:genus',
-                                   'scientificname',
-                                   'country',
-                                   'geopoint'))
-    message("found ", nrow(res), " records.")
+                               fields = fields)
+    flmnh_res <- idig_search_records(rq = flmnh_qry, limit = 100000,
+                                     fields = fields)
+    message("found ", nrow(res), " records in iDigbio, and ",
+            nrow(flmnh_res), " for FLMNH.")
+    top_phylum <- names(which.max(table(res$`phylum`)))
+    message("  using ", sQuote(top_phylum), " for missing values.")
+    if (nrow(res) >  0 && nrow(flmnh_res) > 0)  {
+        bind_rows(res, flmnh_res) %>%
+            mutate(`data.dwc:phylum` = tolower(`data.dwc:phylum`)) %>%
+            mutate(`data.dwc:phylum` = replace(`data.dwc:phylum`,
+                                               is.na(`data.dwc:phylum`),
+                                               top_phylum))
+    } else {
+        bind_rows(res, flmnh_res)
+    }
+}
+
     res
 }
 
