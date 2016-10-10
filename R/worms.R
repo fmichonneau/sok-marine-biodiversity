@@ -15,6 +15,8 @@ fetch_hook_worms_ids <- function(key, namespace) {
             message("Can't find synonyms for: ", key)
             return(NA)
         }
+        if (identical(res, "0"))
+            return(NA)
         if (length(res) > 1) stop("More than one record for ", key)
         return(res)
     } else stop("I don't know what to do ", attr(wid, "match"))

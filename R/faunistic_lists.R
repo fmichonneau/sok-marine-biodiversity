@@ -71,7 +71,23 @@ capwords <- function(s, strict = FALSE) {
     sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
 }
 
+assemble_idigbio_species_list_dates <- function(idig_worms) {
+    res <- lapply(store_idigbio_records()$list(), function(x)
+        store_idigbio_records()$get(x))
+    res <- bind_rows(res)
+    is_marine <- idig_worms %>%
+        filter(is_marine == TRUE) %>%
+        select(verbatim_scientificname) %>%
+        .[[1]]
+    res <- filter(res, scientificname %in% is_marine) %>%
+        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
+        mutate(year = year(parsed_date)) %>%
+        mutate(year = replace(year, year > 2016 | year < 1800, NA)) %>%
+        filter(!is.na(year)) %>% #, !is.na(`data.dwc:phylum`)) %>%
+        mutate(`data.dwc:phylum` = capwords(`data.dwc:phylum`, strict = TRUE))
+
     res
+
 }
 
 assemble_idigbio_species_list <- function(idig_store = store_idigbio_records()) {
