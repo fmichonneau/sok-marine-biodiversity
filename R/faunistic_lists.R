@@ -16,7 +16,7 @@ assemble_idigbio_records <- function(taxon_name, taxon_level) {
 }
 
 get_idigbio_records <- function(taxon_name, taxon_level) {
-    message("Looking for ", taxon_name, " ... ", appendLF = FALSE)
+    message("Looking for ", taxon_name, " ... ")
     taxon_level <- match.arg(taxon_level, c("phylum", "class", "order", "family", "genus"))
     fields <- c('uuid',
                 'catalognumber',
@@ -32,36 +32,55 @@ get_idigbio_records <- function(taxon_name, taxon_level) {
                 'datecollected',
                 'country',
                 'geopoint')
-    qry <- list(basisofrecord = "PreservedSpecimen",
-                scientificname = list(type = "exists"),
-                geopoint = list(type = "geo_bounding_box",
-                                top_left = list(lat = 51, lon = -133),
-                                bottom_right = list(lat = 23, lon = -51))
-                )
-    ## apparently, we don't provide the dwc.data:phylum fields so our records
-    ## are not included. Using `phylum` to do the query brings in too much crap.
-    flmnh_qry <- c(setNames(taxon_name, taxon_level),
-                   setNames("flmnh", "institutioncode"),
-                   qry)
-    taxon_level <- paste0("data.dwc:", taxon_level)
-    qry <- c(setNames(taxon_name, taxon_level), qry)
-    res <- idig_search_records(rq = qry, limit = 100000,
-                               fields = fields)
-    flmnh_res <- idig_search_records(rq = flmnh_qry, limit = 100000,
-                                     fields = fields)
-    message("found ", nrow(res), " records in iDigbio, and ",
-            nrow(flmnh_res), " for FLMNH.")
-    top_phylum <- names(which.max(table(res$`phylum`)))
-    message("  using ", sQuote(top_phylum), " for missing values.")
-    if (nrow(res) >  0 && nrow(flmnh_res) > 0)  {
-        bind_rows(res, flmnh_res) %>%
+    regions <- list(
+        gulf_of_mex = list(type = "geo_bounding_box",
+                           top_left = list(lat = 30.6, lon = -98.3),
+                           bottom_right = list(lat = 23, lon = -80.6)),
+        south_east = list(type = "geo_bounding_box",
+                          top_left = list(lat = 39.5, lon = -81),
+                          bottom_right = list(lat = 23, lon = -67.3)),
+        north_east = list(type = "geo_bounding_box",
+                          top_left = list(lat = 49.5, lon = -74.6),
+                          bottom_right = list(lat = 39.5, lon = -61.4)),
+        west_coast = list(type = "geo_bounding_box",
+                          top_left = list(lat = 49.5, lon = -127.1),
+                          bottom_right = list(lat = 31.7, lon = -116.9))
+    )
+
+    RES <- lapply(seq_along(regions), function(r) {
+        message("  in ", names(regions)[r], ": ",   appendLF = FALSE)
+        qry <- list(basisofrecord = "PreservedSpecimen",
+                    scientificname = list(type = "exists"),
+                    geopoint = regions[[r]])
+        ## apparently, FLMNH doesn't provide the dwc.data:phylum fields so
+        ## their records are not included. Using `phylum` to do the query
+        ## on all iDigBio brings in too much crap, so we need two queries
+        flmnh_qry <- c(setNames(taxon_name, taxon_level),
+                       setNames("flmnh", "institutioncode"),
+                       qry)
+        taxon_level <- paste0("data.dwc:", taxon_level)
+        qry <- c(setNames(taxon_name, taxon_level), qry)
+        res <- idig_search_records(rq = qry, limit = 100000,
+                                   fields = fields)
+        flmnh_res <- idig_search_records(rq = flmnh_qry, limit = 100000,
+                                         fields = fields)
+        message("there are ", nrow(res), " records in iDigbio, and ",
+                nrow(flmnh_res), " for FLMNH.")
+        bind_rows(res, flmnh_res)
+
+    })
+    RES <- bind_rows(RES)
+    top_phylum <- names(which.max(table(RES$`phylum`)))
+        message("  using ", sQuote(top_phylum), " for missing values.")
+    if (nrow(RES) > 0) {
+        RES %>%
+            distinct(uuid, .keep_all = TRUE) %>%
             mutate(`data.dwc:phylum` = tolower(`data.dwc:phylum`)) %>%
             mutate(`data.dwc:phylum` = replace(`data.dwc:phylum`,
                                                is.na(`data.dwc:phylum`),
                                                top_phylum))
-    } else {
-        bind_rows(res, flmnh_res)
-    }
+    } else
+        RES
 }
 
 capwords <- function(s, strict = FALSE) {
@@ -132,6 +151,7 @@ add_worms_info <- function(sp_list_idig) {
     wid <- valid_name <- vector("character", nrow(res))
     marine <- vector("logical", nrow(res))
     for (i in seq_len(nrow(res))) {
+        message("taxon: ", res[i, 1])
         wid[i] <- store_worms_ids()$get(res[i, 1])
         if (!is.na(wid[i]) && !identical(wid[i], "0")) {
             w_info <- store_worms_info()$get(wid[i])
@@ -241,7 +261,6 @@ make_plot_bold_records_per_idigbio_species <- function(idig_table) {
 make_map_idigibio_records <- function(idig_records) {
     states <- map_data("state")
     idig_records %>%
-        filter(scientificname %in% sp_list) %>%
         ggplot(.) +
         annotation_map(states, fill = "gray40") +
         geom_point(aes(x = geopoint.lon, y = geopoint.lat), position = "jitter", colour = "red", alpha = .2) +
