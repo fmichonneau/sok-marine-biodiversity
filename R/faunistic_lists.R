@@ -133,7 +133,7 @@ add_worms_info <- function(sp_list_idig) {
     marine <- vector("logical", nrow(res))
     for (i in seq_len(nrow(res))) {
         wid[i] <- store_worms_ids()$get(res[i, 1])
-        if (!is.na(wid[i])) {
+        if (!is.na(wid[i]) && !identical(wid[i], "0")) {
             w_info <- store_worms_info()$get(wid[i])
             if (nrow(w_info) > 1) browser()
             marine[i] <- (identical(w_info$isMarine, "1") | identical(w_info$isBrackish, "1"))
@@ -155,7 +155,8 @@ add_worms_info <- function(sp_list_idig) {
 
 add_bold_info <- function(worms_idig) {
     res <- worms_idig %>%
-        filter(!is.na(is_marine), is_marine == TRUE) %>%
+        filter(!is.na(is_marine), is_marine == TRUE,
+               worms_valid_name != "not in worms") %>%
         select(worms_valid_name) %>%
         unique
 
@@ -163,24 +164,28 @@ add_bold_info <- function(worms_idig) {
 
     for (i in seq_len(nrow(res))) {
         bold <- store_bold_specimens_per_species()$get(res$worms_valid_name[i])
-        bold_rcrd[i] <- ifelse(is.null(bold), 0, nrow(bold))
+        bold_rcrd[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
+                               0, nrow(bold))
     }
     res <- data.frame(worms_valid_name = res,
                       n_bold_records = bold_rcrd,
                       stringsAsFactors = FALSE)
-    ##left_join(worms_idig, res)
-    res
+    wrm <- select(worms_idig, rank, taxon_name, worms_valid_name) %>%
+        unique %>%
+        filter(!is.na(worms_valid_name))
+    left_join(res, wrm)
 }
 
 
 fetch_hook_bold_specimens_per_species <- function(key, namespace) {
+    if (is.na(key)) return(NULL)
     res <- try(bold_specimens(taxon = paste0("'", key, "'")), silent = TRUE)
     if (inherits(res, "try-error")) {
         message("No record for ", key, ". Trying to look for synonyms ...", appendLF = FALSE)
         wid <- store_worms_ids()$get(key)
         if (is.na(wid)) {
             message("Can't find a valid WoRMS ID")
-            return("not in worms")
+            return("not in worms/multi match")
         } else {
             syn <- store_synonyms()$get(wid)
             res <- try(bold_specimens(taxon = paste0("'", syn, "'", collapse = "|")),
@@ -213,34 +218,27 @@ assemble_bold_specimens_per_species <- function(sp_lists) {
     })
 }
 
-make_table_records_per_species <- function(store = store_bold_specimens_per_species()) {
-    nmspc <- setdiff(store$list_namespaces(), "objects")
-    phyla <- nmspc
-    res <- lapply(phyla, function(p) {
-        sp <- st$list(namespace = p)
-        t <- lapply(sp, function(s) {
-            ## TODO -- also check that BOLD taxonomy also indicates
-            ## that it's the correct phylum. Some iDigBio records seem
-            ## to have the wrong phylum listed for some taxa.
-            r <- st$get(s, namespace = p)
-            if (is.null(r))
-                n <- 0
-            else if (identical(r, "not in worms"))
-                n <- NA
-            else
-                n <- NROW(r)
-            data.frame(phylum = p,
-                       species = s,
-                       n_records = n,
-                       stringsAsFactors = FALSE)
-        })
-        bind_rows(t)
-    })
-    bind_rows(res)
+make_table_bold_records_per_idigbio_species <- function(idig_bold) {
+    idig_bold %>%
+        group_by(taxon_name) %>%
+        summarize(
+            n_spp = n(),
+            p_seq = sum(n_bold_records > 0)/n(),
+            mean_seq_spcm = mean(n_bold_records)
+        )
 }
 
+make_plot_bold_records_per_idigbio_species <- function(idig_table) {
+    idig_table %>%
+        filter(p_seq > 0) %>%
+        ggplot(.) +
+        geom_bar(aes(x = reorder(taxon_name, p_seq), y = p_seq), stat = "identity") +
+        coord_flip() +
+        xlab("Taxa") + ylab("Proportion of species sequenced")
+}
+
+
 make_map_idigibio_records <- function(idig_records) {
-    sp_list <- species_list_from_idigbio(idig_records)
     states <- map_data("state")
     idig_records %>%
         filter(scientificname %in% sp_list) %>%
@@ -250,4 +248,13 @@ make_map_idigibio_records <- function(idig_records) {
         coord_map(projection = "mercator") +
         xlab("longitude") + ylab("latitude") + ggtitle(unique(tolower(idig_records$`data.dwc:phylum`)))
 
+}
+
+make_plot_idigbio_records_per_date <- function(idig_dates) {
+    idig_dates %>%
+        filter(year >=  1850) %>%
+    ggplot(aes(x=year, fill=institutioncode)) +
+        geom_bar() + scale_y_log10() +
+        facet_wrap(~ `data.dwc:phylum`) +
+        scale_fill_viridis(discrete = TRUE)
 }

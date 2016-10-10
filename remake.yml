@@ -13,6 +13,7 @@ packages:
   - tibble
   - tidyr
   - ridigbio
+  - lubridate
 
 targets:
   all:
@@ -210,7 +211,7 @@ targets:
       - xenacoelomorpha_idigbio_records
       - polychaeta_idigbio_records
       - porifera_idigbio_records
-      # TODO - malacostraca_idigbio_records
+      - decapoda_idigbio_records
       - entoprocta_idigbio_records
       - bryozoa_idigbio_records
       - gnathostomulida_idigbio_records
@@ -264,8 +265,8 @@ targets:
   gnathostomulida_idigbio_records:
     command: assemble_idigbio_records(I("Gnathostomulida"), I("phylum"))
 
-  #_idigbio_records:
-  #  command: assemble_idigbio_records(I(""), I("class"))
+  decapoda_idigbio_records:
+    command: assemble_idigbio_records(I("Decapoda"), I("order"))
 
   echinodermata_idigbio_records:
     command: assemble_idigbio_records(I("Echinodermata"), I("phylum"))
@@ -294,6 +295,23 @@ targets:
 
   idigbio_species_with_bold_info:
     command: add_bold_info(idigbio_species_with_worms_info)
+
+  table_idigbio_species_sequenced:
+    command: make_table_bold_records_per_idigbio_species(idigbio_species_with_bold_info)
+
+  figures/plot_idigbio_species_sequenced.pdf:
+    command: make_plot_bold_records_per_idigbio_species(table_idigbio_species_sequenced)
+    plot: true
+
+  idigbio_species_list_dates:
+    command: assemble_idigbio_species_list_dates(idigbio_species_with_worms_info)
+    depends: idigbio_records
+
+  figures/plot_idigbio_species_dates.pdf:
+    command: make_plot_idigbio_records_per_date(idigbio_species_list_dates)
+    plot:
+      width: 12
+      height: 8
 
   # table_records_per_species:
   #   command: make_table_records_per_species()
