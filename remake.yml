@@ -221,6 +221,7 @@ targets:
       - ctenophora_idigbio_records
       - chaetognatha_idigbio_records
       - cnidaria_idigbio_records
+      - mollusca_idigbio_records
 
 
   acanthocephala_idigbio_records:
@@ -285,6 +286,9 @@ targets:
 
   cnidaria_idigbio_records:
     command: assemble_idigbio_records(I("Cnidaria"), I("phylum"))
+
+  mollusca_idigbio_records:
+    command: assemble_idigbio_records(I("Mollusca"), I("phylum"))
 
   idigbio_species_list:
     command: assemble_idigbio_species_list()
