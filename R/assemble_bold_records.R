@@ -44,8 +44,8 @@ get_stats_bold <- function(bold) {
         )
 }
 
+make_table_proportion_barcoded_by_phylum <- function(bold, worms, others) {
 
-plot_proportion_barcoded_by_phylum <- function(bold, worms, others) {
     worms <- read.csv(file = worms, stringsAsFactors = FALSE)
     other <- read.csv(file = others, stringsAsFactors = FALSE)
 
@@ -54,9 +54,13 @@ plot_proportion_barcoded_by_phylum <- function(bold, worms, others) {
         dplyr::rename_("accepted_species" = "accepted_species_marine") %>%
         dplyr::bind_rows(other)
 
-    left_join(bold, oth) %>%
-        mutate(p_barcoded = n_binom/accepted_species) %>%
-        ggplot(.) +
+    left_join(bold, oth, by = "taxon") %>%
+        mutate(p_barcoded = n_binom/accepted_species)
+}
+
+
+plot_proportion_barcoded_by_phylum <- function(bold_stats) {
+    ggplot(bold_stats) +
         geom_bar(aes(x = reorder(taxon, p_barcoded), y = p_barcoded), stat = "identity") +
         coord_flip() +
         xlab("Taxa") + ylab("Proportion of number of species for which DNA barcodes are available")
