@@ -109,14 +109,37 @@ assemble_idigbio_species_list_dates <- function(idig_worms) {
 
 }
 
-assemble_idigbio_species_list <- function(idig_store = store_idigbio_records()) {
+assemble_idigbio_species_list <- function(geo_filter = c("global", "east_coast",
+                                                         "west_coast", "florida"),
+                                          idig_store = store_idigbio_records()) {
+    geo_filter <- match.arg(geo_filter)
     groups <- idig_store$list()
-    res <- lapply(groups, function(x) species_list_from_idigbio(idig_store$get(x)))
+    res <- lapply(groups, function(x) {
+        idig <- idig_store$get(x)
+        idig <- switch(geo_filter,
+                       global = idig,
+                       east_coast = filter_idigbio_east_coast(idig),
+                       west_coast = filter_idigbio_west_coast(idig),
+                       florida = filter_idigbio_florida(idig))
+        species_list_from_idigbio(idig)
+    })
     names(res) <- groups
     res <- bind_rows(res, .id = "taxon")
     tidyr::extract_(res, "taxon", c("rank", "taxon_name"), "([[:alnum:]]+)-([[:alnum:]]+)")
 }
 
+filter_idigbio_east_coast <- function(idig) {
+    filter(idig, geopoint.lon > -99)
+}
+
+filter_idigbio_west_coast <- function(idig) {
+    filter(idig, geopoint.lon < -112)
+}
+
+filter_idigbio_florida <- function(idig) {
+    filter(idig, geopoint.lon > -88, geopoint.lon < -78,
+           geopoint.lat > 24,  geopoint.lat < 30)
+}
 
 species_list_from_idigbio <- function(idig) {
     res <- idig$scientificname
@@ -151,7 +174,6 @@ add_worms_info <- function(sp_list_idig) {
     wid <- valid_name <- vector("character", nrow(res))
     marine <- vector("logical", nrow(res))
     for (i in seq_len(nrow(res))) {
-        message("taxon: ", res[i, 1])
         wid[i] <- store_worms_ids()$get(res[i, 1])
         if (!is.na(wid[i]) && !identical(wid[i], "0")) {
             w_info <- store_worms_info()$get(wid[i])
@@ -238,9 +260,12 @@ assemble_bold_specimens_per_species <- function(sp_lists) {
     })
 }
 
-make_table_bold_records_per_idigbio_species <- function(idig_bold) {
+make_table_bold_records_per_idigbio_species <- function(...) {
+    idig <- list(...)
+    names(idig) <- names(list(...))
+    idig_bold <- bind_rows(idig, .id = "geo_scope")
     idig_bold %>%
-        group_by(taxon_name) %>%
+        group_by(geo_scope, taxon_name) %>%
         summarize(
             n_spp = n(),
             p_seq = sum(n_bold_records > 0)/n(),
@@ -258,22 +283,57 @@ make_plot_bold_records_per_idigbio_species <- function(idig_table) {
 }
 
 
-make_map_idigibio_records <- function(idig_records) {
+make_map_idigibio_records <- function(idig_worms) {
     states <- map_data("state")
-    idig_records %>%
-        ggplot(.) +
-        annotation_map(states, fill = "gray40") +
-        geom_point(aes(x = geopoint.lon, y = geopoint.lat), position = "jitter", colour = "red", alpha = .2) +
-        coord_map(projection = "mercator") +
-        xlab("longitude") + ylab("latitude") + ggtitle(unique(tolower(idig_records$`data.dwc:phylum`)))
 
+    idig <- store_idigbio_records()$list()
+    res <- lapply(idig, function(x) store_idigbio_records()$get(x))
+    res <- bind_rows(res)
+    tmp_db <- src_sqlite("data/tmp_idigdb.sqlite", create = TRUE)
+    ##idig_sql <- copy_to(tmp_db, res, name = "idigbio_records", temporary = FALSE, indexes = list("scientificname", "phylum"))
+    ##wrms_sql <- copy_to(tmp_db, idig_worms, name = "worms", temporary = FALSE, indexes = list("taxon_name", "verbatim_scientificname"))
+
+    pdf(file = "figures/map_by_phyla.pdf", paper = "USr")
+    on.exit(dev.off())
+    lapply(unique(res$`data.dwc:phylum`), function(x) {
+        message("making map for ", x)
+        db <- tbl(tmp_db, sql(paste0("SELECT DISTINCT idigbio_records.uuid, idigbio_records.`data.dwc:order`, idigbio_records.`data.dwc:phylum`, idigbio_records.`data.dwc:family`, idigbio_records.`scientificname`, idigbio_records.`geopoint.lat`, idigbio_records.`geopoint.lon`, worms.worms_id, worms.worms_valid_name  FROM idigbio_records JOIN worms ON idigbio_records.scientificname = worms.verbatim_scientificname WHERE worms.is_marine = 1 AND idigbio_records.`data.dwc:phylum` is '", x, "'")))
+        message("Starting the collect")
+        db_res <- collect(db, n = Inf)
+        if (nrow(db_res) < 2) return(NULL)
+        p <- ggplot(db_res) +
+            annotation_map(states, fill = "gray40") +
+            geom_point(aes(x = geopoint.lon, y = geopoint.lat), position = "jitter", colour = "red", alpha = .15) +
+            coord_map(projection = "mercator") +
+            xlab("longitude") + ylab("latitude") +
+            ggtitle(unique(tolower(x)))
+        print(p)
+    })
 }
 
-make_plot_idigbio_records_per_date <- function(idig_dates) {
+make_plot_idigbio_records_per_date <- function(idig_dates, to_keep = c("Echinodermata", "Annelida", "Arthropoda", "Mollusca", "Porifera")) {
     idig_dates %>%
-        filter(year >=  1850) %>%
-    ggplot(aes(x=year, fill=institutioncode)) +
-        geom_bar() + scale_y_log10() +
+        filter(year >=  1900,
+               `data.dwc:phylum` %in% to_keep) %>%
+        group_by(year, institutioncode, `data.dwc:phylum`) %>%
+        tally %>%
+        ggplot(aes(x = year, y = n)) +
+        geom_bar(aes(fill=institutioncode), stat = "identity") +
+        geom_smooth(method = "lm", formula = y ~ splines::bs(x, 6), se = FALSE) + #geom_smooth() +
+        scale_y_log10() +
         facet_wrap(~ `data.dwc:phylum`) +
         scale_fill_viridis(discrete = TRUE)
+}
+
+make_proportion_barcoded_east_coast <- function(idigbio_)
+
+make_proportion_barcoded_summary <- function(bold_stats, idigbio_stats) {
+    res <- left_join(bold_stats, idigbio_stats, by = c("taxon" = "taxon_name")) %>%
+        select(taxon, global_barcoded = p_barcoded, us_barcoded = p_seq ) %>%
+        gather(scale, prop_seq, -taxon)
+
+    ggplot(res) +
+        geom_bar(aes(x = reorder(taxon, prop_seq), y = prop_seq, fill = scale), stat = "identity", position = "dodge") +
+        coord_flip()
+
 }
