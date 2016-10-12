@@ -14,6 +14,7 @@ packages:
   - tidyr
   - ridigbio
   - lubridate
+  - viridis
 
 targets:
   all:
@@ -186,8 +187,11 @@ targets:
   stats_bold_data:
     command: get_stats_bold(bold_data)
 
+  table_proportion_barcoded_by_phylum:
+    command: make_table_proportion_barcoded_by_phylum(stats_bold_data, worms="data-raw/20160929_worms_stats.csv", others="data-raw/20160929_other_taxa_stats.csv")
+
   figures/proportion_barcoded_by_phylum.pdf:
-    command: plot_proportion_barcoded_by_phylum(stats_bold_data,  worms="data-raw/20160929_worms_stats.csv",others="data-raw/20160929_other_taxa_stats.csv")
+    command: plot_proportion_barcoded_by_phylum(table_proportion_barcoded_by_phylum)
     plot: true
 
   level_identification:
@@ -290,25 +294,60 @@ targets:
   mollusca_idigbio_records:
     command: assemble_idigbio_records(I("Mollusca"), I("phylum"))
 
-  idigbio_species_list:
-    command: assemble_idigbio_species_list()
+### global list
+  global_idigbio_species_list:
+    command: assemble_idigbio_species_list(geo_filter=I("global"))
     depends: idigbio_records
 
-  idigbio_species_with_worms_info:
-    command: add_worms_info(idigbio_species_list)
+  global_idigbio_species_with_worms_info:
+    command: add_worms_info(global_idigbio_species_list)
 
-  idigbio_species_with_bold_info:
-    command: add_bold_info(idigbio_species_with_worms_info)
+  global_idigbio_species_with_bold_info:
+    command: add_bold_info(global_idigbio_species_with_worms_info)
 
+### east coast list
+  east_idigbio_species_list:
+    command: assemble_idigbio_species_list(geo_filter=I("east_coast"))
+    depends: idigbio_records
+
+  east_idigbio_species_with_worms_info:
+    command: add_worms_info(east_idigbio_species_list)
+
+  east_idigbio_species_with_bold_info:
+    command: add_bold_info(east_idigbio_species_with_worms_info)
+
+### west coast list
+  west_idigbio_species_list:
+    command: assemble_idigbio_species_list(geo_filter=I("west_coast"))
+    depends: idigbio_records
+
+  west_idigbio_species_with_worms_info:
+    command: add_worms_info(west_idigbio_species_list)
+
+  west_idigbio_species_with_bold_info:
+    command: add_bold_info(west_idigbio_species_with_worms_info)
+
+### florida list
+  florida_idigbio_species_list:
+    command: assemble_idigbio_species_list(geo_filter=I("florida"))
+    depends: idigbio_records
+
+  florida_idigbio_species_with_worms_info:
+    command: add_worms_info(florida_idigbio_species_list)
+
+  florida_idigbio_species_with_bold_info:
+    command: add_bold_info(florida_idigbio_species_with_worms_info)
+
+### summary tables
   table_idigbio_species_sequenced:
-    command: make_table_bold_records_per_idigbio_species(idigbio_species_with_bold_info)
+    command: make_table_bold_records_per_idigbio_species(global=global_idigbio_species_with_bold_info, east_coast=east_idigbio_species_with_bold_info, west_coast=west_idigbio_species_with_bold_info, florida=florida_idigbio_species_with_bold_info)
 
   figures/plot_idigbio_species_sequenced.pdf:
     command: make_plot_bold_records_per_idigbio_species(table_idigbio_species_sequenced)
     plot: true
 
   idigbio_species_list_dates:
-    command: assemble_idigbio_species_list_dates(idigbio_species_with_worms_info)
+    command: assemble_idigbio_species_list_dates(global_idigbio_species_with_worms_info)
     depends: idigbio_records
 
   figures/plot_idigbio_species_dates.pdf:
@@ -317,6 +356,12 @@ targets:
       width: 12
       height: 8
 
+  figures/proportion_barcoded.pdf:
+    command: make_plot_proportion_barcoded()
+
   # table_records_per_species:
   #   command: make_table_records_per_species()
   #   depends: bold_records_for_idigbio_species
+
+  proportion_barcoded_summary:
+    command: make_proportion_barcoded_summary(table_proportion_barcoded_by_phylum, table_idigbio_species_sequenced)
