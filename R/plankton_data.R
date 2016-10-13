@@ -6,8 +6,11 @@ get_plankton_identifications <- function() {
                esu = labmanager::get_esu_by_voucher_number(sequences))# %>%
 }
 
-all_esus <- function(whitney_only = TRUE) {
+all_esus <- function(whitney_only = TRUE, phylum = "all") {
     sample_esu <- get_lab("sample_esu")
+    if (phylum != "all") {
+        sample_esu <- sample_esu[sample_esu$phylum == phylum, ]
+    }
     if (whitney_only) {
         sample_data <- get_lab("sample_data")
         sample_esu <- get_lab("station_data") %>%
