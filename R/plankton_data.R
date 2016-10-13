@@ -91,10 +91,18 @@ distance_from_whitney <- function(lat, lon) {
 }
 
 plankton_geo_distances <- function(pk_id) {
-    pk_id <- filter(pk_id, esu %in% all_esus()) %>%
+    pk_id <- pk_id %>%
         group_by(field_phylum, esu) %>%
         summarize(
             closest_match = min(geo_dist, na.rm = TRUE)
         )
     pk_id
+}
+
+calc_n_larvae <- function(...) {
+    nrow(all_voucher_numbers(...))
+}
+
+calc_n_esus <- function(...) {
+    length(all_esus(...))
 }
