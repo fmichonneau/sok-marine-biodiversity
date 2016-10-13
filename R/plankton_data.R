@@ -3,7 +3,8 @@ get_plankton_identifications <- function() {
     res %>%
         distinct_("sequences", "ID", .keep_all = TRUE) %>%
         mutate(field_phylum = labmanager::get_phylum(sequences),
-               esu = labmanager::get_esu_by_voucher_number(sequences))# %>%
+               esu = labmanager::get_esu_by_voucher_number(sequences),
+               geo_dist = distance_from_whitney(specimen_lat, specimen_lon))# %>%
 }
 
 all_esus <- function(whitney_only = TRUE, phylum = "all") {
@@ -75,4 +76,22 @@ prop_plankton_with_multi_species_match <- function(pk_id) {
             spp = paste(unique(taxonomicidentification), collapse = ", ")
         )
     sum(pk$n_spp ==  1)/length(all_esus())
+}
+
+
+distance_from_whitney <- function(lat, lon) {
+    mapply(function(.lat, .lon) {
+        if (is.na(.lat) || is.na(.lon)) return(NA)
+        gcd.hf(deg2rad(as.numeric(.lat)), deg2rad(as.numeric(.lon)),
+               deg2rad(29.669), deg2rad(-81.216), warn = FALSE)
+    }, lat, lon)
+}
+
+plankton_geo_distances <- function(pk_id) {
+    pk_id <- filter(pk_id, esu %in% all_esus()) %>%
+        group_by(field_phylum, esu) %>%
+        summarize(
+            closest_match = min(geo_dist, na.rm = TRUE)
+        )
+    pk_id
 }
