@@ -15,11 +15,12 @@ packages:
   - ridigbio
   - lubridate
   - viridis
+  - rmarkdown
 
 targets:
   all:
     depends:
-      - irl_species_in_bold
+      - manuscript.pdf
 
   irl_checklist:
     command: read_irl_checklist(file="data-raw/Species List Database Post V1.xlsx")
@@ -359,9 +360,22 @@ targets:
   figures/proportion_barcoded.pdf:
     command: make_plot_proportion_barcoded()
 
-  # table_records_per_species:
+  #table_records_per_species:
   #   command: make_table_records_per_species()
   #   depends: bold_records_for_idigbio_species
 
   proportion_barcoded_summary:
     command: make_proportion_barcoded_summary(table_proportion_barcoded_by_phylum, table_idigbio_species_sequenced)
+
+### in text statistics
+  average_prop_species_seq:
+    command: calculate_average_prop_species_seq(table_idigbio_species_sequenced)
+
+### Manuscript -----------------------------------------------------------------
+
+  manuscript.md:
+    depends: average_prop_species_seq
+    knitr: true
+
+  manuscript.pdf:
+    command: render("manuscript.md")
