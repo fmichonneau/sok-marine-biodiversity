@@ -337,7 +337,7 @@ make_proportion_barcoded_summary <- function(bold_stats, idigbio_stats) {
 
 }
 
-calculate_average_prop_species_seq <- function(idig) {
+calc_average_prop_species_seq <- function(idig) {
     res <- idig %>%
         group_by(geo_scope) %>%
         summarize(

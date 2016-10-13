@@ -4,10 +4,12 @@ get_plankton_identifications <- function() {
         distinct_("sequences", "ID", .keep_all = TRUE) %>%
         mutate(field_phylum = labmanager::get_phylum(sequences),
                esu = labmanager::get_esu_by_voucher_number(sequences),
-               geo_dist = distance_from_whitney(specimen_lat, specimen_lon))# %>%
+               geo_dist = distance_from_whitney(specimen_lat, specimen_lon)) %>%
+        ## remove the fish and keep only specimens for Whitney
+        filter(esu %in% all_esus())
 }
 
-all_esus <- function(whitney_only = TRUE, phylum = "all") {
+all_voucher_numbers <- function(whitney_only = TRUE, phylum = "all") {
     sample_esu <- get_lab("sample_esu")
     if (phylum != "all") {
         sample_esu <- sample_esu[sample_esu$phylum == phylum, ]
@@ -70,7 +72,7 @@ calc_prop_plankton_with_species_match_by_phylum <- function(pk_id) {
 }
 
 
-prop_plankton_with_multi_species_match <- function(pk_id) {
+calc_prop_plankton_with_multi_species_match <- function(pk_id) {
     ## proportion of ESUs that match to more than one binomial name
     pk <- plankton_matches_binomial(pk_id) %>%
         group_by(esu) %>%

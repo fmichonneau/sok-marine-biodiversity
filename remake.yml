@@ -16,6 +16,7 @@ packages:
   - lubridate
   - viridis
   - rmarkdown
+  - labmanager
 
 targets:
   all:
@@ -367,14 +368,34 @@ targets:
   proportion_barcoded_summary:
     command: make_proportion_barcoded_summary(table_proportion_barcoded_by_phylum, table_idigbio_species_sequenced)
 
+### plankton data
+  plankton_ids:
+    command: get_plankton_identifications()
+
 ### in text statistics
+  in_text_stats:
+    depends:
+      - average_prop_species_seq
+      - n_esus
+      - n_larvae
+      - prop_plankton_with_match
+
   average_prop_species_seq:
-    command: calculate_average_prop_species_seq(table_idigbio_species_sequenced)
+    command: calc_average_prop_species_seq(table_idigbio_species_sequenced)
+
+  n_esus:
+    command: calc_n_esus()
+
+  n_larvae:
+    command: calc_n_larvae()
+
+  prop_plankton_with_match:
+    command: calc_prop_plankton_with_species_match(plankton_ids)
 
 ### Manuscript -----------------------------------------------------------------
 
   manuscript.md:
-    depends: average_prop_species_seq
+    depends: in_text_stats
     knitr: true
 
   manuscript.pdf:
