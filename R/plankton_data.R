@@ -25,31 +25,34 @@ all_esus <- function(whitney_only = TRUE, phylum = "all") {
                    phylum != "Chordata") %>%
             distinct(voucher_number, .keep_all = TRUE)
     }
+    sample_esu
+}
+
+all_esus <- function(whitney_only = TRUE, phylum = "all") {
+    sample_esu <- all_voucher_numbers(whitney_only, phylum)
     unique(paste(sample_esu$phylum, sample_esu$group_esu, sep = "-"))
 }
 
-plankton_matches_binomial <- function(pk_id) {
+calc_plankton_matches_binomial <- function(pk_id) {
     pk_id %>%
-        filter(esu %in% all_esus()) %>%
         ## we focus on matches identified at the species level
         mutate(is_binomial = is_binomial(taxonomicidentification)) %>%
         filter(is_binomial == TRUE)
 }
 
-prop_plankton_with_match <- function(pk_id) {
+calc_prop_plankton_with_match <- function(pk_id) {
     ## proportion of ESUs that have at least one match in
     ## BOLD/GenBank
-    pk_id <- pk_id %>% filter(esu %in% all_esus())
     length(unique(pk_id$esu))/length(all_esus())
 }
 
-prop_plankton_with_species_match <- function(pk_id) {
+calc_prop_plankton_with_species_match <- function(pk_id) {
     ## proportion of ESUs that have a species-level match
-    pk <- plankton_matches_binomial(pk_id)
+    pk <- calc_plankton_matches_binomial(pk_id)
     length(unique(pk$esu))/length(all_esus())
 }
 
-prop_plankton_with_species_match_by_phylum <- function(pk_id) {
+calc_prop_plankton_with_species_match_by_phylum <- function(pk_id) {
     ## proportion of ESUs that have species-level match by phylum
     ## first let's get the number of esu per phylum with matches
     pk <- plankton_matches_binomial(pk_id) %>%
