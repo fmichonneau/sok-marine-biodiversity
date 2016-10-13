@@ -158,11 +158,10 @@ species_list_from_idigbio <- function(idig) {
     ## remove extra spaces at the end or in the middle
     res <- gsub("\\s+$", "", res)
     res <- gsub("\\s{2,}", " ", res)
-    is_binom <- is_binomial(res)
 
     data.frame(verbatim_scientificname = idig$scientificname,
                cleaned_scientificname = res,
-               is_binomial = is_binom,
+               is_binomial = is_binomial(res),
                stringsAsFactors = FALSE)
 }
 
