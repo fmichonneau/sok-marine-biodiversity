@@ -57,7 +57,7 @@ calc_prop_plankton_with_species_match <- function(pk_id) {
 calc_prop_plankton_with_species_match_by_phylum <- function(pk_id) {
     ## proportion of ESUs that have species-level match by phylum
     ## first let's get the number of esu per phylum with matches
-    pk <- plankton_matches_binomial(pk_id) %>%
+    pk <- calc_plankton_matches_binomial(pk_id) %>%
         group_by(field_phylum) %>%
         summarize(n_esu_match = length(unique(esu)))
     ## then let's make a table of the total number of esu
@@ -107,4 +107,29 @@ calc_n_larvae <- function(...) {
 
 calc_n_esus <- function(...) {
     length(all_esus(...))
+}
+
+make_plot_proportion_barcoded <- function(idig, pk) {
+    pk <- pk %>%  select(taxon_name = field_phylum, p_seq = p_esu_match) %>%
+        mutate(geo_scope = "whitney") %>%
+        mutate(taxon_name = replace(taxon_name, taxon_name == "Ectoprocta", "Bryozoa"))
+    idig %>%
+        mutate(taxon_name = replace(taxon_name, taxon_name == "Polychaeta", "Annelida")) %>%
+        mutate(taxon_name = replace(taxon_name, taxon_name == "Decapoda", "Arthropoda")) %>%
+        select(geo_scope, taxon_name, p_seq) %>%
+        bind_rows(pk) %>%
+        ##filter(geo_scope != "west_coast") %>%
+        filter(taxon_name %in% c("Porifera", "Cnidaria", "Arthropoda", "Echinodermata",
+                                 "Polychaeta", "Mollusca", "Bryozoa", "Nemertea")) %>%
+        ggplot(.) +
+        geom_bar(aes(x = reorder(taxon_name, p_seq), y = p_seq,
+                     fill = factor(geo_scope, levels = c("global", "west_coast", "east_coast", "florida", "whitney"))),
+                     stat = "identity", position = "dodge") +
+        coord_flip() +
+        scale_fill_viridis(discrete = TRUE,
+                           breaks = c("global", "west_coast", "east_coast", "florida", "whitney"),
+                           labels = c("All US", "US West Coast", "US East Coast", "Florida", "Plankton dataset")) +
+        guides(fill = guide_legend(title = NULL)) +
+        theme(legend.position = "top") +
+        xlab("Phylum") + ylab("Proportion of species with DNA barcode")
 }
