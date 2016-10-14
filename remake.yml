@@ -17,6 +17,10 @@ packages:
   - viridis
   - rmarkdown
   - labmanager
+  - raster
+  - sp
+  - maptools
+  - maps
 
 targets:
   all:
@@ -359,7 +363,8 @@ targets:
       height: 8
 
   figures/proportion_barcoded.pdf:
-    command: make_plot_proportion_barcoded()
+    command: make_plot_proportion_barcoded(table_idigbio_species_sequenced, prop_plankton_with_species_match_by_phylum)
+    plot: true
 
   #table_records_per_species:
   #   command: make_table_records_per_species()
@@ -372,7 +377,43 @@ targets:
   plankton_ids:
     command: get_plankton_identifications()
 
-### in text statistics
+  prop_plankton_with_species_match_by_phylum:
+    command: calc_prop_plankton_with_species_match_by_phylum(plankton_ids)
+
+### map sampling effort --------------------------------------------------------
+
+  sampling_maps:
+    depends:
+      - figures/map_sampling_effort.pdf
+      - figures/map_diversity.pdf
+      - figures/map_sampling.pdf
+
+
+  data_map_sampling_effort:
+    command: make_data_map_sampling_effort()
+    depends: idigbio_records
+
+  data_map_diversity:
+    command: make_data_map_diversity()
+    depends: idigbio_records
+
+  data_map_standardized_diversity:
+    command: make_data_map_standardized_diversity(data_map_sampling_effort, data_map_diversity)
+
+  figures/map_sampling_effort.pdf:
+    command: make_heatmap_sampling(data_map_sampling_effort)
+    plot: true
+
+  figures/map_diversity.pdf:
+    command: make_heatmap_sampling(data_map_diversity)
+    plot: true
+
+  figures/map_sampling.pdf:
+    command: make_heatmap_sampling(data_map_standardized_diversity)
+    plot: true
+
+### in text statistics ---------------------------------------------------------
+
   in_text_stats:
     depends:
       - average_prop_species_seq
