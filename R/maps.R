@@ -53,13 +53,19 @@ make_heatmap_sampling <- function(gg_r) {
     IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
     state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
 
+    us_bathy <- suppressMessages(getNOAA.bathy(lon1 = -128, lon2 = -60, lat1 = 22, lat2 = 51, keep = TRUE)) %>%
+        fortify %>%
+        filter(z < 0 & z > -1500)
+
     ## this does the magic for geom_map
     state_map <- fortify(state)
     ggplot() +
         geom_raster(data = gg_r, aes(x = x, y = y, fill = value)) +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),
-                 fill="gray40") +
+                 fill="gray20", colour = "gray20", size = .05) +
+        geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
+                     colour = "gray80", binwidth = 500, size = .1) +
         coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
         scale_fill_viridis(trans = "log") +
         theme_bw()
