@@ -42,12 +42,12 @@ make_data_map_standardized_diversity <- function(sampling, diversity) {
 
     res <- bind_cols(sampling, dplyr::select(diversity, n_species)) %>%
         dplyr::select(x, y, n_specimen, n_species) %>%
-        mutate(value = n_species/n_specimen)
+        mutate(value = n_species*n_species/n_specimen)
 
     res
 }
 
-make_heatmap_sampling <- function(gg_r) {
+make_heatmap_sampling <- function(gg_r, title) {
     state <- map("world", fill = TRUE, plot = FALSE)
     ## convert the 'map' to something we can work with via geom_map
     IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
@@ -67,6 +67,8 @@ make_heatmap_sampling <- function(gg_r) {
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
                      colour = "gray80", binwidth = 500, size = .1) +
         coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
-        scale_fill_viridis(trans = "log") +
-        theme_bw()
+        scale_fill_viridis(trans = "log", breaks = c(1, 10, 100, 1000, 10000)) +
+        theme_bw() +
+        theme(legend.title = element_blank()) +
+        ggtitle(title)
 }

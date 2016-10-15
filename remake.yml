@@ -21,6 +21,7 @@ packages:
   - sp
   - maptools
   - maps
+  - marmap
 
 targets:
   all:
@@ -401,15 +402,21 @@ targets:
     command: make_data_map_standardized_diversity(data_map_sampling_effort, data_map_diversity)
 
   figures/map_sampling_effort.pdf:
-    command: make_heatmap_sampling(data_map_sampling_effort)
+    command: make_heatmap_sampling(data_map_sampling_effort, I("Number of samples"))
     plot: true
 
   figures/map_diversity.pdf:
-    command: make_heatmap_sampling(data_map_diversity)
+    command: make_heatmap_sampling(data_map_diversity, I("Number of species"))
     plot: true
 
   figures/map_sampling.pdf:
-    command: make_heatmap_sampling(data_map_standardized_diversity)
+    command: make_heatmap_sampling(data_map_standardized_diversity, I("Diversity"))
+    plot: true
+
+### plot sampling effort -------------------------------------------------------
+
+  figures/plot_sampling_effort.pdf:
+    command: plot_sampling_effort(data_map_standardized_diversity)
     plot: true
 
 ### in text statistics ---------------------------------------------------------
