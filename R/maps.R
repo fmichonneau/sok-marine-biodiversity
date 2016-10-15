@@ -1,8 +1,11 @@
+us_raster <- function()
+    raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .5)
+
 make_data_map_sampling_effort <- function() {
     idig <- lapply(store_idigbio_records()$list(), function(x)
         store_idigbio_records()$get(x))
     idig <- bind_rows(idig)
-    us_raster <- raster(xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = 1)
+    us_raster <- us_raster()
     pts <- SpatialPoints(data.frame(lon = idig$geopoint.lon,
                                     lat = idig$geopoint.lat))
     r <- rasterize(pts, us_raster, fun = "count")
@@ -16,7 +19,7 @@ make_data_map_diversity <- function() {
         store_idigbio_records()$get(x))
     idig <- bind_rows(idig)
 
-    us_raster <- raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = 1)
+    us_raster <- us_raster()
     raster_cell <- mapply(function(x, y) cellFromXY(us_raster, c(x, y)),
                           idig$geopoint.lon, idig$geopoint.lat)
 
