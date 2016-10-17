@@ -95,8 +95,8 @@ assemble_idigbio_species_list_dates <- function(idig_worms) {
         store_idigbio_records()$get(x))
     res <- bind_rows(res)
     is_marine <- idig_worms %>%
-        filter(is_marine == TRUE) %>%
-        select(verbatim_scientificname) %>%
+        dplyr::filter(is_marine == TRUE) %>%
+        dplyr::select(verbatim_scientificname) %>%
         .[[1]]
     res <- filter(res, scientificname %in% is_marine) %>%
         mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%

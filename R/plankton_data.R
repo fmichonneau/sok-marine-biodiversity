@@ -17,14 +17,14 @@ all_voucher_numbers <- function(whitney_only = TRUE, phylum = "all") {
     if (whitney_only) {
         sample_data <- get_lab("sample_data")
         sample_esu <- get_lab("station_data") %>%
-            filter(latitude_start > 29.6, latitude_start < 29.8,
-                   longitude_start > -81.3, longitude_start < -81.2) %>%
-            select(station_number) %>%
+            dplyr::filter(latitude_start > 29.6, latitude_start < 29.8,
+                          longitude_start > -81.3, longitude_start < -81.2) %>%
+            dplyr::select(station_number) %>%
             left_join(sample_data, by = "station_number") %>%
-            select(voucher_number) %>%
+            dplyr::select(voucher_number) %>%
             left_join(sample_esu, by = "voucher_number") %>%
-            filter(!is.na(voucher_number), !is.na(phylum), !is.na(group_esu),
-                   phylum != "Chordata") %>%
+            dplyr::filter(!is.na(voucher_number), !is.na(phylum), !is.na(group_esu),
+                          phylum != "Chordata") %>%
             distinct(voucher_number, .keep_all = TRUE)
     }
     sample_esu
