@@ -381,6 +381,12 @@ targets:
   prop_plankton_with_species_match_by_phylum:
     command: calc_prop_plankton_with_species_match_by_phylum(plankton_ids)
 
+  prop_plankton_with_multi_species_match:
+    command: calc_prop_plankton_with_multi_species_match(plankton_ids)
+
+  plankton_geo_distances:
+    command: calc_plankton_geo_distances(plankton_ids)
+
 ### map sampling effort --------------------------------------------------------
 
   sampling_maps:
@@ -427,6 +433,8 @@ targets:
       - n_esus
       - n_larvae
       - prop_plankton_with_match
+      - prop_singleton_species
+      - prop_species_not_collected_since_1950
 
   average_prop_species_seq:
     command: calc_average_prop_species_seq(table_idigbio_species_sequenced)
@@ -440,6 +448,15 @@ targets:
   prop_plankton_with_match:
     command: calc_prop_plankton_with_species_match(plankton_ids)
 
+  prop_singleton_species:
+    command: calc_prop_singleton_species(idigbio_species_list_dates)
+
+  prop_species_not_collected_since_1950:
+    command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1950))
+
+  prop_species_not_collected_since_1990:
+    command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1990))
+
 ### Manuscript -----------------------------------------------------------------
 
   manuscript.md:
@@ -448,3 +465,6 @@ targets:
 
   manuscript.pdf:
     command: render("manuscript.md")
+
+  manuscript.docx:
+    command: render("manuscript.md", output_format=I("word_document"))

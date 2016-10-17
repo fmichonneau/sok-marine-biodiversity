@@ -74,13 +74,13 @@ calc_prop_plankton_with_species_match_by_phylum <- function(pk_id) {
 
 calc_prop_plankton_with_multi_species_match <- function(pk_id) {
     ## proportion of ESUs that match to more than one binomial name
-    pk <- plankton_matches_binomial(pk_id) %>%
+    pk <- calc_plankton_matches_binomial(pk_id) %>%
         group_by(esu) %>%
         summarize(
             n_spp = length(unique(taxonomicidentification)),
             spp = paste(unique(taxonomicidentification), collapse = ", ")
         )
-    sum(pk$n_spp ==  1)/length(all_esus())
+    sum(pk$n_spp ==  1)/nrow(pk)
 }
 
 
@@ -92,7 +92,7 @@ distance_from_whitney <- function(lat, lon) {
     }, lat, lon)
 }
 
-plankton_geo_distances <- function(pk_id) {
+calc_plankton_geo_distances <- function(pk_id) {
     pk_id <- pk_id %>%
         group_by(field_phylum, esu) %>%
         summarize(
