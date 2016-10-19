@@ -27,6 +27,7 @@ targets:
   all:
     depends:
       - manuscript.pdf
+      - manuscript.docx
 
   irl_checklist:
     command: read_irl_checklist(file="data-raw/Species List Database Post V1.xlsx")
