@@ -205,20 +205,23 @@ add_bold_info <- function(worms_idig) {
         dplyr::select(worms_valid_name) %>%
         unique
 
-    bold_rcrd <- numeric(nrow(res))
+    bold_rcrd <- bold_bin <- numeric(nrow(res))
 
     for (i in seq_len(nrow(res))) {
         bold <- store_bold_specimens_per_species()$get(res$worms_valid_name[i])
         bold_rcrd[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
                                0, nrow(bold))
+        bold_bin[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
+                              0, length(na.omit(bold$bin_uri)))
     }
     res <- data.frame(worms_valid_name = res,
                       n_bold_records = bold_rcrd,
+                      n_bins = bold_bin,
                       stringsAsFactors = FALSE)
-    wrm <- select(worms_idig, rank, taxon_name, worms_valid_name) %>%
+    wrm <- dplyr::select(worms_idig, rank, taxon_name, worms_valid_name) %>%
         unique %>%
-        filter(!is.na(worms_valid_name))
-    left_join(res, wrm)
+        dplyr::filter(!is.na(worms_valid_name))
+    dplyr::left_join(res, wrm)
 }
 
 
