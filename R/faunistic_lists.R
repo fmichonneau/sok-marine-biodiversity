@@ -171,8 +171,8 @@ species_list_from_idigbio <- function(idig) {
 
 add_worms_info <- function(sp_list_idig) {
     res <- sp_list_idig %>%
-        filter(is_binomial == TRUE)  %>%
-        select(cleaned_scientificname) %>%
+        dplyr::filter(is_binomial == TRUE)  %>%
+        dplyr::select(cleaned_scientificname) %>%
         unique
     wid <- valid_name <- vector("character", nrow(res))
     marine <- vector("logical", nrow(res))
