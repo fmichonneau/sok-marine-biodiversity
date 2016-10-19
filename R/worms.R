@@ -1,5 +1,7 @@
 ## Storr for the WoRMS ids: given a taxon name, what is its WoRMS id? ----------
 fetch_hook_worms_ids <- function(key, namespace) {
+    if (!identical(tolower(key), key))
+        stop("key must be lowercase: ", key)
     wid <- get_wormsid(searchterm = key, ask = FALSE)
     if (identical(attr(wid, "match"), "found")) {
         return(wid)
