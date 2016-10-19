@@ -208,7 +208,29 @@ targets:
     command: plot_level_identification(level_identification)
     plot: true
 
-  ### get species list from the US using iDigBio
+### Kozloff species list--------------------------------------------------------
+
+  kozloff_list:
+    command: read_kozloff("data-raw/Kozloff/Koz_checklist.xlsx")
+
+  kozloff_bold:
+    command: add_bold_info(kozloff_list)
+
+  # overlap with iDigBio query made by geography
+  kozloff_idigbio_overlap:
+    command: calc_kozloff_idigbio_overlap(kozloff_list, global_idigbio_species_with_worms_info)
+
+  # get idigbio records based on species names
+  kozloff_idigbio_query:
+    command: fetch_kozloff_from_idigbio(kozloff_list)
+
+  kozloff_idigbio_species_list:
+    command: extract_species_from_kozloff_idigbio(kozloff_idigbio_query)
+
+  kozloff_idigbio_with_worms_info:
+    command: add_worms_info(kozloff_idigbio_species_list)
+
+### get species list from the US using iDigBio ---------------------------------
   idigbio_records:
     depends:
       - acanthocephala_idigbio_records

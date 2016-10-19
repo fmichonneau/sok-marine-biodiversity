@@ -15,23 +15,27 @@ assemble_idigbio_records <- function(taxon_name, taxon_level) {
     invisible(store_idigbio_records()$get(paste(taxon_level, taxon_name, sep = "-")))
 }
 
+idigbio_fields <- function() {
+    c('uuid',
+      'catalognumber',
+      'datecollected',
+      'institutioncode',
+      'phylum',
+      'data.dwc:phylum',
+      'data.dwc:class',
+      'data.dwc:order',
+      'data.dwc:family',
+      'data.dwc:genus',
+      'scientificname',
+      'datecollected',
+      'country',
+      'geopoint')
+}
+
 get_idigbio_records <- function(taxon_name, taxon_level) {
     message("Looking for ", taxon_name, " ... ")
     taxon_level <- match.arg(taxon_level, c("phylum", "class", "order", "family", "genus"))
-    fields <- c('uuid',
-                'catalognumber',
-                'datecollected',
-                'institutioncode',
-                'phylum',
-                'data.dwc:phylum',
-                'data.dwc:class',
-                'data.dwc:order',
-                'data.dwc:family',
-                'data.dwc:genus',
-                'scientificname',
-                'datecollected',
-                'country',
-                'geopoint')
+    fields <- idigbio_fields()
     regions <- list(
         gulf_of_mex = list(type = "geo_bounding_box",
                            top_left = list(lat = 30.6, lon = -98.3),
@@ -196,9 +200,9 @@ add_worms_info <- function(sp_list_idig) {
 
 add_bold_info <- function(worms_idig) {
     res <- worms_idig %>%
-        filter(!is.na(is_marine), is_marine == TRUE,
-               worms_valid_name != "not in worms") %>%
-        select(worms_valid_name) %>%
+        dplyr::filter(!is.na(is_marine), is_marine == TRUE,
+                      worms_valid_name != "not in worms") %>%
+        dplyr::select(worms_valid_name) %>%
         unique
 
     bold_rcrd <- numeric(nrow(res))
