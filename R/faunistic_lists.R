@@ -177,7 +177,7 @@ add_worms_info <- function(sp_list_idig) {
     wid <- valid_name <- vector("character", nrow(res))
     marine <- vector("logical", nrow(res))
     for (i in seq_len(nrow(res))) {
-        wid[i] <- store_worms_ids()$get(res[i, 1])
+        wid[i] <- store_worms_ids()$get(tolower(res[i, 1]))
         if (!is.na(wid[i]) && !identical(wid[i], "0")) {
             w_info <- store_worms_info()$get(wid[i])
             if (nrow(w_info) > 1) browser()
@@ -208,7 +208,7 @@ add_bold_info <- function(worms_idig) {
     bold_rcrd <- bold_bin <- numeric(nrow(res))
 
     for (i in seq_len(nrow(res))) {
-        bold <- store_bold_specimens_per_species()$get(res$worms_valid_name[i])
+        bold <- store_bold_specimens_per_species()$get(tolower(res$worms_valid_name[i]))
         bold_rcrd[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
                                0, nrow(bold))
         bold_bin[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
