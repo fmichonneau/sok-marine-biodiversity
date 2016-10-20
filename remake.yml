@@ -214,9 +214,6 @@ targets:
   kozloff_list:
     command: read_kozloff("data-raw/Kozloff/Koz_checklist.xlsx")
 
-  kozloff_bold:
-    command: add_bold_info(kozloff_list)
-
   # overlap with iDigBio query made by geography
   kozloff_idigbio_overlap:
     command: calc_kozloff_idigbio_overlap(kozloff_list, global_idigbio_species_with_worms_info)
@@ -226,12 +223,28 @@ targets:
     command: fetch_kozloff_from_idigbio(kozloff_list)
 
   kozloff_idigbio_species_list:
-    command: extract_species_from_kozloff_idigbio(kozloff_idigbio_query)
+    command: extract_species_from_kozloff_idigbio(kozloff_idigbio_query, kozloff_list)
 
   kozloff_idigbio_with_worms_info:
     command: add_worms_info(kozloff_idigbio_species_list)
 
+  kozloff_bold:
+    command: add_bold_info(kozloff_idigbio_with_worms_info)
+
+  # number/proportion of species listed in Kozloff, but not found in iDigBio
+  # (complete list, beyond the search done on geography)
+  kozloff_not_in_idigbio:
+    command: data_kozloff_not_in_idigbio(kozloff_list, kozloff_idigbio_query)
+
+  prop_kozloff_not_in_idigbio:
+    command: calc_prop_kozloff_not_in_idigbio(kozloff_not_in_idigbio)
+
+  figures/kozloff_not_in_idigbio.pdf:
+    command: graph_kozloff_not_in_idigbio(kozloff_not_in_idigbio)
+    plot: true
+
 ### get species list from the US using iDigBio ---------------------------------
+
   idigbio_records:
     depends:
       - acanthocephala_idigbio_records
