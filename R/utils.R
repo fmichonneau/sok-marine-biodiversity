@@ -1,4 +1,4 @@
-cleanup_species_names <- function(nm) {
+cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     ## remove words that contain numbers
     nm <- gsub("\\S*\\d\\S*", "", nm)
     ## remove extra spaces
@@ -9,6 +9,9 @@ cleanup_species_names <- function(nm) {
     nm <- gsub("\\s[A-Z]+", "", nm)
     ## remove trailing spaces
     nm <- gsub("\\s+$", "", nm)
+    ## remove subgenus
+    if (rm_subgenus)
+        nm <- gsub("\\([^)]*\\)", "", nm)
     nm
 }
 
