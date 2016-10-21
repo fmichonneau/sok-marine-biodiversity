@@ -231,6 +231,12 @@ targets:
   kozloff_bold:
     command: add_bold_info(kozloff_idigbio_with_worms_info)
 
+  figures/map_kozloff_idigbio.pdf:
+    command: map_kozloff(kozloff_idigbio_query)
+    plot:
+      height: 8
+      width: 12
+
   # number/proportion of species listed in Kozloff, but not found in iDigBio
   # (complete list, beyond the search done on geography)
   kozloff_not_in_idigbio:

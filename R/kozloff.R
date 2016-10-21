@@ -80,3 +80,25 @@ graph_kozloff_not_in_idigbio <- function(koz_not_idig) {
         xlab("Phylum") +
         ylab("Proportion of species not in iDigBio")
 }
+
+map_kozloff <- function(koz_idig) {
+    state <- map("world", fill = TRUE, plot = FALSE)
+    ## convert the 'map' to something we can work with via geom_map
+    IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
+       state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
+
+    ## this does the magic for geom_map
+    state_map <- fortify(state)
+
+    koz_idig %>%
+        filter(!is.na(geopoint.lon), !is.na(geopoint.lat)) %>%
+        mutate(`data.dwc:phylum` = gsub("[^a-z]", "", tolower(`data.dwc:phylum`))) %>%
+    ggplot(.) +
+        geom_point(aes(x = geopoint.lon, y = geopoint.lat, colour = `data.dwc:phylum`)) +
+        geom_map(data=state_map, map=state_map,
+                 aes(x=long, y=lat, map_id=id),
+                 fill="gray20", colour = "gray20", size = .05) +
+        coord_quickmap() + #xlim = c(-128, -60), ylim = c(22, 51)) +
+        theme_bw() +
+        theme(legend.title = element_blank())
+}
