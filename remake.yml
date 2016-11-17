@@ -263,6 +263,14 @@ targets:
   itis_bold:
     command: add_bold_info(itis_worms)
 
+### Gulf of Mexico species list ------------------------------------------------
+
+  gom_species:
+    command: get_gom_species(file="data-raw/GOM/BioGoMx.xls")
+
+  gom_worms:
+    command: add_worms_gom(gom_species)
+
 ### get species list from the US using iDigBio ---------------------------------
 
   idigbio_records:
