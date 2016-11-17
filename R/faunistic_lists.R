@@ -169,15 +169,13 @@ species_list_from_idigbio <- function(idig) {
                stringsAsFactors = FALSE)
 }
 
-add_worms_info <- function(sp_list_idig) {
-    res <- sp_list_idig %>%
-        dplyr::filter(is_binomial == TRUE)  %>%
-        dplyr::select(cleaned_scientificname) %>%
-        unique
-    wid <- valid_name <- vector("character", nrow(res))
-    marine <- vector("logical", nrow(res))
-    for (i in seq_len(nrow(res))) {
-        wid[i] <- store_worms_ids()$get(tolower(res[i, 1]))
+add_worms_info <- function(sp_list) {
+
+    wid <- valid_name <- vector("character", length(sp_list))
+    marine <- vector("logical", length(sp_list))
+
+    for (i in seq_along(sp_list)) {
+        wid[i] <- store_worms_ids()$get(tolower(sp_list[i]))
         if (!is.na(wid[i]) && !identical(wid[i], "0")) {
             w_info <- store_worms_info()$get(wid[i])
             if (nrow(w_info) > 1) browser()
@@ -188,13 +186,21 @@ add_worms_info <- function(sp_list_idig) {
             valid_name[i] <- NA
         }
     }
-    to_add <- data.frame(
-        cleaned_scientificname = res,
+    data.frame(
+        cleaned_scientificname = sp_list,
         worms_id = wid,
         is_marine = marine,
         worms_valid_name = valid_name,
         stringsAsFactors = FALSE
     )
+}
+
+add_worms_info_idigbio <- function(sp_list_idig) {
+    res <- sp_list_idig %>%
+        dplyr::filter(is_binomial == TRUE)  %>%
+        dplyr::select(cleaned_scientificname) %>%
+        unique
+    to_add <- add_worms_info(res)
     left_join(sp_list_idig, to_add, by = "cleaned_scientificname")
 }
 

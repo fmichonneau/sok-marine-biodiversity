@@ -226,7 +226,7 @@ targets:
     command: extract_species_from_kozloff_idigbio(kozloff_idigbio_query, kozloff_list)
 
   kozloff_idigbio_with_worms_info:
-    command: add_worms_info(kozloff_idigbio_species_list)
+    command: add_worms_info_idigbio(kozloff_idigbio_species_list)
 
   kozloff_bold:
     command: add_bold_info(kozloff_idigbio_with_worms_info)
@@ -349,7 +349,7 @@ targets:
     depends: idigbio_records
 
   global_idigbio_species_with_worms_info:
-    command: add_worms_info(global_idigbio_species_list)
+    command: add_worms_info_idigbio(global_idigbio_species_list)
 
   global_idigbio_species_with_bold_info:
     command: add_bold_info(global_idigbio_species_with_worms_info)
@@ -360,7 +360,7 @@ targets:
     depends: idigbio_records
 
   east_idigbio_species_with_worms_info:
-    command: add_worms_info(east_idigbio_species_list)
+    command: add_worms_info_idigbio(east_idigbio_species_list)
 
   east_idigbio_species_with_bold_info:
     command: add_bold_info(east_idigbio_species_with_worms_info)
@@ -371,7 +371,7 @@ targets:
     depends: idigbio_records
 
   west_idigbio_species_with_worms_info:
-    command: add_worms_info(west_idigbio_species_list)
+    command: add_worms_info_idigbio(west_idigbio_species_list)
 
   west_idigbio_species_with_bold_info:
     command: add_bold_info(west_idigbio_species_with_worms_info)
@@ -382,7 +382,7 @@ targets:
     depends: idigbio_records
 
   florida_idigbio_species_with_worms_info:
-    command: add_worms_info(florida_idigbio_species_list)
+    command: add_worms_info_idigbio(florida_idigbio_species_list)
 
   florida_idigbio_species_with_bold_info:
     command: add_bold_info(florida_idigbio_species_with_worms_info)
