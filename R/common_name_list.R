@@ -6,9 +6,18 @@ get_common_names <- function() {
 }
 
 binomial_common_names <- function(nm) {
-    nm[is_binomial(nm)]
+    data.frame(cleaned_scientificname = cleanup_species_names(nm),
+               is_binomial = is_binomial(nm),
+               stringsAsFactors = FALSE)
 }
 
 add_worms_info_common_names <- function(nm) {
-    add_worms_info(nm)
+    nm <- nm %>%
+        dplyr::filter(is_binomial == TRUE) %>%
+        dplyr::select(cleaned_scientificname) %>%
+        unique
+    res <- add_worms_info(nm)
+    res$rank <- rep("Phylum", nrow(res))
+    res$taxon_name <- rep("Mollusca", nrow(res))
+    res
 }
