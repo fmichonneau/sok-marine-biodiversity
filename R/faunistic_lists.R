@@ -170,7 +170,10 @@ species_list_from_idigbio <- function(idig) {
 }
 
 add_worms_info <- function(sp_list) {
+    stopifnot(inherits(sp_list, "data.frame"))
+    stopifnot(ncol(sp_list) == 1)
 
+    sp_list <- as.data.frame(sp_list, stringsAsFactors = FALSE)[, 1, drop = TRUE]
     wid <- valid_name <- vector("character", length(sp_list))
     marine <- vector("logical", length(sp_list))
 
@@ -227,7 +230,7 @@ add_bold_info <- function(worms_idig) {
     wrm <- dplyr::select(worms_idig, rank, taxon_name, worms_valid_name) %>%
         unique %>%
         dplyr::filter(!is.na(worms_valid_name))
-    dplyr::left_join(res, wrm)
+    dplyr::left_join(res, wrm, by = "worms_valid_name")
 }
 
 
