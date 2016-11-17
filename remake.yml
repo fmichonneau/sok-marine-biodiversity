@@ -249,6 +249,20 @@ targets:
     command: graph_kozloff_not_in_idigbio(kozloff_not_in_idigbio)
     plot: true
 
+### ITIS common names of mollusks ----------------------------------------------
+
+  itis_common_names:
+    command: get_common_names()
+
+  itis_binomial:
+    command: binomial_common_names(itis_common_names)
+
+  itis_worms:
+    command: add_worms_info_common_names(itis_binomial)
+
+  itis_bold:
+    command: add_bold_info(itis_worms)
+
 ### get species list from the US using iDigBio ---------------------------------
 
   idigbio_records:
