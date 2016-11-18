@@ -28,7 +28,7 @@ taxa_to_keep <- c(
     "Phylum-Mollusca" = "Mollusca-Cephalopoda",
     "Phylum-Mollusca" = "Mollusca-Bivalvia",
     "Phylum-Mollusca" = "Mollusca-Scaphopoda",
-    "Phylum-Mollusca" = "Polychaeta",
+    "Phylum-Annelida" = "Polychaeta",
     "Phylum-Annelida" = "Echiura",
     "Phylum-Sipuncula" = "Sipuncula",
     "Phylum-Tardigrada" = "Tardigrada",
