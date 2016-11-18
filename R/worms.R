@@ -92,3 +92,39 @@ rescue_store <- function(store) {
     sapply(to_redo, function(x) store$del(x))
     sapply(to_redo, function(x) store$get(x))
 }
+
+
+add_worms <- function(sp_list) {
+    stopifnot(inherits(sp_list, "data.frame"))
+    stopifnot(all(c("is_binomial", "cleaned_scientificname") %in%
+                  names(sp_list)))
+
+    spp <- sp_list %>%
+        dplyr::filter(is_binomial == TRUE) %>%
+        dplyr::select(cleaned_scientificname) %>%
+        unique
+
+    wid <- valid_name <- vector("character", nrow(spp))
+    marine <- vector("logical", nrow(spp))
+
+    for (i in seq_len(nrow(spp))) {
+        wid[i] <- store_worms_ids()$get(tolower(spp[i, 1]))
+        if (!is.na(wid[i]) && !identical(wid[i], "0")) {
+            w_info <- store_worms_info()$get(wid[i])
+            if (nrow(w_info) > 1) browser()
+            marine[i] <- (identical(w_info$isMarine, "1") | identical(w_info$isBrackish, "1"))
+            valid_name[i] <- w_info$valid_name
+        } else {
+            marine[i] <- NA
+            valid_name[i] <- NA
+        }
+    }
+    to_add <- data.frame(
+        cleaned_scientificname = spp,
+        worms_id = wid,
+        is_marine = marine,
+        worms_valid_name = valid_name,
+        stringsAsFactors = FALSE
+    )
+    dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname")
+}

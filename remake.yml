@@ -211,22 +211,22 @@ targets:
 
 ### Kozloff species list--------------------------------------------------------
 
-  kozloff_list:
-    command: read_kozloff("data-raw/Kozloff/Koz_checklist.xlsx")
+  kozloff_species:
+    command: get_kozloff_species("data-raw/Kozloff/Koz_checklist.xlsx")
 
   # overlap with iDigBio query made by geography
   kozloff_idigbio_overlap:
-    command: calc_kozloff_idigbio_overlap(kozloff_list, global_idigbio_species_with_worms_info)
+    command: calc_kozloff_idigbio_overlap(kozloff_species, global_idigbio_species_with_worms_info)
 
   # get idigbio records based on species names
   kozloff_idigbio_query:
-    command: fetch_kozloff_from_idigbio(kozloff_list)
+    command: fetch_kozloff_from_idigbio(kozloff_species)
 
   kozloff_idigbio_species_list:
-    command: extract_species_from_kozloff_idigbio(kozloff_idigbio_query, kozloff_list)
+    command: extract_species_from_kozloff_idigbio(kozloff_idigbio_query, kozloff_species)
 
   kozloff_idigbio_with_worms_info:
-    command: add_worms_info_idigbio(kozloff_idigbio_species_list)
+    command: add_worms(kozloff_idigbio_species_list)
 
   kozloff_bold:
     command: add_bold_info(kozloff_idigbio_with_worms_info)
@@ -240,7 +240,7 @@ targets:
   # number/proportion of species listed in Kozloff, but not found in iDigBio
   # (complete list, beyond the search done on geography)
   kozloff_not_in_idigbio:
-    command: data_kozloff_not_in_idigbio(kozloff_list, kozloff_idigbio_query)
+    command: data_kozloff_not_in_idigbio(kozloff_species, kozloff_idigbio_query)
 
   prop_kozloff_not_in_idigbio:
     command: calc_prop_kozloff_not_in_idigbio(kozloff_not_in_idigbio)
@@ -258,10 +258,10 @@ targets:
     command: binomial_common_names(itis_common_names)
 
   itis_worms:
-    command: add_worms_info_common_names(itis_binomial)
+    command: add_worms(itis_binomial)
 
   itis_bold:
-    command: add_bold_info(itis_worms)
+    command: add_bold(itis_worms)
 
 ### Gulf of Mexico species list ------------------------------------------------
 
@@ -269,7 +269,13 @@ targets:
     command: get_gom_species(file="data-raw/GOM/BioGoMx.xls")
 
   gom_worms:
-    command: add_worms_gom(gom_species)
+    command: add_worms(gom_species)
+
+  gom_bold:
+    command: add_bold(gom_worms)
+
+  gom_idigbio:
+    command: fetch_gom_from_idigbio(gom_worms)
 
 ### get species list from the US using iDigBio ---------------------------------
 
@@ -371,10 +377,10 @@ targets:
     depends: idigbio_records
 
   global_idigbio_species_with_worms_info:
-    command: add_worms_info_idigbio(global_idigbio_species_list)
+    command: add_worms(global_idigbio_species_list)
 
   global_idigbio_species_with_bold_info:
-    command: add_bold_info(global_idigbio_species_with_worms_info)
+    command: add_bold(global_idigbio_species_with_worms_info)
 
 ### east coast list
   east_idigbio_species_list:
@@ -382,10 +388,10 @@ targets:
     depends: idigbio_records
 
   east_idigbio_species_with_worms_info:
-    command: add_worms_info_idigbio(east_idigbio_species_list)
+    command: add_worms(east_idigbio_species_list)
 
   east_idigbio_species_with_bold_info:
-    command: add_bold_info(east_idigbio_species_with_worms_info)
+    command: add_bold(east_idigbio_species_with_worms_info)
 
 ### west coast list
   west_idigbio_species_list:
@@ -393,10 +399,10 @@ targets:
     depends: idigbio_records
 
   west_idigbio_species_with_worms_info:
-    command: add_worms_info_idigbio(west_idigbio_species_list)
+    command: add_worms(west_idigbio_species_list)
 
   west_idigbio_species_with_bold_info:
-    command: add_bold_info(west_idigbio_species_with_worms_info)
+    command: add_bold(west_idigbio_species_with_worms_info)
 
 ### florida list
   florida_idigbio_species_list:
@@ -404,10 +410,10 @@ targets:
     depends: idigbio_records
 
   florida_idigbio_species_with_worms_info:
-    command: add_worms_info_idigbio(florida_idigbio_species_list)
+    command: add_worms(florida_idigbio_species_list)
 
   florida_idigbio_species_with_bold_info:
-    command: add_bold_info(florida_idigbio_species_with_worms_info)
+    command: add_bold(florida_idigbio_species_with_worms_info)
 
 ### summary tables
   table_idigbio_species_sequenced:

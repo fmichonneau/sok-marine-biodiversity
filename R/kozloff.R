@@ -1,4 +1,4 @@
-read_kozloff <- function(koz_raw) {
+get_kozloff_species <- function(koz_raw) {
     readxl::read_excel(koz_raw, col_types = rep("text", 43)) %>%
         .[, c(1:3, 6:25)] %>%
         dplyr::select(
@@ -11,7 +11,7 @@ read_kozloff <- function(koz_raw) {
         dplyr::mutate(is_marine = rep(TRUE, nrow(.)),
                       rank = rep("phylum", nrow(.)),
                       taxon_name = phylum,
-                      cleaned_valid_name = cleanup_species_names(worms_valid_name, rm_subgenus = TRUE),
+                      cleaned_scientificname = cleanup_species_names(worms_valid_name, rm_subgenus = TRUE),
                       is_binomial = is_binomial(cleaned_valid_name)) %>%
         dplyr::filter(is_binomial == TRUE)
 }
@@ -27,18 +27,18 @@ fetch_kozloff_from_idigbio <- function(koz) {
     split_species <- split(koz$worms_valid_name, ceiling(seq_along(koz$worms_valid_name)/150))
     res <- lapply(split_species, function(x) {
         qry <- list(scientificname = as.list(x))
-        idig_search_records(rq = qry, fields = fields)
+        ridigbio::idig_search_records(rq = qry, fields = fields)
     })
-    bind_rows(res)
+    dplyr::bind_rows(res)
 }
 
 extract_species_from_kozloff_idigbio <- function(koz_idig, koz) {
     res <- species_list_from_idigbio(koz_idig) %>%
-        filter(!duplicated(cleaned_scientificname))
+        dplyr::filter(!duplicated(cleaned_scientificname))
     koz <- koz %>%
-        mutate(worms_valid_name = tolower(worms_valid_name)) %>%
+        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
         dplyr::select(phylum, class, order, rank, taxon_name, worms_valid_name)
-    left_join(res, koz, by = c("cleaned_scientificname" = "worms_valid_name"))
+    dplyr::left_join(res, koz, by = c("cleaned_scientificname" = "worms_valid_name"))
 }
 
 first_5 <- function(x) {
@@ -49,14 +49,15 @@ first_5 <- function(x) {
 ## calculate proportion of species listed in Kozloff not in iDigBio
 data_kozloff_not_in_idigbio <- function(koz, idig_qry) {
     idig_qry <- idig_qry %>%
-        group_by(scientificname) %>%
-        summarize(
+        dplyr::group_by(scientificname) %>%
+        dplyr::summarize(
             uuid_lst = first_5(uuid)
         )
 
     res <- koz %>%
-        mutate(worms_valid_name = tolower(worms_valid_name)) %>%
-        left_join(idig_qry, by = c("worms_valid_name" = "scientificname"))
+        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
+        dplyr::left_join(idig_qry, by = c("worms_valid_name" = "scientificname"))
+    res
 }
 
 
@@ -85,7 +86,7 @@ map_kozloff <- function(koz_idig) {
     state <- map("world", fill = TRUE, plot = FALSE)
     ## convert the 'map' to something we can work with via geom_map
     IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
-       state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
+    state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
 
     ## this does the magic for geom_map
     state_map <- fortify(state)
@@ -94,11 +95,12 @@ map_kozloff <- function(koz_idig) {
         filter(!is.na(geopoint.lon), !is.na(geopoint.lat)) %>%
         mutate(`data.dwc:phylum` = gsub("[^a-z]", "", tolower(`data.dwc:phylum`))) %>%
     ggplot(.) +
-        geom_point(aes(x = geopoint.lon, y = geopoint.lat, colour = `data.dwc:phylum`)) +
+        geom_point(aes(x = geopoint.lon, y = geopoint.lat, colour = `data.dwc:phylum`),
+                   size = .6, alpha = .3) +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
-        coord_quickmap() + #xlim = c(-128, -60), ylim = c(22, 51)) +
+        coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
         theme_bw() +
         theme(legend.title = element_blank())
 }

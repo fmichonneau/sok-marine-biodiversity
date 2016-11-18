@@ -169,69 +169,6 @@ species_list_from_idigbio <- function(idig) {
                stringsAsFactors = FALSE)
 }
 
-add_worms_info <- function(sp_list) {
-    stopifnot(inherits(sp_list, "data.frame"))
-    stopifnot(ncol(sp_list) == 1)
-
-    sp_list <- as.data.frame(sp_list, stringsAsFactors = FALSE)[, 1, drop = TRUE]
-    wid <- valid_name <- vector("character", length(sp_list))
-    marine <- vector("logical", length(sp_list))
-
-    for (i in seq_along(sp_list)) {
-        wid[i] <- store_worms_ids()$get(tolower(sp_list[i]))
-        if (!is.na(wid[i]) && !identical(wid[i], "0")) {
-            w_info <- store_worms_info()$get(wid[i])
-            if (nrow(w_info) > 1) browser()
-            marine[i] <- (identical(w_info$isMarine, "1") | identical(w_info$isBrackish, "1"))
-            valid_name[i] <- w_info$valid_name
-        } else {
-            marine[i] <- NA
-            valid_name[i] <- NA
-        }
-    }
-    data.frame(
-        cleaned_scientificname = sp_list,
-        worms_id = wid,
-        is_marine = marine,
-        worms_valid_name = valid_name,
-        stringsAsFactors = FALSE
-    )
-}
-
-add_worms_info_idigbio <- function(sp_list_idig) {
-    res <- sp_list_idig %>%
-        dplyr::filter(is_binomial == TRUE)  %>%
-        dplyr::select(cleaned_scientificname) %>%
-        unique
-    to_add <- add_worms_info(res)
-    left_join(sp_list_idig, to_add, by = "cleaned_scientificname")
-}
-
-add_bold_info <- function(worms_idig) {
-    res <- worms_idig %>%
-        dplyr::filter(!is.na(is_marine), is_marine == TRUE,
-                      worms_valid_name != "not in worms") %>%
-        dplyr::select(worms_valid_name) %>%
-        unique
-
-    bold_rcrd <- bold_bin <- numeric(nrow(res))
-
-    for (i in seq_len(nrow(res))) {
-        bold <- store_bold_specimens_per_species()$get(tolower(res$worms_valid_name[i]))
-        bold_rcrd[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
-                               0, nrow(bold))
-        bold_bin[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
-                              0, length(na.omit(bold$bin_uri)))
-    }
-    res <- data.frame(worms_valid_name = res,
-                      n_bold_records = bold_rcrd,
-                      n_bins = bold_bin,
-                      stringsAsFactors = FALSE)
-    wrm <- dplyr::select(worms_idig, rank, taxon_name, worms_valid_name) %>%
-        unique %>%
-        dplyr::filter(!is.na(worms_valid_name))
-    dplyr::left_join(res, wrm, by = "worms_valid_name")
-}
 
 
 fetch_hook_bold_specimens_per_species <- function(key, namespace) {

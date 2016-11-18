@@ -87,12 +87,5 @@ get_gom_species <- function(file) {
     res
 }
 
-add_worms_gom <- function(gom) {
-    res <- gom %>%
-        dplyr::filter(is_binomial == TRUE) %>%
-        dplyr::select(cleaned_scientificname) %>%
-        unique
-    to_add <- add_worms_info(res)
-    dplyr::left_join(gom, to_add, by = "cleaned_scientificname")
 
 }
