@@ -17,53 +17,7 @@ get_kozloff_species <- function(koz_raw) {
 }
 
 
-calc_kozloff_idigbio_overlap <- function(koz, idig_worms) {
-    setdiff(koz$worms_valid_name, idig_worms$worms_valid_name)
-}
 
-
-fetch_kozloff_from_idigbio <- function(koz) {
-    fields <- idigbio_fields()
-    split_species <- split(koz$worms_valid_name, ceiling(seq_along(koz$worms_valid_name)/150))
-    res <- lapply(split_species, function(x) {
-        qry <- list(scientificname = as.list(x))
-        ridigbio::idig_search_records(rq = qry, fields = fields)
-    })
-    dplyr::bind_rows(res)
-}
-
-extract_species_from_kozloff_idigbio <- function(koz_idig, koz) {
-    res <- species_list_from_idigbio(koz_idig) %>%
-        dplyr::filter(!duplicated(cleaned_scientificname))
-    koz <- koz %>%
-        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
-        dplyr::select(phylum, class, order, rank, taxon_name, worms_valid_name)
-    dplyr::left_join(res, koz, by = c("cleaned_scientificname" = "worms_valid_name"))
-}
-
-first_5 <- function(x) {
-    n <- ifelse(length(x) > 5, 5, length(x))
-    paste(x[seq_len(n)], collapse = ", ")
-}
-
-## calculate proportion of species listed in Kozloff not in iDigBio
-data_kozloff_not_in_idigbio <- function(koz, idig_qry) {
-    idig_qry <- idig_qry %>%
-        dplyr::group_by(scientificname) %>%
-        dplyr::summarize(
-            uuid_lst = first_5(uuid)
-        )
-
-    res <- koz %>%
-        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
-        dplyr::left_join(idig_qry, by = c("worms_valid_name" = "scientificname"))
-    res
-}
-
-
-calc_prop_kozloff_not_in_idigbio <- function(koz_not_idig) {
-    sum(is.na(koz_not_idig$uuid_lst))/nrow(koz_not_idig)
-}
 
 graph_kozloff_not_in_idigbio <- function(koz_not_idig) {
     koz_not_idig %>%

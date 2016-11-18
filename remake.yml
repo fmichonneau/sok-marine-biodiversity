@@ -220,11 +220,12 @@ targets:
 
   # get idigbio records based on species names
   kozloff_idigbio_query:
-    command: fetch_kozloff_from_idigbio(kozloff_species)
+    command: fetch_spp_from_idigbio(kozloff_species)
 
   kozloff_idigbio_species_list:
-    command: extract_species_from_kozloff_idigbio(kozloff_idigbio_query, kozloff_species)
+    command: extract_species_from_idigbio(kozloff_idigbio_query, kozloff_species)
 
+  ## need to query WoRMS at this stage to the is_marine field
   kozloff_idigbio_with_worms_info:
     command: add_worms(kozloff_idigbio_species_list)
 
@@ -239,14 +240,14 @@ targets:
 
   # number/proportion of species listed in Kozloff, but not found in iDigBio
   # (complete list, beyond the search done on geography)
-  kozloff_not_in_idigbio:
-    command: data_kozloff_not_in_idigbio(kozloff_species, kozloff_idigbio_query)
+  kozloff_spp_not_in_idigbio:
+    command: spp_not_in_idigbio(kozloff_species, kozloff_idigbio_query)
 
   prop_kozloff_not_in_idigbio:
-    command: calc_prop_kozloff_not_in_idigbio(kozloff_not_in_idigbio)
+    command: calc_prop_kozloff_not_in_idigbio(kozloff_spp_not_in_idigbio)
 
   figures/kozloff_not_in_idigbio.pdf:
-    command: graph_kozloff_not_in_idigbio(kozloff_not_in_idigbio)
+    command: graph_kozloff_not_in_idigbio(kozloff_spp_not_in_idigbio)
     plot: true
 
 ### ITIS common names of mollusks ----------------------------------------------
@@ -262,6 +263,12 @@ targets:
 
   itis_bold:
     command: add_bold(itis_worms)
+
+  itis_idigbio:
+    command: fetch_spp_from_idigbio(itis_worms)
+
+  itis_spp_not_in_idigbio:
+    command: spp_not_in_idigbio(itis_worms, itis_idigbio)
 
 ### Gulf of Mexico species list ------------------------------------------------
 
