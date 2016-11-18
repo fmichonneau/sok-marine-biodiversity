@@ -284,6 +284,19 @@ targets:
   gom_idigbio:
     command: fetch_spp_from_idigbio(gom_worms)
 
+  gom_spp_not_in_idigbio:
+    command: spp_not_in_idigbio(gom_worms, gom_idigbio)
+
+  figures/gom_not_in_idigbio.pdf:
+    command: plot_spp_not_in_idigbio(gom_spp_not_in_idigbio)
+    plot: true
+
+  figures/combined_not_in_idigbio.pdf:
+    command: plot_spp_not_in_idigbio_combined(kozloff_spp_not_in_idigbio, gom_spp_not_in_idigbio)
+    plot:
+      height: 8
+      width: 12
+
 ### get species list from the US using iDigBio ---------------------------------
 
   idigbio_records:
