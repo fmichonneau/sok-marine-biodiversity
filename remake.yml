@@ -282,7 +282,7 @@ targets:
     command: add_bold(gom_worms)
 
   gom_idigbio:
-    command: fetch_gom_from_idigbio(gom_worms)
+    command: fetch_spp_from_idigbio(gom_worms)
 
 ### get species list from the US using iDigBio ---------------------------------
 

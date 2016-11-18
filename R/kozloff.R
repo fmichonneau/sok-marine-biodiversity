@@ -12,7 +12,7 @@ get_kozloff_species <- function(koz_raw) {
                       rank = rep("phylum", nrow(.)),
                       taxon_name = phylum,
                       cleaned_scientificname = cleanup_species_names(worms_valid_name, rm_subgenus = TRUE),
-                      is_binomial = is_binomial(cleaned_valid_name)) %>%
+                      is_binomial = is_binomial(cleaned_scientificname)) %>%
         dplyr::filter(is_binomial == TRUE)
 }
 
