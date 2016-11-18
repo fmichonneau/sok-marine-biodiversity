@@ -19,22 +19,6 @@ get_kozloff_species <- function(koz_raw) {
 
 
 
-graph_kozloff_not_in_idigbio <- function(koz_not_idig) {
-    koz_not_idig %>%
-        group_by(phylum) %>%
-        summarize(
-            not_in_idigbio = sum(is.na(uuid_lst))/n(),
-            n_spp_not_in_idigbio = sum(is.na(uuid_lst)),
-            n_spp_total = n()
-        ) %>%
-        ggplot(.) +
-        geom_bar(aes(x = reorder(phylum, not_in_idigbio), y = not_in_idigbio), stat = "identity") +
-        geom_text(aes(x = reorder(phylum, not_in_idigbio), y = .8,
-                      label = paste(n_spp_not_in_idigbio, n_spp_total, sep = "/"))) +
-        coord_flip() +
-        xlab("Phylum") +
-        ylab("Proportion of species not in iDigBio")
-}
 
 map_kozloff <- function(koz_idig) {
     state <- map("world", fill = TRUE, plot = FALSE)

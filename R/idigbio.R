@@ -28,6 +28,7 @@ first_5 <- function(x) {
 
 ## calculate proportion of species listed in Kozloff not in iDigBio
 spp_not_in_idigbio <- function(wrm, idig_qry) {
+
     idig_qry <- idig_qry %>%
         dplyr::group_by(scientificname) %>%
         dplyr::summarize(
@@ -36,6 +37,7 @@ spp_not_in_idigbio <- function(wrm, idig_qry) {
         )
 
     res <- wrm %>%
+        dplyr::filter(is_marine == TRUE) %>%
         dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
         dplyr::left_join(idig_qry, by = c("worms_valid_name" = "scientificname"))
     stopifnot(all(res$is_marine))
@@ -46,4 +48,52 @@ spp_not_in_idigbio <- function(wrm, idig_qry) {
 
 calc_prop_spp_not_in_idigbio <- function(not_idig) {
     sum(is.na(not_idig$uuid_lst))/nrow(not_idig)
+}
+
+plot_spp_not_in_idigbio <- function(koz_not_idig) {
+    koz_not_idig %>%
+        group_by(taxon_name) %>%
+        summarize(
+            not_in_idigbio = sum(is.na(uuid_lst))/n(),
+            n_spp_not_in_idigbio = sum(is.na(uuid_lst)),
+            n_spp_total = n()
+        ) %>%
+        ggplot(.) +
+        geom_bar(aes(x = reorder(taxon_name, not_in_idigbio), y = not_in_idigbio), stat = "identity") +
+        geom_text(aes(x = reorder(taxon_name, not_in_idigbio), y = .8,
+                      label = paste(n_spp_not_in_idigbio, n_spp_total, sep = "/"))) +
+        coord_flip() +
+        xlab("Phylum") +
+        ylab("Proportion of species not in iDigBio")
+}
+
+plot_spp_not_in_idigbio_combined <- function(koz_not_idig, gom_not_idig) {
+
+    res <- dplyr::bind_rows("kozloff" = koz_not_idig,
+                     "gom" = gom_not_idig,
+                     .id = "list") %>%
+        group_by(list, taxon_name) %>%
+        summarize(
+            not_in_idigbio = sum(is.na(uuid_lst))/n(),
+            n_spp_not_in_idigbio = sum(is.na(uuid_lst)),
+            n_spp_total = n()
+        )
+
+    abd_spp <- res %>%
+        group_by(taxon_name) %>%
+        summarize(n = sum(n_spp_total)) %>%
+        filter(n > 50)
+
+
+    res %>%
+        filter(taxon_name %in% abd_spp$taxon_name,
+               taxon_name != "Nematoda") %>%
+        ggplot(aes(x = reorder(taxon_name, not_in_idigbio), y = not_in_idigbio)) +
+        geom_bar(aes(fill = list), stat = "identity", position = "dodge") +
+        geom_text(aes(y = .005, label = paste(n_spp_not_in_idigbio, n_spp_total, sep = "/")),
+                  position = position_dodge(.6),
+                  hjust = 0, vjust = rep(c(2, -1), 10)) +
+        coord_flip() +
+        xlab("Phylum") +
+        ylab("Proportion of species not in iDigBio")
 }

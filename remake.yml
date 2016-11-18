@@ -247,7 +247,7 @@ targets:
     command: calc_prop_kozloff_not_in_idigbio(kozloff_spp_not_in_idigbio)
 
   figures/kozloff_not_in_idigbio.pdf:
-    command: graph_kozloff_not_in_idigbio(kozloff_spp_not_in_idigbio)
+    command: plot_spp_not_in_idigbio(kozloff_spp_not_in_idigbio)
     plot: true
 
 ### ITIS common names of mollusks ----------------------------------------------
