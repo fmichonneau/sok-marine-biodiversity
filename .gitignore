@@ -2,3 +2,10 @@ data-raw/BOLD/
 .remake
 data/*.sqlite
 data/synonym_storr/
+*.docx
+*.html
+*.pdf
+manuscript.md
+*.Rhistory
+*(copy)*
+*~
