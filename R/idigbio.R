@@ -11,6 +11,11 @@ fetch_spp_from_idigbio <- function(wrm) {
     dplyr::bind_rows(res)
 }
 
+filter_by_eez <- function(res, usa_map) {
+    in_eez <- is_in_eez(res$uuid, res$geopoint.lon, res$geopoint.lat, usa_map)
+    dplyr::left_join(res, in_eez, by = "uuid")
+}
+
 extract_species_from_idigbio <- function(koz_idig, koz) {
     res <- species_list_from_idigbio(koz_idig) %>%
         dplyr::filter(!duplicated(cleaned_scientificname))

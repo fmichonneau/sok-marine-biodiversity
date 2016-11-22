@@ -23,6 +23,7 @@ packages:
   - maps
   - marmap
   - robis
+  - geojsonio
 
 targets:
   all:
