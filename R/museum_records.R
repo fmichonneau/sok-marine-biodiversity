@@ -56,31 +56,21 @@ get_idigbio_records <- function(taxon_name, taxon_level) {
         qry <- list(basisofrecord = "PreservedSpecimen",
                     scientificname = list(type = "exists"),
                     geopoint = regions[[r]])
-        ## apparently, FLMNH doesn't provide the dwc.data:phylum fields so
-        ## their records are not included. Using `phylum` to do the query
-        ## on all iDigBio brings in too much crap, so we need two queries
-        flmnh_qry <- c(setNames(taxon_name, taxon_level),
-                       setNames("flmnh", "institutioncode"),
-                       qry)
         taxon_level <- paste0("data.dwc:", taxon_level)
         qry <- c(setNames(taxon_name, taxon_level), qry)
         res <- idig_search_records(rq = qry, limit = 100000,
                                    fields = fields)
-        flmnh_res <- idig_search_records(rq = flmnh_qry, limit = 100000,
-                                         fields = fields)
-        message("there are ", nrow(res), " records in iDigbio, and ",
-                nrow(flmnh_res), " for FLMNH.")
-        bind_rows(res, flmnh_res)
-
+        message("there are ", nrow(res), " records in iDigbio.")
+        res
     })
-    RES <- bind_rows(RES)
+    RES <- dplyr::bind_rows(RES)
     top_phylum <- names(which.max(table(RES$`phylum`)))
         message("  using ", sQuote(top_phylum), " for missing values.")
     if (nrow(RES) > 0) {
         RES %>%
-            distinct(uuid, .keep_all = TRUE) %>%
-            mutate(`data.dwc:phylum` = tolower(`data.dwc:phylum`)) %>%
-            mutate(`data.dwc:phylum` = replace(`data.dwc:phylum`,
+            dplyr::distinct(uuid, .keep_all = TRUE) %>%
+            dplyr::mutate(`data.dwc:phylum` = tolower(`data.dwc:phylum`)) %>%
+            dplyr::mutate(`data.dwc:phylum` = replace(`data.dwc:phylum`,
                                                is.na(`data.dwc:phylum`),
                                                top_phylum))
     } else
