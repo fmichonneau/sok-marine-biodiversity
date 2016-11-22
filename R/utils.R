@@ -50,3 +50,12 @@ format_output <- function(x) {
 render <- function(file, ...) {
     rmarkdown::render(file, ...)
 }
+
+## US coordinates
+## pretty generous, but easier
+us_coords <- function() {
+    list(
+        lon = c(-128, -60),
+        lat = c(22, 51)
+    )
+}
