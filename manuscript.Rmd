@@ -50,11 +50,51 @@ sequenced at various spatial scale.
 
 # Main text
 
+
+
 With increased anthropogenic pressure on ecosystems, it is crucial to become
 efficient at documenting biodiversity before species go extinct. This is
 especially important in marine ecosystems where an undefined, but large,
 fraction of the biodiversity remains to be discovered especially among
-invertebrates. However, taxonomic expertise is dwindling, and there are now only
+invertebrates. One approach would be to build on existing knowledge to identify
+gaps and target understudied areas or taxonomic groups. This is currently
+difficult because the knowledge is fragmented and not always
+accessible. However, recent several large-scale initiatives have been developed
+to aggregate and synthesize various facets of biodiversity knowledge. For
+instance, the Biodiversity Heritage Library aims at making the biodiversity
+litterature openly available, the World Registry of Marine Species provides a
+database of the validity and relationships for most marine species taxonomic
+names, and iDigBio digitizes and makes available on the web museum
+specimen-associated data. Our knowledge about species and their geographical
+range comes from:
+
+1. **Faunistic lists** synthesize and evaluate expert knowledge about a specific
+   location. While limited in geographical scope, they tend to be accurate and
+   comprehensive.
+1. **Museum specimens** are physical proofs of the presence of a species at a
+   given point in time and space. The identification can be re-assessed, but
+   their contribution to biodiversity knowledge is greatly enhanced if
+   associated data and metadata are digitized.
+1. **DNA barcodes** useful to delineate and identify species. It requires the
+   presence of a museum voucher. Only as good as the identification. Has been
+   very useful to identify species complexes, especially among marine
+   invertebrates.
+
+To assess the level of digitization for biodiversity, we compared two very
+comprehensive faunistic lists for the marine fauna of the US, one from the Puget
+Sound (West coast) by Kozloff and the Gulf of Mexico checklist (East
+coast). These areas are well studied. Overall, we found that xx% of the species
+included in these lists were not found in iDigBio, and xx% in GBIF. Microscopic,
+poorly studied metaozans were less represented than larger groups, but for the
+latter, proportions on the East and West coast were very similar. Most species
+are likely to be undersampled as xx% of the species are represented by less than
+5 lots.
+
+
+
+
+
+However, taxonomic expertise is dwindling, and there are now only
 a handful of natural history museums with active marine invertebrates
 collections. Museum collections have been recording our knowledge about species
 and their geographical ranges, but until recently, this information was
