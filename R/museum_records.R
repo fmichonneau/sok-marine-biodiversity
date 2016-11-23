@@ -23,6 +23,34 @@ assemble_idigbio_records <- function(file) {
     res
 }
 
+map_validate_eez <- function(idig_rcrd) {
+    state <- map("world", fill = TRUE, plot = FALSE)
+    ## convert the 'map' to something we can work with via geom_map
+    IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
+    state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
+
+    us_bathy <- suppressMessages(getNOAA.bathy(lon1 = -128, lon2 = -60, lat1 = 22, lat2 = 51, keep = TRUE)) %>%
+        fortify %>%
+        filter(z < 0 & z > -1500)
+
+    ## this does the magic for geom_map
+    state_map <- fortify(state)
+    ggplot() +
+        geom_point(data = idig_rcrd,
+                    aes(x = geopoint.lon, y = geopoint.lat,
+                        colour = as.factor(is_in_eez))) +
+        geom_map(data=state_map, map=state_map,
+                 aes(x=long, y=lat, map_id=id),
+                 fill="gray20", colour = "gray20", size = .05) +
+        geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
+                     colour = "gray80", binwidth = 500, size = .1) +
+        coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
+        scale_fill_viridis(trans = "log", breaks = c(1, 10, 100, 1000, 10000)) +
+        theme_bw() +
+        theme(legend.title = element_blank())
+}
+
+
 idigbio_fields <- function() {
     c('uuid',
       'catalognumber',
