@@ -11,8 +11,16 @@ store_idigbio_records <- function(store_path = "data/idigbio_records") {
                    fetch_hook_idigbio_records)
 }
 
-assemble_idigbio_records <- function(taxon_name, taxon_level) {
-    invisible(store_idigbio_records()$get(paste(taxon_level, taxon_name, sep = "-")))
+assemble_idigbio_records <- function(file) {
+    taxa <- readr::read_csv(file)
+    res <- apply(taxa, 1, function(x) {
+        store_idigbio_records()$get(paste(x[2], x[1], sep = "-"))
+    })
+    res <- dplyr::bind_rows(res) %>%
+        dplyr::distinct_("uuid", .keep_all = TRUE) %>%
+        dplyr::mutate_(.dots = setNames(list(~is_in_eez(geopoint.lon, geopoint.lat)),
+                                        "is_in_eez"))
+    res
 }
 
 idigbio_fields <- function() {
