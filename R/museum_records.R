@@ -18,7 +18,7 @@ assemble_idigbio_records <- function(file) {
     })
     res <- dplyr::bind_rows(res) %>%
         dplyr::distinct_("uuid", .keep_all = TRUE) %>%
-        dplyr::mutate_(.dots = setNames(list(~is_in_eez(geopoint.lon, geopoint.lat)),
+        dplyr::mutate_(.dots = setNames(list(~get_is_in_eez(uuid, geopoint.lon, geopoint.lat)),
                                         "is_in_eez"))
     res
 }

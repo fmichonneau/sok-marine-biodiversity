@@ -2,6 +2,7 @@ sources:
   - R/
 
 packages:
+  - progress
   - readxl
   - readr
   - dplyr
