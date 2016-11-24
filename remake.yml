@@ -2,7 +2,6 @@ sources:
   - R/
 
 packages:
-  - progress
   - readxl
   - readr
   - dplyr
@@ -25,6 +24,7 @@ packages:
   - marmap
   - robis
   - geojsonio
+  - lawn
 
 targets:
   all:

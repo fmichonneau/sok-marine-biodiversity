@@ -17,9 +17,16 @@ assemble_idigbio_records <- function(file) {
         store_idigbio_records()$get(paste(x[2], x[1], sep = "-"))
     })
     res <- dplyr::bind_rows(res) %>%
-        dplyr::distinct_("uuid", .keep_all = TRUE) %>%
-        dplyr::mutate_(.dots = setNames(list(~get_is_in_eez(uuid, geopoint.lon, geopoint.lat)),
-                                        "is_in_eez"))
+        dplyr::distinct_("uuid", .keep_all = TRUE)
+
+     res_lawn <- lawn_get_is_in_eez(
+        dplyr::select(res,
+                      uuid,
+                      lat = geopoint.lat,
+                      long = geopoint.lon)
+    )
+    uuids_in_eez <- res_lawn$features$properties$uuid
+    res$is_in_eez <- res$uuid %in% uuids_in_eez
     res
 }
 
