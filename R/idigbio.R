@@ -2,8 +2,7 @@ fetch_spp_from_idigbio <- function(wrm) {
     stopifnot(inherits(wrm, "data.frame"))
     stopifnot("worms_valid_name" %in% names(wrm))
     fields <- idigbio_fields()
-    split_species <- split(na.omit(wrm$worms_valid_name),
-                           ceiling(seq_along(na.omit(wrm$worms_valid_name))/150))
+    split_species <- split_by_n(na.omit(wrm$worms_valid_name), 150)
     res <- lapply(split_species, function(x) {
         qry <- list(scientificname = as.list(x))
         ridigbio::idig_search_records(rq = qry, fields = fields)
