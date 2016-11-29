@@ -32,7 +32,31 @@ fetch_spp_from_gbif <- function(wrm, feather_path) {
     res <- lapply(wrm[[colnm]], function(x) {
         store_gbif_occ()$get(tolower(x))
     })
-    res <- dplyr::bind_rows(lapply(res, function(x) x$data))
+    res <- dplyr::bind_rows(lapply(res, function(x) {
+                      ## remove issues
+                      rgbif::occ_issues(x,
+                                        -preneglat,    # presumed negated latitude
+                                        -preneglon,    # presumed negated longitude
+                                        -preswcd,      # presumed swapped coordinates
+                                        -rdatunl)$data # unlikely date (future or way past)
+                  }))
     feather::write_feather(res, path = feather_path)
-    feather_path
+}
+
+
+filter_gbif <- function(feather_path) {
+    gb <- feather::read_feather(feather_path)
+    gb %>%
+        filter(basisOfRecord != "FOSSIL_OBSERVATION",
+               !is.na(decimalLatitude) | !is.na(decimalLongitude))
+}
+
+us_gbif <- function(gbif_filtered_data) {
+    res_lawn <- gbif_filtered_data %>%
+        dplyr::select(uuid = key,
+               lat = decimalLatitude,
+               long = decimalLongitude) %>%
+        lawn_get_is_in_eez(cache = "data/gbif_is_in_eez.rds")
+    gbif_filtered_data$is_in_eez <- gbif_filtered_data %in% res_lawn$features$properties$uuid
+    gbif_filtered_data
 }
