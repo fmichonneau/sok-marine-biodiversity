@@ -1,22 +1,12 @@
-get_usa_map <- function(file = "data-raw/USA-EEZ/eez.shp", out = "data/usa_eez.rds") {
-    if (file.exists(out))
-        return(readRDS(out))
+get_usa_map <- function(file) {
     res <- geojsonio::geojson_read(x = file, what = "sp")
-    saveRDS(res, file = out)
+    geojsonio::geojson_json(res)
 }
 
-lawn_get_is_in_eez <- function(points, cache = "data/is_in_eez.rds") {
-    if (file.exists(cache)) {
-        message("Using cached data, it won't work if there are new records in the iDigBio data!")
-        res <- readRDS(cache)
-    }
-    else {
-        message("Sit back, relax, it's going to be a while... (about 45 min)")
-        tt <- geojsonio::geojson_json(get_usa_map())
-        pts <- geojsonio::geojson_json(points, lat = "lat", lon = "long")
-        res <- lawn::lawn_within(pts, tt)
-        saveRDS(res, file = cache)
-    }
+is_in_eez <- function(points, map_usa) {
+    message("Sit back, relax, it's going to be a while... (about 45 min)")
+    pts <- geojsonio::geojson_json(points, lat = "lat", lon = "long")
+    res <- lawn::lawn_within(pts, map_usa)
     res
 }
 

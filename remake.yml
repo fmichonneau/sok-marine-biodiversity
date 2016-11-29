@@ -331,8 +331,14 @@ targets:
 
 ### get species list from the US using iDigBio ---------------------------------
 
-  idigbio_records:
+  usa_map:
+    command: get_usa_map("data-raw/USA-EEZ/eez.shp")
+
+  idigbio_records_raw:
     command: assemble_idigbio_records("data-raw/idigbio-search/idigbio_search.csv")
+
+  idigbio_records:
+    command: is_in_eez(idigbio_records_raw)
 
 ### global list
   global_idigbio_species_list:

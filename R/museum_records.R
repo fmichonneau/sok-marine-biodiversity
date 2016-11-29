@@ -18,16 +18,18 @@ assemble_idigbio_records <- function(file) {
     })
     res <- dplyr::bind_rows(res) %>%
         dplyr::distinct_("uuid", .keep_all = TRUE)
-
-     res_lawn <- lawn_get_is_in_eez(
-        dplyr::select(res,
-                      uuid,
-                      lat = geopoint.lat,
-                      long = geopoint.lon)
-    )
-    uuids_in_eez <- res_lawn$features$properties$uuid
-    res$is_in_eez <- res$uuid %in% uuids_in_eez
     res
+}
+
+idigbio_is_in_eez <- function(idig, map_usa)  {
+    res_lawn <- idig %>%
+        dplyr::select(uuid,
+                      lat = geopoint.lat,
+                      long = geopoint.lon) %>%
+        is_in_eez(map_usa)
+    uuids_in_eez <- res_lawn$features$properties$uuid
+    idig$is_in_eez <- idig$uuid %in% uuids_in_eez
+    idig
 }
 
 map_validate_eez <- function(idig_rcrd) {
