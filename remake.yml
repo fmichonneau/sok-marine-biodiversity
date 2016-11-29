@@ -2,27 +2,35 @@ sources:
   - R/
 
 packages:
+  ## data I/O
   - readxl
   - readr
-  - dplyr
-  - ggplot2
+  - feather
   - RSQLite
-  - taxizesoap
   - storr
   - bold
   - tibble
+  ## data manipulation
+  - dplyr
   - tidyr
-  - ridigbio
   - lubridate
+  ## data visualization
+  - ggplot2
   - viridis
+  ## APIs
+  - taxizesoap
+  - ridigbio
+  - marmap
+  - robis
+  - rgbif
+  ## other utils
   - rmarkdown
   - labmanager
+  ## geospatial tools
   - raster
   - sp
   - maptools
   - maps
-  - marmap
-  - robis
   - geojsonio
   - lawn
 
@@ -231,6 +239,9 @@ targets:
   kozloff_obis:
     command: fetch_spp_from_obis(kozloff_worms)
 
+  kozloff_gbif:
+    command: fetch_spp_from_gbif(kozloff_worms, I("data/kozloff_gbif.feather"))
+
   kozloff_idigbio_species_list:
     command: extract_species_from_idigbio(kozloff_idigbio, kozloff_species)
 
@@ -304,6 +315,9 @@ targets:
 
   gom_obis:
     command: fetch_spp_from_obis(gom_worms)
+
+  gom_gbif:
+    command: fetch_spp_from_gbif(gom_worms)
 
   figures/gom_not_in_idigbio.pdf:
     command: plot_spp_not_in_idigbio(gom_spp_not_in_idigbio)
