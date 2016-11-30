@@ -51,12 +51,12 @@ filter_gbif <- function(feather_path) {
                !is.na(decimalLatitude) | !is.na(decimalLongitude))
 }
 
-us_gbif <- function(gbif_filtered_data) {
+us_gbif <- function(gbif_filtered_data, map_usa) {
     res_lawn <- gbif_filtered_data %>%
         dplyr::select(uuid = key,
                lat = decimalLatitude,
                long = decimalLongitude) %>%
-        lawn_get_is_in_eez(cache = "data/gbif_is_in_eez.rds")
-    gbif_filtered_data$is_in_eez <- gbif_filtered_data %in% res_lawn$features$properties$uuid
+        is_in_eez(map_usa)
+    gbif_filtered_data$is_in_eez <- gbif_filtered_data$key %in% res_lawn$features$properties$uuid
     gbif_filtered_data
 }

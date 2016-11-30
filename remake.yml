@@ -246,7 +246,7 @@ targets:
     command: filter_gbif("data/kozloff_gbif.feather")
 
   kozloff_gbif_in_us:
-    command: us_gbif(kozloff_gbif)
+    command: us_gbif(kozloff_gbif, map_usa)
 
   kozloff_idigbio_species_list:
     command: extract_species_from_idigbio(kozloff_idigbio, kozloff_species)
@@ -322,8 +322,14 @@ targets:
   gom_obis:
     command: fetch_spp_from_obis(gom_worms)
 
+  data/gom_gbif.feather:
+    command: fetch_spp_from_gbif(gom_worms, feather_path="data/gom_gbif.feather")
+
   gom_gbif:
-    command: fetch_spp_from_gbif(gom_worms)
+    command: filter_gbif("data/gom_gbif.feather")
+
+  gom_gbif_in_us:
+    command: us_gbif(gom_gbif, map_usa)
 
   figures/gom_not_in_idigbio.pdf:
     command: plot_spp_not_in_idigbio(gom_spp_not_in_idigbio)
