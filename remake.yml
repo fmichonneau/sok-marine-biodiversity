@@ -315,6 +315,19 @@ targets:
   irl_obis:
     command: fetch_spp_from_obis(irl_worms)
 
+### American mammals  ----------------------------------------------------------
+
+  data/idigbio_mammals.feather:
+    command: convert_to_feather("data-raw/vertebrates/idigbio_mammals_occurrence_raw.csv", feather_out="data/idigbio_mammals.feather")
+
+  mammals_species:
+    command: read_idigbio_mammals("data/idigbio_mammals.feather")
+
+  mammals_bold:
+    command: add_bold(mammals_species, use_worms = I(FALSE))
+
+
+
 ### get species list from the US using iDigBio ---------------------------------
 
   map_usa:
