@@ -40,49 +40,7 @@ targets:
       - manuscript.pdf
       - manuscript.docx
 
-  irl_checklist:
-    command: read_irl_checklist(file="data-raw/Species List Database Post V1.xlsx")
 
-  data/bold_database.sqlite:
-    command: create_bold_db(path=I("data-raw/BOLD"))
-
-  joined_data:
-    command: create_joined_data(irl_checklist, "data/bold_database.sqlite")
-
-  species_list:
-    command: join_species("data/bold_database.sqlite")
-    depends: joined_data
-
-  fill_synonym_store:
-    command: get_synonym_store(irl_checklist)
-
-  fill_classification_store:
-    command: get_classification_store(irl_checklist)
-
-  synonym_table:
-    command: make_synonym_table(store_path=I("data/synonym_storr"), database_path=I("data/bold_database.sqlite"))
-    depends: fill_synonym_store
-
-  synonym_list:
-    command: join_synonyms("data/bold_database.sqlite")
-    depends: synonym_table
-
-  fill_bold_specimen_store:
-    command: get_bold_specimens_store(irl_checklist)
-
-  irl_species_in_bold:
-    command: get_irl_species_in_bold()
-    depends:
-      - fill_synonym_store
-      - fill_classification_store
-      - fill_bold_specimen_store
-
-  barcode_data:
-    command: assemble_barcode_data(worms="data-raw/20160929_worms_stats.csv", bold="data-raw/20160929_bold_bin_stats.csv", other="data-raw/20160929_other_taxa_stats.csv")
-
-  figures/plot_barcode_data.pdf:
-    command: plot_barcoded_species(barcode_data)
-    plot: true
 
   #### get BOLD specimen data for most marine groups ---------------------------
   acanthocephala_raw:
@@ -340,6 +298,22 @@ targets:
     plot:
       height: 8
       width: 12
+
+### IRL checklist --------------------------------------------------------------
+  irl_species:
+    command: read_irl_checklist(file="data-raw/IRL/irl_checklist.xlsx")
+
+  irl_worms:
+    command: add_worms(irl_species)
+
+  irl_bold:
+    command: add_bold(irl_worms)
+
+  irl_idigbio:
+    command: fetch_spp_from_idigbio(irl_worms)
+
+  irl_obis:
+    command: fetch_spp_from_obis(irl_worms)
 
 ### get species list from the US using iDigBio ---------------------------------
 

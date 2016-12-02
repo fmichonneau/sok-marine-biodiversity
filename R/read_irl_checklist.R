@@ -1,3 +1,12 @@
+irl_phylum_list <- function() {
+    c("Mollusca", "Arthropoda", "Annelida", "Cnidaria", "Ectoprocta",
+      "Echinodermata", "Nemertea", "Sipuncula", "Porifera",
+      "Hemichordata", "Platyhelminthes", "Tardigrada", "Kinorhyncha",
+      "Chaetognatha", "Brachiopoda", "Entoprocta", "Ctenophora",
+      "Phoronida", "Echiura")
+}
+
+
 read_irl_checklist_raw <- function(file) {
 
     res <- lapply(3:25, function(i)
@@ -15,12 +24,16 @@ read_irl_checklist_raw <- function(file) {
 
 read_irl_checklist <- function(file) {
     res <- read_irl_checklist_raw(file)
-    res <- dplyr::filter(res, PHYLUM %in% phylum_list())
-    if (! all(res$PHYLUM %in% phylum_list()) &&
-        all(phylum_list() %in% res$PHYLUM))
+    res <- dplyr::filter(res, PHYLUM %in% irl_phylum_list())
+    if (! all(res$PHYLUM %in% irl_phylum_list()) &&
+        all(irl_phylum_list() %in% res$PHYLUM))
         stop("It looks like there is a typo in the spreadsheet or in ",
              " the `phylum_list()`.")
-    res
+    res %>%
+        dplyr::select(cleaned_scientificname = `SCIENTIFIC NAME`,
+                      taxon_name = `PHYLUM`) %>%
+        dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname),
+                      rank = rep("phylum", nrow(res)))
 }
 
 
