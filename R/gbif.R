@@ -1,6 +1,5 @@
 fetch_hook_gbif_occ <- function(key, namespace) {
-    if (!identical(tolower(key), key))
-        stop("key must be lowercase")
+    is_lower_case(key)
     fields <- gbif_fields()
     message("Fetching ", sQuote(key), appendLF = FALSE)
     occ <- rgbif::occ_search(scientificName = key, fields = fields, limit = 5000)

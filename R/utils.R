@@ -72,3 +72,8 @@ convert_to_feather <- function(file, feather_out) {
     res <- readr::read_csv(file)
     feather::write_feather(res, path = feather_out)
 }
+
+is_lower_case <- function(x) {
+    if(!identical(tolower(x), x))
+       stop(x, " is not lowercase.")
+}
