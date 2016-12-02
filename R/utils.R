@@ -20,7 +20,11 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
 
 is_binomial <- function(nm) {
     nm <- cleanup_species_names(nm)
-    vapply(strsplit(nm, " "), function(x) length(x) == 2, logical(1))
+    vapply(strsplit(nm, " "), function(x) length(x) == 2 &&
+                                          vapply(x[[1]],
+                                                 function(y) all(nchar(gsub("[a-zA-Z]", "", x)) == 0),
+                                                 logical(1)),
+           logical(1))
 }
 
 
@@ -62,4 +66,9 @@ us_coords <- function() {
 
 split_by_n <- function(x, n, ...) {
     split(x, ceiling(seq_along(x)/n), ...)
+}
+
+convert_to_feather <- function(file, feather_out) {
+    res <- readr::read_csv(file)
+    feather::write_feather(res, path = feather_out)
 }
