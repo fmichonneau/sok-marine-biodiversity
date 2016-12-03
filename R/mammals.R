@@ -18,6 +18,16 @@ read_idigbio_mammals <- function(file) {
         dplyr::mutate(
                    taxon_name = "mammalia",
                    rank = "",
-                   is_binomial = is_binomial(cleaned_scientificname)
+                   is_binomial = is_binomial(cleaned_scientificname),
+                   itis_accepted_name = get_accepted_itis_names(cleaned_scientificname)
                )
+}
+
+get_accepted_itis_names <- function(nm) {
+    vapply(nm, function(x) {
+        if (is_binomial(x))
+            store_itis_name()$get(tolower(x))
+        else
+            NA_character_
+    }, character(1))
 }
