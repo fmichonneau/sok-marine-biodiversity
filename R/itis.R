@@ -20,8 +20,6 @@ fetch_itis_name <- function(key, namespace) {
         if (sum(n_res == 0) == 0) {
             res <- dplyr::bind_rows(tsns)
             res <- unique(res$acceptedName)
-            if (length(res) > 1)
-                browser()
         } else if (sum(n_res) > 0) {
             res <- nm$combinedName[n_res == 0]
         } else

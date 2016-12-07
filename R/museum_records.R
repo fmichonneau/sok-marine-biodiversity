@@ -47,12 +47,13 @@ map_validate_eez <- function(idig_rcrd) {
     ggplot() +
         geom_point(data = idig_rcrd,
                     aes(x = geopoint.lon, y = geopoint.lat,
-                        colour = as.factor(is_in_eez))) +
+                        colour = as.factor(is_in_eez)),
+                   size = .1) +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
-                     colour = "gray80", binwidth = 500, size = .1) +
+                     colour = "gray60", binwidth = 500, size = .1) +
         coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
         scale_fill_viridis(trans = "log", breaks = c(1, 10, 100, 1000, 10000)) +
         theme_bw() +

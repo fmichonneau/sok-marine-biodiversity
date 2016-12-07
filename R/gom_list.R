@@ -94,5 +94,61 @@ get_gom_species <- function(file) {
     res
 }
 
+if (FALSE) {
+
+   ## koz_idig <- koz_idigbio_species_list %>%
+
+    koz_summ <- kozloff_bold %>%
+        group_by(taxon_name) %>%
+        summarize(
+            p_barcoded = sum(n_bold_records > 0)/n(),
+            n_barcoded = sum(n_bold_records > 0),
+            n_total = n()
+        ) %>%
+        gather(n, n_brcded, -taxon_name, -p_barcoded)  %>%
+        dplyr::select(- p_barcoded)
+
+
+    gom_idig <- gom_spp_not_in_idigbio %>%
+        group_by(taxon_name) %>%
+        summarize(
+            n_idigbio = sum(!is.na(n_idigbio))
+        )
+
+    gom_obis <- gom_spp_not_in_obis %>%
+        group_by(taxon_name) %>%
+        summarize(
+            n_obis = sum(!is.na(n_obis))
+        )
+
+    gom_bold %>%
+        group_by(taxon_name) %>%
+        summarize(
+            #p_barcoded = sum(n_bold_records > 0)/n(),
+            n_barcoded = sum(n_bold_records > 0),
+            n_total = n()
+        ) %>%
+        left_join(gom_idig, by = "taxon_name") %>%
+        left_join(gom_obis, by = "taxon_name") %>%
+        gather(counts, n_cat, -taxon_name)  %>%
+        #bind_rows("gom" = ., "koz" = koz_summ, .id = "source") %>%
+        ggplot(aes(x = reorder(taxon_name, n_cat), y = n_cat, fill = counts)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        #facet_grid(~ source) +
+        coord_flip()
+
+
+    n_spp_gom <- length(unique(gom_worms$worms_valid_name))
+    n_spp_gom_bold <- sum(gom_bold$n_bold_records > 0)
+    n_spp_gom_idigbio <- sum(!is.na(gom_spp_not_in_idigbio$n_idigbio))
+    n_spp_gom_bold_idigbio <- sum(gom_bold$worms_valid_name[gom_bold$n_bold_records > 0] %in%
+                                  gom_spp_not_in_idigbio$worms_valid_name[!is.na(gom_spp_not_in_idigbio$n_idigbio)])
+    fit1 <- eulerr::eulerr(c("GOM" = n_spp_gom,
+                             "BOLD" = n_spp_gom_bold,
+                             "idigbio" = n_spp_gom_idigbio,
+                             "GOM&BOLD" = n_spp_gom_bold,
+                             "GOM&idigbio" = n_spp_gom_idigbio,
+                             "GOM&idigbio&BOLD" = n_spp_gom_bold_idigbio))
+    plot(fit1)
 
 }
