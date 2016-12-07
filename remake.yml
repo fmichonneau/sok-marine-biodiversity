@@ -274,8 +274,11 @@ targets:
   gom_spp_not_in_us:
     command: spp_not_in_us(gom_idigbio)
 
-  gom_obis:
-    command: fetch_spp_from_obis(gom_worms)
+  data/gom_obis.feather:
+    command: fetch_spp_from_obis(gom_worms, "data/gom_obis.feather")
+
+  gom_spp_not_in_obis:
+    command: spp_not_in_obis(gom_worms, "data/gom_obis.feather")
 
   data/gom_gbif.feather:
     command: fetch_spp_from_gbif(gom_worms, feather_path="data/gom_gbif.feather")
