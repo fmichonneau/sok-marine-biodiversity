@@ -6,12 +6,11 @@ get_kozloff_species <- function(koz_raw) {
             phylum = Phylum,
             class = Class,
             order = Order,
-            scientific_name_verbatim = ScientificName,
-            worms_valid_name = ScientificName_accepted) %>%
-        dplyr::mutate(is_marine = rep(TRUE, nrow(.)),
-                      rank = rep("phylum", nrow(.)),
+            scientific_name_verbatim = ScientificName) %>%
+        dplyr::mutate(rank = rep("phylum", nrow(.)),
                       taxon_name = phylum,
-                      cleaned_scientificname = cleanup_species_names(worms_valid_name, rm_subgenus = TRUE),
+                      cleaned_scientificname = cleanup_species_names(scientific_name_verbatim,
+                                                                     rm_subgenus = TRUE),
                       is_binomial = is_binomial(cleaned_scientificname)) %>%
         dplyr::filter(is_binomial == TRUE)
 }

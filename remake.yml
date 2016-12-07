@@ -213,12 +213,8 @@ targets:
   kozloff_spp_not_in_us:
     command: spp_not_in_us(kozloff_idigbio)
 
-  ## need to query WoRMS at this stage to get the is_marine field
-  kozloff_idigbio_with_worms_info:
-    command: add_worms(kozloff_idigbio_species_list)
-
   kozloff_bold:
-    command: add_bold_info(kozloff_idigbio_with_worms_info)
+    command: add_bold(kozloff_worms)
 
   figures/map_kozloff_idigbio.pdf:
     command: map_kozloff(kozloff_idigbio)
