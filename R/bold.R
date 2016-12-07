@@ -26,7 +26,7 @@ add_bold <- function(worms, use_worms = TRUE) {
         bold_rcrd[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
                                0, nrow(bold))
         bold_bin[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
-                              0, length(na.omit(bold$bin_uri)))
+                              0, length(unique(na.omit(bold$bin_uri))))
     }
     res <- data.frame(worms_valid_name = res,
                       n_bold_records = bold_rcrd,
