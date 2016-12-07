@@ -15,10 +15,12 @@ store_obis_occurrences <- function(store_path = "data/obis_occurrences_storr") {
               fetch_hook_obis_occurrences))
 }
 
-fetch_spp_from_obis <- function(wrm) {
+fetch_spp_from_obis <- function(wrm, feather_out) {
     stopifnot(inherits(wrm, "data.frame"))
     stopifnot("worms_id" %in% names(wrm))
     res <- lapply(wrm$worms_id, function(x)
         store_obis_occurrences()$get(x))
-    dplyr::bind_rows(res)
+    res <- dplyr::bind_rows(res)
+    feather::write_feather(res, feather_out)
+}
 }
