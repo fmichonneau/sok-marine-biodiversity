@@ -22,13 +22,8 @@ gbif_fields <- function() {
 
 fetch_spp_from_gbif <- function(wrm, feather_path) {
     stopifnot(inherits(wrm, "data.frame"))
-    stopifnot("worms_valid_name.y" %in% names(wrm) ||
-              "worms_valid_name" %in% names(wrm))
-    if (exists("worms_valid_name.y", wrm)) {
-        colnm <- "worms_valid_name.y"
-    } else
-        colnm <- "worms_valid_name"
-    res <- lapply(wrm[[colnm]], function(x) {
+    stopifnot("worms_valid_name" %in% names(wrm))
+    res <- lapply(wrm[["worms_valid_name"]], function(x) {
         store_gbif_occ()$get(tolower(x))
     })
     res <- dplyr::bind_rows(lapply(res, function(x) {
