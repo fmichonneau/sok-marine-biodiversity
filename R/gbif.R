@@ -39,12 +39,16 @@ fetch_spp_from_gbif <- function(wrm, feather_path) {
         dplyr::rename(scientificname_authority = scientificname,
                       scientificname = species,
                       uuid = key) %>%
+        ## for some reason, there are duplicated records in GBIF data
+        dplyr::distinct(uuid, .keep_all = TRUE)
     feather::write_feather(res, path = feather_path)
 }
 
 
 filter_gbif <- function(feather_path) {
     gb <- feather::read_feather(feather_path)
+    if (any(duplicated(gb$uuid)))
+        stop("duplicated UUID values!")
     gb %>%
         filter(basisofrecord != "FOSSIL_OBSERVATION",
                !is.na(decimallatitude) | !is.na(decimallongitude))
