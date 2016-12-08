@@ -45,15 +45,15 @@ fetch_spp_from_gbif <- function(wrm, feather_path) {
 filter_gbif <- function(feather_path) {
     gb <- feather::read_feather(feather_path)
     gb %>%
-        filter(basisOfRecord != "FOSSIL_OBSERVATION",
-               !is.na(decimalLatitude) | !is.na(decimalLongitude))
+        filter(basisofrecord != "FOSSIL_OBSERVATION",
+               !is.na(decimallatitude) | !is.na(decimallongitude))
 }
 
 us_gbif <- function(gbif_filtered_data, map_usa) {
     res_lawn <- gbif_filtered_data %>%
         dplyr::select(uuid = key,
-               lat = decimalLatitude,
-               long = decimalLongitude) %>%
+               lat = decimallatitude,
+               long = decimallongitude) %>%
         is_in_eez(map_usa)
     gbif_filtered_data$is_in_eez <- gbif_filtered_data$key %in% res_lawn$features$properties$uuid
     gbif_filtered_data
