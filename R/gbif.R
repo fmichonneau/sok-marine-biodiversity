@@ -34,6 +34,10 @@ fetch_spp_from_gbif <- function(wrm, feather_path) {
                                         -preswcd,      # presumed swapped coordinates
                                         -rdatunl)$data # unlikely date (future or way past)
                   }))
+    names(res) <- tolower(names(res))
+    res <- res %>%
+        dplyr::rename(scientificname_authority = scientificname,
+                      scientificname = species)
     feather::write_feather(res, path = feather_path)
 }
 
