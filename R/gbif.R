@@ -45,21 +45,22 @@ fetch_spp_from_gbif <- function(wrm, feather_path) {
 }
 
 
-filter_gbif <- function(feather_path) {
+filter_raw_records <- function(feather_path) {
     gb <- feather::read_feather(feather_path)
     if (any(duplicated(gb$uuid)))
         stop("duplicated UUID values!")
     gb %>%
-        filter(basisofrecord != "FOSSIL_OBSERVATION",
+        filter(basisofrecord != "FOSSIL_OBSERVATION", # this is only for GBIF data
                !is.na(decimallatitude) | !is.na(decimallongitude))
 }
 
-us_gbif <- function(gbif_filtered_data, map_usa) {
-    res_lawn <- gbif_filtered_data %>%
-        dplyr::select(uuid = key,
-               lat = decimallatitude,
-               long = decimallongitude) %>%
+is_in_eez_records <- function(filtered_data, map_usa) {
+    res_lawn <- filtered_data %>%
+        dplyr::select(
+                   uuid,
+                   lat = decimallatitude,
+                   long = decimallongitude) %>%
         is_in_eez(map_usa)
-    gbif_filtered_data$is_in_eez <- gbif_filtered_data$key %in% res_lawn$features$properties$uuid
-    gbif_filtered_data
+    filtered_data$is_in_eez <- filtered_data$uuid %in% res_lawn$features$properties$uuid
+    filtered_data
 }

@@ -10,11 +10,6 @@ fetch_spp_from_idigbio <- function(wrm) {
     dplyr::bind_rows(res)
 }
 
-filter_by_eez <- function(res, usa_map) {
-    in_eez <- is_in_eez(res$uuid, res$geopoint.lon, res$geopoint.lat, usa_map)
-    dplyr::left_join(res, in_eez, by = "uuid")
-}
-
 extract_species_from_idigbio <- function(koz_idig, koz) {
     res <- species_list_from_idigbio(koz_idig) %>%
         dplyr::filter(!duplicated(cleaned_scientificname))
@@ -28,25 +23,6 @@ extract_species_from_idigbio <- function(koz_idig, koz) {
 first_5 <- function(x) {
     n <- ifelse(length(x) > 5, 5, length(x))
     paste(x[seq_len(n)], collapse = ", ")
-}
-
-## calculate proportion of species listed in Kozloff not in iDigBio
-spp_not_in_idigbio <- function(wrm, idig_qry) {
-
-    idig_qry <- idig_qry %>%
-        dplyr::group_by(scientificname) %>%
-        dplyr::summarize(
-                   uuid_lst = first_5(uuid),
-                   n_idigbio = n()
-        )
-
-    res <- wrm %>%
-        dplyr::filter(is_marine == TRUE) %>%
-        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
-        dplyr::left_join(idig_qry, by = c("worms_valid_name" = "scientificname"))
-    stopifnot(all(res$is_marine))
-    stopifnot(all(res$is_binomial))
-    res
 }
 
 calc_prop_spp_not_in_idigbio <- function(not_idig) {

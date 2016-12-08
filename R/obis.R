@@ -9,7 +9,6 @@ fetch_hook_obis_occurrences <- function(key, namespace) {
         res
 }
 
-
 store_obis_occurrences <- function(store_path = "data/obis_occurrences_storr") {
     invisible(storr_external(driver_rds(store_path),
               fetch_hook_obis_occurrences))
@@ -27,22 +26,6 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
     feather::write_feather(res, feather_out)
 }
 
-spp_not_in_obis <- function(wrm, obis_feather) {
-    obis_qry <- feather::read_feather(obis_feather) %>%
-        dplyr::mutate(scientificName = tolower(scientificName)) %>%
-        dplyr::group_by(scientificName) %>%
-        dplyr::summarize(
-                   uuid_lst = first_5(id),
-                   n_obis = n()
-        )
-    res <- wrm %>%
-        dplyr::filter(is_marine == TRUE) %>%
-        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
-        dplyr::left_join(obis_qry, by = c("worms_valid_name" = "scientificName"))
-    stopifnot(all(res$is_marine))
-    stopifnot(all(res$is_binomial))
-    res
-}
 
 get_n_records_in_db <- function(worm, db, field_name) {
     ## worm: taxonomic database with WoRMS information
@@ -56,11 +39,22 @@ get_n_records_in_db <- function(worm, db, field_name) {
         names(db) <- tolower(names(db))
     }
 
+    db <- db %>%
+        dplyr::mutate(scientificname = tolower(scientificname))
+
     summary_db <- db %>%
-        dplyr::mutate(scientificname = tolower(scientificname)) %>%
         dplyr::group_by(scientificname) %>%
         dplyr::tally(.) %>%
         dplyr::rename_(.dots = setNames("n", field_name))
+
+    summary_db_in_us <- db %>%
+        dplyr::filter(is_in_eez == TRUE) %>%
+        dplyr::group_by(scientificname) %>%
+        dplyr::tally(.) %>%
+        dplyr::rename_(.dots = setNames("n", paste0(field_name, "_in_us")))
+
+    summary_db <- dplyr::left_join(summary_db, summary_db_in_us,
+                                   by = "scientificname")
 
     res <- worm %>%
         dplyr::filter(is_marine == TRUE) %>%
