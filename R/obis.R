@@ -50,10 +50,11 @@ get_n_records_in_db <- function(worm, db, field_name) {
 
     if (inherits(db, "character")) {
         db <- feather::read_feather(db)
-        colnames(db) <- tolower(colnames(db))
+        names(db) <- tolower(names(db))
     }
 
     summary_db <- db %>%
+        dplyr::mutate(scientificname = tolower(scientificname)) %>%
         dplyr::group_by(scientificname) %>%
         dplyr::tally(.) %>%
         dplyr::rename_(.dots = setNames("n", field_name))
