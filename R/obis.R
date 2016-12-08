@@ -62,6 +62,7 @@ get_n_records_in_db <- function(worm, db, field_name) {
     res <- worm %>%
         dplyr::filter(is_marine == TRUE) %>%
         dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
+        dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
         dplyr::left_join(summary_db, by = c("worms_valid_name" = "scientificname"))
 
     stopifnot(all(res$is_marine))
