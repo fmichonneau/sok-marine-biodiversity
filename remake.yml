@@ -271,8 +271,6 @@ targets:
   gom_spp_not_in_idigbio:
     command: spp_not_in_idigbio(gom_worms, gom_idigbio)
 
-  gom_spp_not_in_us:
-    command: spp_not_in_us(gom_idigbio)
 
   data/gom_obis.feather:
     command: fetch_spp_from_obis(gom_worms, "data/gom_obis.feather")

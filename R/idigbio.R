@@ -49,24 +49,6 @@ spp_not_in_idigbio <- function(wrm, idig_qry) {
     res
 }
 
-
-is_in_us <- function(country, lon, lat) {
-    identical(tolower(country), "united states") ||
-        ((lon > us_coords()$lon[1] && lon < us_coords()$lon[2]) &&
-         (lat > us_coords()$lat[1] && lat < us_coords()$lat[2]))
-}
-
-
-## takes the output of fetch_spp_from_idigbio
-spp_not_in_us <- function(idig) {
-    idig %>%
-        dplyr::group_by(scientificname) %>%
-        summarize(
-            in_us = any(mapply(is_in_us, country, geopoint.lon, geopoint.lat))
-        )
-}
-
-
 calc_prop_spp_not_in_idigbio <- function(not_idig) {
     sum(is.na(not_idig$uuid_lst))/nrow(not_idig)
 }
