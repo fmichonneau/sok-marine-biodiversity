@@ -21,6 +21,8 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
     res <- lapply(wrm$worms_id, function(x)
         store_obis_occurrences()$get(x))
     res <- dplyr::bind_rows(res)
+    names(res) <- tolower(names(res))
+    res <- dplyr::rename(res, uuid = id) %>%
     feather::write_feather(res, feather_out)
 }
 

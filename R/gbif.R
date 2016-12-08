@@ -37,7 +37,8 @@ fetch_spp_from_gbif <- function(wrm, feather_path) {
     names(res) <- tolower(names(res))
     res <- res %>%
         dplyr::rename(scientificname_authority = scientificname,
-                      scientificname = species)
+                      scientificname = species,
+                      uuid = key) %>%
     feather::write_feather(res, path = feather_path)
 }
 
