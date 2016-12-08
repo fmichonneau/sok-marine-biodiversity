@@ -268,31 +268,33 @@ targets:
   gom_idigbio:
     command: fetch_spp_from_idigbio(gom_worms)
 
-  gom_spp_not_in_idigbio:
-    command: spp_not_in_idigbio(gom_worms, gom_idigbio)
-
+  gom_spp_records_idigbio:
+    command: get_n_records_in_db(gom_worms, gom_idigbio, field_name=I("n_idigbio"))
 
   data/gom_obis.feather:
     command: fetch_spp_from_obis(gom_worms, "data/gom_obis.feather")
 
-  gom_spp_not_in_obis:
-    command: spp_not_in_obis(gom_worms, "data/gom_obis.feather")
-
   data/gom_gbif.feather:
     command: fetch_spp_from_gbif(gom_worms, feather_path="data/gom_gbif.feather")
 
+  gom_spp_records_obis:
+    command: get_n_records_in_db(gom_worms, "data/gom_obis.feather", field_name=I("n_obis"))
+
   gom_gbif:
     command: filter_gbif("data/gom_gbif.feather")
+
+  gom_spp_records_gbif:
+    command: get_n_records_in_db(gom_worms,"data/gom_gbif.feather", field_name=I("n_gbif"))
 
   gom_gbif_in_us:
     command: us_gbif(gom_gbif, map_usa)
 
   figures/gom_not_in_idigbio.pdf:
-    command: plot_spp_not_in_idigbio(gom_spp_not_in_idigbio)
+    command: plot_spp_not_in_idigbio(gom_spp_records_idigbio)
     plot: true
 
   figures/combined_not_in_idigbio.pdf:
-    command: plot_spp_not_in_idigbio_combined(kozloff_spp_not_in_idigbio, gom_spp_not_in_idigbio)
+    command: plot_spp_not_in_idigbio_combined(kozloff_spp_not_in_idigbio, gom_spp_records_idigbio)
     plot:
       height: 8
       width: 12
