@@ -56,15 +56,6 @@ filter_raw_records <- function(db) {
     if (any(duplicated(db$uuid)))
         stop("duplicated UUID values!")
 
-is_in_eez_records <- function(filtered_data, map_usa) {
-    res_lawn <- filtered_data %>%
-        dplyr::select(
-                   uuid,
-                   lat = decimallatitude,
-                   long = decimallongitude) %>%
-        is_in_eez(map_usa)
-    filtered_data$is_in_eez <- filtered_data$uuid %in% res_lawn$features$properties$uuid
-    filtered_data
     db %>%
         filter(!is.na(decimallatitude) | !is.na(decimallongitude))
 }

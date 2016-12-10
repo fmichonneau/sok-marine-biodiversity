@@ -10,6 +10,18 @@ is_in_eez <- function(points, map_usa) {
     res
 }
 
+is_in_eez_records <- function(filtered_data, map_usa, coords_store = eez_coords_store()) {
+    p <- progress::progress_bar$new(total = nrow(filtered_data))
+    res_lawn <- filtered_data %>%
+        dplyr::mutate(
+                   lat = round(decimallatitude, 1),
+                   long = round(decimallongitude, 1)) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(
+                   is_in_eez = { p$tick(); coords_store$get(paste(lat, long, sep = "|")) }
+               )
+    res_lawn
+}
 
 
 ### this approach was way too slow!
