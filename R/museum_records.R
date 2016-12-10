@@ -46,7 +46,7 @@ map_validate_eez <- function(idig_rcrd) {
     state_map <- fortify(state)
     ggplot() +
         geom_point(data = idig_rcrd,
-                    aes(x = geopoint.lon, y = geopoint.lat,
+                    aes(x = decimallongitude, y = decimallatitude,
                         colour = as.factor(is_in_eez)),
                    size = .1) +
         geom_map(data=state_map, map=state_map,

@@ -7,7 +7,10 @@ fetch_spp_from_idigbio <- function(wrm) {
         qry <- list(scientificname = as.list(x))
         ridigbio::idig_search_records(rq = qry, fields = fields)
     })
-    dplyr::bind_rows(res)
+    res <- dplyr::bind_rows(res) %>%
+        dplyr::distinct(uuid, .keep_all = TRUE) %>%
+        dplyr::rename(decimallatitude = geopoint.lat,
+                      decimallongitude = geopoint.lon)
 }
 
 extract_species_from_idigbio <- function(koz_idig, koz) {
