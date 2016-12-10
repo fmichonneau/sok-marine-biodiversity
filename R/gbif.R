@@ -39,20 +39,22 @@ fetch_spp_from_gbif <- function(wrm, feather_path) {
         dplyr::rename(scientificname_authority = scientificname,
                       scientificname = species,
                       uuid = key) %>%
+        filter(basisofrecord != "FOSSIL_OBSERVATION") %>%
         ## for some reason, there are duplicated records in GBIF data
         dplyr::distinct(uuid, .keep_all = TRUE)
     feather::write_feather(res, path = feather_path)
 }
 
 
-filter_raw_records <- function(feather_path) {
-    gb <- feather::read_feather(feather_path)
-    if (any(duplicated(gb$uuid)))
+filter_raw_records <- function(db) {
+
+    if (inherits(db, "character")) {
+        db <- feather::read_feather(db)
+        names(db) <- tolower(names(db))
+    }
+
+    if (any(duplicated(db$uuid)))
         stop("duplicated UUID values!")
-    gb %>%
-        filter(basisofrecord != "FOSSIL_OBSERVATION", # this is only for GBIF data
-               !is.na(decimallatitude) | !is.na(decimallongitude))
-}
 
 is_in_eez_records <- function(filtered_data, map_usa) {
     res_lawn <- filtered_data %>%
@@ -63,4 +65,6 @@ is_in_eez_records <- function(filtered_data, map_usa) {
         is_in_eez(map_usa)
     filtered_data$is_in_eez <- filtered_data$uuid %in% res_lawn$features$properties$uuid
     filtered_data
+    db %>%
+        filter(!is.na(decimallatitude) | !is.na(decimallongitude))
 }
