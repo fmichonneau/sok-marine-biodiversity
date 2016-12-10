@@ -34,11 +34,6 @@ get_n_records_in_db <- function(worm, db, field_name) {
     ## column containing the number of record for a given species in
     ## the database (e.g., `n_idigibio`)
 
-    if (inherits(db, "character")) {
-        db <- feather::read_feather(db)
-        names(db) <- tolower(names(db))
-    }
-
     db <- db %>%
         dplyr::mutate(scientificname = tolower(scientificname))
 
