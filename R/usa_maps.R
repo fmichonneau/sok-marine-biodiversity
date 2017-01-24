@@ -12,37 +12,26 @@ is_in_eez <- function(points, map_usa) {
     res
 }
 
-eez_coords_hook <- function(key, namespace) {
-    coords <- unlist(strsplit(key, "\\|"))
-    pts <- data.frame(
-        coords = key,
-        lat = as.numeric(coords[1]),
-        long = as.numeric(coords[2]),
-        stringsAsFactors = FALSE
-    )
-    !is.null(is_in_eez(pts, readRDS("data/map_eez_usa.rds"))$features$properties)
-}
-
-eez_coords_store <- function(path = "data/eez_coords_storr") {
-    invisible(
-        storr::storr_external(
-                   storr::driver_rds(path),
-                   eez_coords_hook
-               )
-    )
-}
-
-
 is_in_eez_records <- function(filtered_data, map_usa, coords_store = eez_coords_store()) {
-    p <- progress::progress_bar$new(total = nrow(filtered_data))
     res_lawn <- filtered_data %>%
         dplyr::mutate(
                    lat = round(decimallatitude, 1),
-                   long = round(decimallongitude, 1)) %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(
-                   is_in_eez = { p$tick(); coords_store$get(paste(lat, long, sep = "|")) }
-               )
+                   long = round(decimallongitude, 1),
+                   coord_key = paste(lat, long, sep = "|"))
+
+    simplified_coords <-  res_lawn %>%
+        dplyr::select(coord_key, lat, long) %>%
+        dplyr::distinct(coord_key, .keep_all = TRUE)
+
+    res_is_in_eez <- is_in_eez(simplified_coords, map_usa)$features$geometry$coordinates %>%
+                        lapply(function(x) data.frame(
+                                               coord_key = paste(x[2], x[1], sep = "|"),
+                                               lat = x[2],
+                                               lon = x[1],
+                                               stringsAsFactors = FALSE)) %>%
+                        dplyr::bind_rows()
+
+    res_lawn$is_in_eez <- res_lawn$coord_key %in% res_is_in_eez$coord_key
     res_lawn
 }
 
