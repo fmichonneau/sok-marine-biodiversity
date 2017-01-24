@@ -22,7 +22,12 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
     res <- dplyr::bind_rows(res)
     names(res) <- tolower(names(res))
     res <- dplyr::rename(res, uuid = id) %>%
-        dplyr::distinct(uuid, .keep_all = TRUE)
+        dplyr::distinct(uuid, .keep_all = TRUE) %>%
+        dplyr::select_("uuid", "decimallatitude",
+                       "decimallongitude",
+                       "phylum", "family",
+                       "genus", "species",
+                       "scientificname")
     feather::write_feather(res, feather_out)
 }
 
