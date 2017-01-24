@@ -94,48 +94,86 @@ get_gom_species <- function(file) {
     res
 }
 
+extract_species_from_gom_idigbio <- function(gom_idig, gom_wrm) {
+    res <- species_list_from_idigbio(gom_idig) %>%
+        dplyr::filter(!duplicated(cleaned_scientificname))
+    gom <- gom_wrm %>%
+        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
+        dplyr::select(rank, taxon_name, worms_valid_name)
+    dplyr::left_join(res, gom, by = c("cleaned_scientificname" = "worms_valid_name"))
+}
+
+
+standardize_gom <- function(gom_spp) {
+    dplyr::select_(gom_spp,
+                   "cleaned_scientificname",
+                   "is_binomial",
+                   "rank",
+                   "taxon_name")
+}
+
+summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
+
+    idig_ <- idig_db %>%
+        dplyr::group_by(taxon_name) %>%
+        dplyr::summarize(
+            n_idigbio = sum(!is.na(n_idigbio)),
+            n_idigbio_in_us = sum(!is.na(n_idigbio_in_us))
+        )
+
+    obis_ <- obis_db %>%
+        dplyr::group_by(taxon_name) %>%
+        dplyr::summarize(
+            n_obis = sum(!is.na(n_obis)),
+            n_obis_in_us = sum(!is.na(n_obis_in_us))
+        )
+
+    gbif_ <- gbif_db %>%
+        group_by(taxon_name) %>%
+        summarize(
+            n_gbif = sum(!is.na(n_gbif)),
+            n_gbif_in_us = sum(!is.na(n_gbif_in_us))
+        )
+
+    bold_db %>%
+        dplyr::group_by(taxon_name) %>%
+        dplyr::summarize(
+            n_barcoded = sum(n_bold_records > 0),
+            n_total = n()
+        ) %>%
+        dplyr::left_join(idig_, by = "taxon_name") %>%
+        dplyr::left_join(obis_, by = "taxon_name") %>%
+        dplyr::left_join(gbif_, by = "taxon_name") %>%
+
+        dplyr::filter(taxon_name %in% c("Arthropoda", "Mollusca", "Annelida",
+                                        "Cnidaria", "Echinodermata", "Platyhelminthes",
+                                        "Porifera", "Bryozoa", "Nematoda", "Chordata"
+                                        ))
+
+}
+
+plot_richness_per_db <- function(smry_db) {
+    smry_db %>%
+        ggplot(aes(x = reorder(taxon_name, n_spp), y = n_spp, fill = counts)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        xlab("Phylum") + ylab("Number of species") +
+        labs(title = "Number of species in databases", subtitle = "Gulf Of Mexico",
+             caption = "(only marine taxa)") +
+        coord_flip()
+}
+
+
+## plot_proportion_per_db <- function(smry_db) {
+##     # TODO
+##     smry_
+
+## }
+
+#gom_not_in_idigbio <- function(gom)
+
+##
 if (FALSE) {
 
-   ## koz_idig <- koz_idigbio_species_list %>%
-
-    koz_summ <- kozloff_bold %>%
-        group_by(taxon_name) %>%
-        summarize(
-            p_barcoded = sum(n_bold_records > 0)/n(),
-            n_barcoded = sum(n_bold_records > 0),
-            n_total = n()
-        ) %>%
-        gather(n, n_brcded, -taxon_name, -p_barcoded)  %>%
-        dplyr::select(- p_barcoded)
-
-
-    gom_idig <- gom_spp_not_in_idigbio %>%
-        group_by(taxon_name) %>%
-        summarize(
-            n_idigbio = sum(!is.na(n_idigbio))
-        )
-
-    gom_obis <- gom_spp_not_in_obis %>%
-        group_by(taxon_name) %>%
-        summarize(
-            n_obis = sum(!is.na(n_obis))
-        )
-
-    gom_bold %>%
-        group_by(taxon_name) %>%
-        summarize(
-            #p_barcoded = sum(n_bold_records > 0)/n(),
-            n_barcoded = sum(n_bold_records > 0),
-            n_total = n()
-        ) %>%
-        left_join(gom_idig, by = "taxon_name") %>%
-        left_join(gom_obis, by = "taxon_name") %>%
-        gather(counts, n_cat, -taxon_name)  %>%
-        #bind_rows("gom" = ., "koz" = koz_summ, .id = "source") %>%
-        ggplot(aes(x = reorder(taxon_name, n_cat), y = n_cat, fill = counts)) +
-        geom_bar(stat = "identity", position = "dodge") +
-        #facet_grid(~ source) +
-        coord_flip()
 
 
     n_spp_gom <- length(unique(gom_worms$worms_valid_name))

@@ -10,6 +10,13 @@ packages:
   - storr
   - bold
   - tibble
+  ## geospatial tools
+  - raster
+  - sp
+  - maptools
+  - maps
+  - geojsonio
+  - lawn
   ## data manipulation
   - dplyr
   - tidyr
@@ -27,13 +34,7 @@ packages:
   ## other utils
   - rmarkdown
   - labmanager
-  ## geospatial tools
-  - raster
-  - sp
-  - maptools
-  - maps
-  - geojsonio
-  - lawn
+
 
 targets:
   all:
@@ -256,8 +257,11 @@ targets:
 
 ### Gulf of Mexico species list ------------------------------------------------
 
-  gom_species:
+  gom_species_raw:
     command: get_gom_species(file="data-raw/GOM/BioGoMx.xls")
+
+  gom_species:
+    command: standardize_gom(gom_species_raw)
 
   gom_worms:
     command: add_worms(gom_species)
@@ -471,6 +475,15 @@ targets:
 
   figures/map_sampling.pdf:
     command: make_heatmap_sampling(data_map_standardized_diversity, I("Diversity"))
+    plot: true
+
+### plot summary database ------------------------------------------------------
+
+  summary_richness_per_db:
+    command: summarize_richness_per_db(gom_bold, gom_spp_records_idigbio, gom_spp_records_obis, gom_spp_records_gbif)
+
+  figures/plot_richness_per_db.pdf:
+    command: plot_richness_per_db(summary_richness_per_db)
     plot: true
 
 ### plot sampling effort -------------------------------------------------------
