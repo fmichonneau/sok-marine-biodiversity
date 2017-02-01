@@ -42,7 +42,7 @@ plot_spp_not_in_idigbio <- function(koz_not_idig) {
         ) %>%
         ggplot(.) +
         geom_bar(aes(x = reorder(taxon_name, not_in_idigbio), y = not_in_idigbio), stat = "identity") +
-        geom_text(aes(x = reorder(taxon_name, not_in_idigbio), y = .8,
+        geom_text(aes(x = reorder(taxon_name, not_in_idigbio), y = .9,
                       label = paste(n_spp_not_in_idigbio, n_spp_total, sep = "/"))) +
         coord_flip() +
         xlab("Phylum") +
