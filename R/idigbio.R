@@ -56,9 +56,12 @@ plot_spp_not_in_idigbio_combined <- function(koz_not_idig, gom_not_idig) {
                      .id = "list") %>%
         group_by(list, taxon_name) %>%
         summarize(
-            not_in_idigbio = sum(is.na(uuid_lst))/n(),
-            n_spp_not_in_idigbio = sum(is.na(uuid_lst)),
-            n_spp_total = n()
+            p_not_in_idigbio = sum(is.na(n_idigbio))/n(),
+            p_not_in_idigbio_us = sum(is.na(n_idigbio_in_us))/n(),
+            n_spp_not_in_idigbio = sum(is.na(n_idigbio)),
+            n_spp_not_in_idigio_us = sum(is.na(n_idigbio_in_us)),
+            n_spp_total = n(),
+            n_spp_total_us = n()
         )
 
     abd_spp <- res %>%
@@ -66,16 +69,23 @@ plot_spp_not_in_idigbio_combined <- function(koz_not_idig, gom_not_idig) {
         summarize(n = sum(n_spp_total)) %>%
         filter(n > 50)
 
-
     res %>%
+        gather(idig_status, n, -list, -taxon_name) %>%
+        mutate(n_p = if_else(grepl("^p", idig_status), "p",
+                             ifelse(grepl("total", idig_status), "N", "n")),
+               in_us = ifelse(grepl("_us$", idig_status), "US", "World")) %>%
+        select(-idig_status) %>%
+        spread(n_p, n) %>%
         filter(taxon_name %in% abd_spp$taxon_name,
                taxon_name != "Nematoda") %>%
-        ggplot(aes(x = reorder(taxon_name, not_in_idigbio), y = not_in_idigbio)) +
+        ggplot(aes(x = reorder(taxon_name, p), y = p)) +
         geom_bar(aes(fill = list), stat = "identity", position = "dodge") +
-        geom_text(aes(y = .005, label = paste(n_spp_not_in_idigbio, n_spp_total, sep = "/")),
+        geom_text(aes(y = .005, label = paste(n, N, sep = "/")),
                   position = position_dodge(.6),
-                  hjust = 0, vjust = rep(c(2, -1), 10)) +
+                  hjust = 0, vjust = rep(c(2, -1), 20)) +
         coord_flip() +
         xlab("Phylum") +
-        ylab("Proportion of species not in iDigBio")
+    ylab("Proportion of species not in iDigBio") +
+        facet_wrap(~ in_us)
+
 }
