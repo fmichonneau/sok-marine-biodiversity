@@ -154,7 +154,8 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
 
 plot_richness_per_db <- function(smry_db) {
     smry_db %>%
-        ggplot(aes(x = reorder(taxon_name, n_spp), y = n_spp, fill = counts)) +
+        tidyr::gather(source_n_spp, n_spp, -taxon_name) %>%
+        ggplot(aes(x = reorder(taxon_name, n_spp), y = n_spp, fill = source_n_spp)) +
         geom_bar(stat = "identity", position = "dodge") +
         xlab("Phylum") + ylab("Number of species") +
         labs(title = "Number of species in databases", subtitle = "Gulf Of Mexico",
@@ -188,5 +189,56 @@ if (FALSE) {
                              "GOM&idigbio" = n_spp_gom_idigbio,
                              "GOM&idigbio&BOLD" = n_spp_gom_bold_idigbio))
     plot(fit1)
+
+}
+
+
+## test caching
+if (FALSE) {
+    ## first let's figure out a reasonable resolution
+    eez_shp <- rgdal::readOGR(dsn = "data-raw/USA-EEZ", "eez")
+    eez_df <- ggplot2::fortify(eez_shp, region = "geoname")
+
+    pt_grid <- expand.grid(
+        x = seq(-130, -70, by = .1),
+        y = seq(22, 48, by = .1)
+    )
+    ggplot() +
+        geom_map(data = eez_df, map = eez_df, aes(x = long, y = lat, map_id = id)) +
+        geom_point(data = pt_grid, aes(x = x, y = y), color = "red", size = .2) +
+        coord_quickmap(xlim = c(-84, -80), ylim = c(23, 27))
+
+    ## let's use 1000 random points
+    rnd <- gom_idigbio %>%
+        sample_n(50) %>%
+        mutate(
+            lat = round(decimallatitude, 1),
+            long = round(decimallongitude, 1)
+        )
+
+    ## map_usa_ <- remake::fetch("map_usa")
+
+
+    lawn_direct <- function() {
+        res <- is_in_eez(rnd, map_usa_)
+        rnd$is_in_eez <- rnd$uuid %in% res$features$properties$uuid
+        rnd
+    }
+
+    lawn_cached <- function() {
+        rnd <- rnd %>%
+            rowwise() %>%
+            mutate(
+                is_in_eez = eez_coords_store$get(paste(lat, long, sep = "|"))
+            )
+        rnd
+    }
+
+    microbenchmark::microbenchmark(
+                        lawn_direct(),
+                        lawn_cached(),
+                        n = 10
+                    )
+
 
 }
