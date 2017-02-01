@@ -36,8 +36,8 @@ plot_spp_not_in_idigbio <- function(koz_not_idig) {
     koz_not_idig %>%
         group_by(taxon_name) %>%
         summarize(
-            not_in_idigbio = sum(is.na(uuid_lst))/n(),
-            n_spp_not_in_idigbio = sum(is.na(uuid_lst)),
+            not_in_idigbio = sum(is.na(n_idigbio))/n(),
+            n_spp_not_in_idigbio = sum(is.na(n_idigbio)),
             n_spp_total = n()
         ) %>%
         ggplot(.) +
