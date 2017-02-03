@@ -152,15 +152,28 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
 
 }
 
-plot_richness_per_db <- function(smry_db) {
+plot_richness_per_db <- function(smry_db, data_source) {
     smry_db %>%
+        dplyr::mutate(n_idigbio_diff = n_idigbio - n_idigbio_in_us,
+                      n_obis_diff = n_obis - n_obis_in_us,
+                      n_gbif_diff = n_gbif - n_gbif_in_us) %>%
+        dplyr::select(-n_idigbio, -n_obis, -n_gbif) %>%
         tidyr::gather(source_n_spp, n_spp, -taxon_name) %>%
-        ggplot(aes(x = reorder(taxon_name, n_spp), y = n_spp, fill = source_n_spp)) +
-        geom_bar(stat = "identity", position = "dodge") +
+        dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>%
+        ggplot(aes(x = factor(source_db,
+                              levels = rev(c("n_total", "n_obis", "n_gbif", "n_idigbio", "n_barcoded")),
+                              labels = c("BOLD", "iDigBio", "GBIF", "OBIS", "Total")),
+                              y = n_spp, fill = source_n_spp)) +
+            geom_bar(stat = "identity", position = "stack") +
+        facet_grid(factor(taxon_name,
+                          levels = c("Arthropoda", "Mollusca", "Annelida", "Cnidaria", "Echinodermata",
+                                     "Platyhelminthes", "Porifera", "Bryozoa", "Nematoda", "Chordata")) ~ .) +
         xlab("Phylum") + ylab("Number of species") +
-        labs(title = "Number of species in databases", subtitle = "Gulf Of Mexico",
+        labs(title = "Number of species in databases", subtitle = data_source,
              caption = "(only marine taxa)") +
-        coord_flip()
+        scale_fill_viridis(option = "inferno", discrete = TRUE) +
+        coord_flip() #+
+        #theme(panel.spacing = unit(-.1, "lines"))
 }
 
 
