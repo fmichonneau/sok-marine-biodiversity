@@ -24,9 +24,9 @@ make_knowledge_through_time <- function(idig_data_gom, idig_data_koz) {
         group_by(source, phylum, min_year) %>%
         arrange(min_year) %>%
         summarize(
-            n_spp = n()
+            n_new_spp = n()
         ) %>%
-        mutate(cum_n_spp = cumsum(n_spp)) %>%
+        mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
         rename(year =  min_year)
 
     left_join(n_samples, n_species, by = c("source", "phylum", "year"))
@@ -46,14 +46,14 @@ plot_cum_spp_through_time <- function(knowledge_through_time) {
 
     phy_to_keep <- knowledge_through_time %>%
         group_by(phylum) %>%
-        filter(cum_n_spp ==  max(cum_n_spp, na.rm = TRUE)) %>%
-        filter(cum_n_spp > 100) %>%
+        filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
+        filter(cum_n_new_spp > 100) %>%
         unique(x = .$phylum)
 
     knowledge_through_time %>%
         filter(phylum %in% phy_to_keep,
-               !is.na(cum_n_spp)) %>%
-        ggplot( aes(x = year, y = cum_n_spp, colour = phylum)) +
+               !is.na(cum_n_new_spp)) %>%
+        ggplot( aes(x = year, y = cum_n_new_spp, colour = phylum)) +
         geom_line() +
         facet_grid(~ source)
 
