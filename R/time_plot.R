@@ -65,3 +65,21 @@ plot_cum_spp_through_time <- function(knowledge_through_time) {
         facet_grid(~ source)
 
 }
+
+plot_new_effort <- function(knowledge_through_time) {
+
+    phy_to_keep <- knowledge_through_time %>%
+        group_by(phylum) %>%
+        filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
+        filter(cum_n_new_spp > 100) %>%
+        unique(x = .$phylum)
+
+    knowledge_through_time %>%
+        filter(phylum %in% phy_to_keep) %>%
+        ggplot(aes(x = n_samples, y = n_new_spp, group = phylum, colour = year,
+                   shape = source)) +
+        geom_point() +
+        geom_abline(aes(intercept = 0, slope = 1)) +
+        scale_y_log10() + scale_x_log10() +
+        facet_wrap(~ phylum)
+}
