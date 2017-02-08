@@ -36,7 +36,14 @@ make_knowledge_through_time <- function(idig_data_gom, idig_data_koz) {
 }
 
 plot_cum_samples_through_time <- function(knowledge_through_time)  {
+    phy_to_keep <- knowledge_through_time %>%
+        group_by(phylum) %>%
+        filter(cum_n_samples ==  max(cum_n_samples, na.rm = TRUE)) %>%
+        filter(cum_n_samples > 1000) %>%
+        unique(x = .$phylum)
+
     knowledge_through_time %>%
+        filter(phylum %in% phy_to_keep) %>%
     ggplot(aes(x = year, y = cum_n_samples, colour = phylum)) +
         geom_line() +
         facet_grid(~ source)
