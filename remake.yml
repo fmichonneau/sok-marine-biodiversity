@@ -484,6 +484,17 @@ targets:
     command: make_heatmap_sampling(data_map_standardized_diversity, I("Diversity"))
     plot: true
 
+  knowledge_through_time:
+    command: make_knowledge_through_time(gom_idigbio, kozloff_idigbio)
+
+  figures/cum_spp_through_time.pdf:
+    command: plot_cum_spp_through_time(knowledge_through_time)
+    plot: true
+
+  figures/cum_samples_through_time.pdf:
+    command: plot_cum_samples_through_time(knowledge_through_time)
+    plot: true
+
 ### plot summary database ------------------------------------------------------
 
   summary_richness_per_db_gom:
