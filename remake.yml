@@ -485,7 +485,7 @@ targets:
     plot: true
 
   knowledge_through_time:
-    command: make_knowledge_through_time(gom_idigbio, kozloff_idigbio)
+    command: make_knowledge_through_time(gom_idigbio_in_us, kozloff_idigbio_in_us, gom_worms, kozloff_worms)
 
   figures/cum_spp_through_time.pdf:
     command: plot_cum_spp_through_time(knowledge_through_time)
@@ -493,6 +493,16 @@ targets:
 
   figures/cum_samples_through_time.pdf:
     command: plot_cum_samples_through_time(knowledge_through_time)
+    plot: true
+
+  figures/new_spp_per_effort.pdf:
+    command: plot_new_effort(knowledge_through_time)
+    plot:
+      width: 12
+      height: 8
+
+  figures/new_effort_proportion.pdf:
+    command: plot_new_effort_proportion(knowledge_through_time)
     plot: true
 
 ### plot summary database ------------------------------------------------------
