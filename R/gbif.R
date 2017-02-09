@@ -23,16 +23,24 @@ gbif_fields <- function() {
 fetch_spp_from_gbif <- function(wrm, feather_path) {
     stopifnot(inherits(wrm, "data.frame"))
     stopifnot("worms_valid_name" %in% names(wrm))
-    res <- lapply(wrm[["worms_valid_name"]], function(x) {
-        store_gbif_occ()$get(tolower(x))
-    })
+    wrm_names <- wrm[["worms_valid_name"]]
+    res <- mapply(function(x, y) {
+        rr <- store_gbif_occ()$get(tolower(x))
+        attr(rr, "taxon_name") <- y
+        rr
+    }, wrm_names[!duplicated(wrm_names)], wrm[["taxon_name"]][!duplicated(wrm_names)],
+    SIMPLIFY = FALSE)
+
     res <- dplyr::bind_rows(lapply(res, function(x) {
                       ## remove issues
-                      rgbif::occ_issues(x,
-                                        -preneglat,    # presumed negated latitude
-                                        -preneglon,    # presumed negated longitude
-                                        -preswcd,      # presumed swapped coordinates
-                                        -rdatunl)$data # unlikely date (future or way past)
+                      rr <- rgbif::occ_issues(x,
+                                              -preneglat,    # presumed negated latitude
+                                              -preneglon,    # presumed negated longitude
+                                              -preswcd,      # presumed swapped coordinates
+                                              -rdatunl)$data # unlikely date (future or way past)
+                      if (is.null(rr)) return(NULL)
+                      rr$taxon_name <- rep(attr(x, "taxon_name"), nrow(rr))
+                      rr
                   }))
     names(res) <- tolower(names(res))
     res <- res %>%
