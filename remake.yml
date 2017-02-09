@@ -485,7 +485,7 @@ targets:
     plot: true
 
   knowledge_through_time:
-    command: make_knowledge_through_time(gom_idigbio_in_us, kozloff_idigbio_in_us, gom_worms, kozloff_worms)
+    command: make_knowledge_through_time(gom_idigbio_in_us, kozloff_idigbio_in_us, gom_gbif_in_us, kozloff_gbif_in_us, gom_worms, kozloff_worms)
 
   figures/cum_spp_through_time.pdf:
     command: plot_cum_spp_through_time(knowledge_through_time)
