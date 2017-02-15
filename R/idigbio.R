@@ -23,11 +23,6 @@ extract_species_from_idigbio <- function(koz_idig, koz) {
 }
 
 
-first_5 <- function(x) {
-    n <- ifelse(length(x) > 5, 5, length(x))
-    paste(x[seq_len(n)], collapse = ", ")
-}
-
 calc_prop_spp_not_in_idigbio <- function(not_idig) {
     sum(is.na(not_idig$uuid_lst))/nrow(not_idig)
 }

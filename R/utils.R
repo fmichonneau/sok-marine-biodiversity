@@ -92,3 +92,8 @@ filter_raw_records <- function(db) {
     db %>%
         filter(!is.na(decimallatitude) | !is.na(decimallongitude))
 }
+
+first_5 <- function(x) {
+    n <- ifelse(length(x) > 5, 5, length(x))
+    paste(x[seq_len(n)], collapse = ", ")
+}
