@@ -107,22 +107,8 @@ plot_cum_spp_through_time <- function(knowledge_through_time) {
 
 }
 
-plot_new_effort <- function(knowledge_through_time) {
 
-    phy_to_keep <- filter_phyla(knowledge_through_time)
-
-    knowledge_through_time %>%
-        filter(phylum %in% phy_to_keep) %>%
-        ggplot(aes(x = n_samples, y = n_new_spp, group = phylum, colour = year,
-                   shape = interaction(database, fauna))) +
-        geom_point() +
-
-        geom_abline(aes(intercept = 0, slope = 1)) +
-        scale_y_log10() + scale_x_log10() +
-        facet_wrap(~ phylum)
-}
-
-plot_new_effort_proportion <- function(knowledge_through_time) {
+plot_cum_frac_through_time <- function(knowledge_through_time) {
 
     phy_to_keep <- filter_phyla(knowledge_through_time)
 
@@ -133,4 +119,57 @@ plot_new_effort_proportion <- function(knowledge_through_time) {
         geom_line() +
         facet_grid(fauna  ~ database)  +
         xlim(c(1850, 2017))
+}
+
+
+
+
+plot_new_effort <- function(knowledge_through_time) {
+
+    phy_to_keep <- filter_phyla(knowledge_through_time)
+
+    knowledge_through_time %>%
+        filter(phylum %in% phy_to_keep,
+               year > 1850) %>%
+        ggplot(aes(x = n_samples, y = n_new_spp, group = phylum, colour = year,
+                   shape = interaction(database, fauna))) +
+        geom_point() +
+
+        geom_abline(aes(intercept = 0, slope = 1)) +
+        scale_y_log10() + scale_x_log10() +
+        facet_wrap(~ phylum)
+}
+
+
+plot_change_trend_through_time <- function(knowledge_through_time) {
+
+    phy_to_keep <- filter_phyla(knowledge_through_time)[-c(3, 7)]
+
+    res <- knowledge_through_time %>%
+        filter(phylum %in% phy_to_keep,
+               year > 1850) %>%
+        mutate(year_cat = cut(year, breaks = seq(1850, 2020, by = 20),
+                              labels = paste(seq(1850, 2000, by = 20),
+                                             seq(1869, 2019, by = 20),
+                                             sep = "-"))) %>%
+        split(list(.$year_cat, .$fauna, .$database, .$phylum)) %>%
+        purrr::map( ~ lm(I(log(n_new_spp + 1, base = 10)) ~ I(log(n_samples + 1, base = 10)) - 1, data = .)) %>%
+        purrr::map(summary) %>% {
+            tibble(
+                mdl  = names(.),
+                slope = map_dbl(map(., "coefficients"), 1),
+                se = map_dbl(map(., "coefficients"), 2),
+                r2 = map_dbl(., "r.squared")
+            )
+        }
+
+    res$mdl %>%
+        strsplit("\\.") %>%
+        lapply(., function(x) set_names(x, c("dates", "fauna", "database", "phylum"))) %>%
+        map_df(~ as.data.frame(t(.), stringsAsFactors = FALSE)) %>%
+        bind_cols(res) %>%
+        select(- mdl) %>%
+        ggplot(aes(x = dates, y = slope, colour = phylum)) +
+        geom_point() +
+        facet_grid(database ~ fauna)
 }

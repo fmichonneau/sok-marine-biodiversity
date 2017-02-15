@@ -21,6 +21,7 @@ packages:
   - dplyr
   - tidyr
   - lubridate
+  - purrr
   ## data visualization
   - ggplot2
   - viridis
@@ -364,9 +365,15 @@ targets:
       width: 12
       height: 8
 
-  figures/new_effort_proportion.pdf:
-    command: plot_new_effort_proportion(knowledge_through_time)
+  figures/cum_frac_through_time.pdf:
+    command: plot_cum_frac_through_time(knowledge_through_time)
     plot: true
+
+  figures/change_trend_through_time.pdf:
+    command: plot_change_trend_through_time(knowledge_through_time)
+    plot:
+      width: 12
+      height: 8
 
 ### plot summary database ------------------------------------------------------
 
