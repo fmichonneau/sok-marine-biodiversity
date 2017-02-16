@@ -1,11 +1,11 @@
 
 
 get_bounding_box <- function(map) {
-    box <- sp::bbox(map_usa_west_sp)
-    gt <- sp::GridTopology(c(box[1,1], box[2,1]), rep(1, 2), rep(20, 2))
+    box <- sp::bbox(map)
+    gt <- sp::GridTopology(c(box[1,1], box[2,1]), rep(.5, 2), rep(100, 2))
     gr <- as(as(sp::SpatialGrid(gt), "SpatialPixels"), "SpatialPolygons")
     proj4string(gr) <- CRS(proj4string(map))
-    it <- rgeos::gIntersects(map_usa_west_sp, gr, byid = TRUE)
+    it <- rgeos::gIntersects(map, gr, byid = TRUE)
     gr[it]
 }
 
@@ -24,7 +24,7 @@ bb_to_df <- function(bb) {
 
 generate_bounding_boxes <- function(map_usa) {
 
-    map_usa_sp_df <- geojson_sp(tt)
+    map_usa_sp_df <- geojson_sp(map_usa)
 
     map_usa_fort <- ggplot2::fortify(map_usa_sp_df)
 
@@ -64,4 +64,26 @@ coords_to_query <- function(coords) {
     })
     names(qry) <- coords$key
     qry
+}
+
+
+make_hook_idigbio_by_geo <- function(coords_qry) {
+    force(coords_qry)
+    function(key, namespace) {
+        ridigbio::idig_search_records(rq = coords_qry[[key]], fields = idigbio_fields())
+    }
+}
+
+
+store_idigbio_by_geo <- function(coords, store_path = "data/idigbio_by_geo") {
+    fetch_hook_idigbio_by_geo <- make_hook_idigbio_by_geo(coords)
+    storr::storr_external(storr::driver_rds(store_path),
+                          fetch_hook_idigbio_by_geo)
+}
+
+fill_store_idigbio_by_geo <- function(map_usa) {
+    bb_eez <- generate_bounding_boxes(map_usa)
+    coords <- coords_to_query(bb_eez)
+    lapply(names(coords), function(q)
+        store_idigbio_by_geo(coords)$get(q))
 }
