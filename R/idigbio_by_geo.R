@@ -1,5 +1,4 @@
-
-
+## generate the geographic grid from a SpatialPolygons object
 get_bounding_box <- function(map) {
     box <- sp::bbox(map)
     gt <- sp::GridTopology(c(box[1,1], box[2,1]), rep(.5, 2), rep(100, 2))
@@ -9,6 +8,8 @@ get_bounding_box <- function(map) {
     gr[it]
 }
 
+## convert the SpatialGrid object into a data frame that contains the
+## coordinates of the corners of square of the geographic grid
 bb_to_df <- function(bb) {
     res <- lapply(seq_along(bb), function(i) {
         data.frame(
@@ -22,6 +23,9 @@ bb_to_df <- function(bb) {
     res
 }
 
+## from the map of the EEZ from the USA, create a data frame that
+## contains the coordinates for a grid that spans the area. This grid
+## will be used to do an iDigBio search by geography
 generate_bounding_boxes <- function(map_usa) {
 
     map_usa_sp_df <- geojson_sp(map_usa)
@@ -52,10 +56,12 @@ generate_bounding_boxes <- function(map_usa) {
     dplyr::bind_rows(list(east = east_df, west = west_df), .id = "coast")
 }
 
+## build the list of iDigBio queries based on the data frame that
+## contains the coordinates of each element of the geographic grid.
 coords_to_query <- function(coords) {
     qry <- lapply(seq_len(nrow(coords)), function(i) {
-        list(basisofrecord = "PreservedSpecimen",
-             scientificname = list(type = "exists"),
+        list(basisofrecord = "PreservedSpecimen",    # only extant specimens (no fossils)
+             scientificname = list(type = "exists"), # only records that contain something in the species name
              geopoint = list(
                  type = "geo_bounding_box",
                  top_left = list(lon = coords$xmin[i], lat = coords$ymax[i]),
@@ -67,6 +73,9 @@ coords_to_query <- function(coords) {
 }
 
 
+## fetch hook for the idigbio by geography storr. The use a closure to
+## enforce the remake dependency on the data frame that contains the
+## coordinates for each element of the grid.
 make_hook_idigbio_by_geo <- function(coords_qry) {
     force(coords_qry)
     function(key, namespace) {
@@ -74,16 +83,25 @@ make_hook_idigbio_by_geo <- function(coords_qry) {
     }
 }
 
-
+## define the storr that contains the iDigBio record for each element
+## of the grid.
 store_idigbio_by_geo <- function(coords, store_path = "data/idigbio_by_geo") {
     fetch_hook_idigbio_by_geo <- make_hook_idigbio_by_geo(coords)
     storr::storr_external(storr::driver_rds(store_path),
                           fetch_hook_idigbio_by_geo)
 }
 
-fill_store_idigbio_by_geo <- function(map_usa) {
+## for all the coordinates of the bounding boxes, find the iDigBio
+## records they contains
+fill_store_idigbio_by_geo <- function(map_usa, use_cache) {
     bb_eez <- generate_bounding_boxes(map_usa)
     coords <- coords_to_query(bb_eez)
+
+    ## if use_cache=FALSE, destroy the storr before fetching the
+    ## results from iDigBio, otherwise, we'll use the cached results
+    if (! use_cache)
+        store_idigbio_by_geo(coords)$destroy()
+
     lapply(names(coords), function(q)
         store_idigbio_by_geo(coords)$get(q))
 }
