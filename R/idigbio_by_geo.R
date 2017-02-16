@@ -105,3 +105,78 @@ fill_store_idigbio_by_geo <- function(map_usa, use_cache) {
     lapply(names(coords), function(q)
         store_idigbio_by_geo(coords)$get(q))
 }
+
+cleanup_idigbio_raw <- function(idig) {
+
+    ## We only want:
+    ## - unique records
+    ## - invertebrates
+    ## - marine
+
+    ## First let's get the phylum names from the Gulf of Mexico list,
+    ## that will take care of plants, fungi, and records with no
+    ## specified phylum
+    taxa <- names(gom_taxa_to_keep())
+    taxa <- strsplit(taxa, "-")
+    taxa <- vapply(taxa, function(x) x[2], character(1))
+    taxa <- tolower(unique(taxa))
+
+    res <- idig %>%
+        dplyr::bind_rows()
+
+
+    res_ <- res %>%
+        mutate_(.dots = setNames(list("tolower(`data.dwc:phylum`)",
+                                      "tolower(`data.dwc:class`)",
+                                      "tolower(`data.dwc:family`)"),
+                                 c("clean_phylum", "clean_class", "clean_family")))
+
+    arth_classes_to_rm <- c("arachnida", "myriapoda", "protura", "symphyla", "chilopoda",
+                            "diplopoda", "hexapoda", "insecta", "trilobita", "unknown")
+
+    arth_family_to_rm <- res_ %>%
+        filter(clean_phylum == "arthropoda" & clean_class %in% arth_classes_to_rm) %>%
+        select(clean_family) %>%
+        distinct() %>%
+        .[[1]] %>%
+        na.omit()
+
+    chordata_classes_to_rm <- c("actinopteri", "actinopterygii",
+                                "cephalaspidomorphi", "agnatha",
+                                "amphibia", "aves", "chondrichthyes",
+                                "chondrichthys", "elasmobranchii",
+                                "holocephali", "mammalia", "myxini",
+                                "osteichthyes", "osteichthyes",
+                                "petromyzonti", "pisces", "reptilia", "unknown")
+
+    chordata_family_to_rm <- res_ %>%
+        filter(clean_phylum == "chordata" & clean_class %in% chordata_classes_to_rm) %>%
+        select(clean_family) %>%
+        distinct() %>%
+        .[[1]] %>%
+        na.omit()
+
+    chordata_family_to_rm <- c(chordata_family_to_rm, "anarhichantidae", "anthiidae",
+                               "belontiidae", "branchiostegidae", "denticipitidae",
+                               "doliolunidae", "eleotrididae", "fritillariidae",
+                               "gobioididae", "grammistidae", "icelidae", "idiacanthidae",
+                               "macrorhamphosidae", "zaniolepidae", "zaniolepididae")
+
+    res. <- res_ %>%
+        ## only the phyla found in the gulf of mexico list
+        filter_(.dots = list(lazyeval::interp(~ a %in% b, a = clean_phylum, b = taxa))) %>%
+        ## only the obviously non-marine arthropods and the vertebrates
+        filter(! (clean_phylum == "arthropoda" &
+                  (clean_class %in% arth_classes_to_rm | clean_family %in% arth_family_to_rm)),
+               ! (clean_phylum == "chordata" &
+                  (clean_class %in% chordata_classes_to_rm | clean_family %in% chordata_family_to_rm))
+               ) %>%
+        filter(country != "canada")
+
+    res <- res. %>%
+        mutate(cleaned_scientificname = cleanup_species_names(scientificname),
+               is_binomial = is_binomial(cleaned_scientificname)) %>%
+        add_worms()
+
+    res
+}
