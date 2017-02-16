@@ -218,7 +218,6 @@ targets:
     command: add_bold(mammals_species, use_worms = I(FALSE))
 
 
-
 ### get species list from the US using iDigBio ---------------------------------
 
   map_usa:
@@ -227,52 +226,6 @@ targets:
   idigbio_records_raw:
     command: assemble_idigbio_records("data-raw/idigbio-search/idigbio_search.csv")
 
-  idigbio_records:
-    command: is_in_eez(idigbio_records_raw, map_usa)
-
-### global list
-  global_idigbio_species_list:
-    command: assemble_idigbio_species_list(geo_filter=I("global"))
-    depends: idigbio_records
-
-  global_idigbio_species_with_worms_info:
-    command: add_worms(global_idigbio_species_list)
-
-  global_idigbio_species_with_bold_info:
-    command: add_bold(global_idigbio_species_with_worms_info)
-
-### east coast list
-  east_idigbio_species_list:
-    command: assemble_idigbio_species_list(geo_filter=I("east_coast"))
-    depends: idigbio_records
-
-  east_idigbio_species_with_worms_info:
-    command: add_worms(east_idigbio_species_list)
-
-  east_idigbio_species_with_bold_info:
-    command: add_bold(east_idigbio_species_with_worms_info)
-
-### west coast list
-  west_idigbio_species_list:
-    command: assemble_idigbio_species_list(geo_filter=I("west_coast"))
-    depends: idigbio_records
-
-  west_idigbio_species_with_worms_info:
-    command: add_worms(west_idigbio_species_list)
-
-  west_idigbio_species_with_bold_info:
-    command: add_bold(west_idigbio_species_with_worms_info)
-
-### florida list
-  florida_idigbio_species_list:
-    command: assemble_idigbio_species_list(geo_filter=I("florida"))
-    depends: idigbio_records
-
-  florida_idigbio_species_with_worms_info:
-    command: add_worms(florida_idigbio_species_list)
-
-  florida_idigbio_species_with_bold_info:
-    command: add_bold(florida_idigbio_species_with_worms_info)
 
 ### summary tables
   table_idigbio_species_sequenced:
@@ -300,8 +253,6 @@ targets:
   #   command: make_table_records_per_species()
   #   depends: bold_records_for_idigbio_species
 
-  proportion_barcoded_summary:
-    command: make_proportion_barcoded_summary(table_proportion_barcoded_by_phylum, table_idigbio_species_sequenced)
 
 ### plankton data
   plankton_ids:
