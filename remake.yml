@@ -224,7 +224,10 @@ targets:
     command: get_map_usa("data-raw/USA-EEZ/eez.shp")
 
   idigbio_records_raw:
-    command: assemble_idigbio_records("data-raw/idigbio-search/idigbio_search.csv")
+    command: fill_store_idigbio_by_geo(map_usa, use_cache=I(TRUE))
+
+  idigbio_records:
+    command: cleanup_idigbio_raw(idigbio_records_raw)
 
 
 ### summary tables
