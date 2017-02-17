@@ -48,7 +48,7 @@ make_data_map_standardized_diversity <- function(sampling, diversity) {
 }
 
 make_heatmap_sampling <- function(gg_r, title) {
-    state <- map("world", fill = TRUE, plot = FALSE)
+    state <- maps::map("world", fill = TRUE, plot = FALSE)
     ## convert the 'map' to something we can work with via geom_map
     IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
     state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
