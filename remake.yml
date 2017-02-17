@@ -211,11 +211,31 @@ targets:
   data/idigbio_mammals.feather:
     command: convert_to_feather("data-raw/vertebrates/idigbio_mammals_occurrence_raw.csv", feather_out="data/idigbio_mammals.feather")
 
-  mammals_species:
+  mammals_species_idigbio:
     command: read_idigbio_mammals("data/idigbio_mammals.feather")
 
-  mammals_bold:
-    command: add_bold(mammals_species, use_worms = I(FALSE))
+  mammals_bold_idigbio:
+    command: add_bold(mammals_species_idigbio, use_worms = I(FALSE))
+
+  ## species list of mammals from the American Society of Mammologists
+  ## (http://www.mammalsociety.org/mammals-list)
+  ## downloaded on 2017-02-15
+  mammals_species_asm:
+    command: read_asm_mammals("data-raw/vertebrates/mammals_species_usa.csv")
+
+  mammals_asm_idigbio_raw:
+    command: asm_mammals_idigbio(mammals_species_asm)
+
+  mammals_asm_idigbio:
+    command: asm_mammals_idigbio_summary(mammals_species_asm, mammals_asm_idigbio_raw)
+
+  mammals_asm_bold:
+    ## this produces messages about not finding a valid WoRMS ID, but it's OK here as
+    ## it happens as we are trying to look for synonyms in case there is no match
+    command: add_bold_mammals(mammals_species_asm)
+
+  mammals_asm_summary:
+    command: asm_summary(mammals_asm_idigbio, mammals_asm_bold)
 
 
 ### get species list from the US using iDigBio ---------------------------------
