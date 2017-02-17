@@ -149,6 +149,7 @@ cleanup_idigbio_raw <- function(idig) {
                                 "osteichthyes", "osteichthyes",
                                 "petromyzonti", "pisces", "reptilia", "unknown")
 
+
     chordata_family_to_rm <- res_ %>%
         filter(clean_phylum == "chordata" & clean_class %in% chordata_classes_to_rm) %>%
         select(clean_family) %>%
@@ -164,7 +165,7 @@ cleanup_idigbio_raw <- function(idig) {
 
     res. <- res_ %>%
         ## only the phyla found in the gulf of mexico list
-        filter_(.dots = list(lazyeval::interp(~ a %in% b, a = clean_phylum, b = taxa))) %>%
+        filter(clean_phylum %in%  taxa) %>%
         ## only the obviously non-marine arthropods and the vertebrates
         filter(! (clean_phylum == "arthropoda" &
                   (clean_class %in% arth_classes_to_rm | clean_family %in% arth_family_to_rm)),
@@ -175,7 +176,10 @@ cleanup_idigbio_raw <- function(idig) {
 
     res <- res. %>%
         mutate(cleaned_scientificname = cleanup_species_names(scientificname),
-               is_binomial = is_binomial(cleaned_scientificname)) %>%
+               is_binomial = is_binomial(cleaned_scientificname),
+               rank = rep("phylum", nrow(.)),
+               taxon_name = `data.dwc:phylum`) %>%
+        distinct(uuid, .keep_all = TRUE) %>%
         add_worms()
 
     res
