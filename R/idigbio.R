@@ -1,3 +1,20 @@
+idigbio_fields <- function() {
+    c('uuid',
+      'catalognumber',
+      'datecollected',
+      'institutioncode',
+      'phylum',
+      'data.dwc:phylum',
+      'data.dwc:class',
+      'data.dwc:order',
+      'data.dwc:family',
+      'data.dwc:genus',
+      'scientificname',
+      'datecollected',
+      'country',
+      'geopoint')
+}
+
 fetch_spp_from_idigbio <- function(wrm) {
     stopifnot(inherits(wrm, "data.frame"))
     stopifnot("worms_valid_name" %in% names(wrm))

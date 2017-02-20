@@ -28,6 +28,24 @@ is_binomial <- function(nm) {
 }
 
 
+keep_marine_taxa <- function(worms) {
+    res <- worms %>%
+        dplyr::filter(!is.na(is_marine),
+                      is_marine == TRUE,
+                      worms_valid_name != "not in worms") %>%
+        dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
+        dplyr::select(rank, taxon_name, cleaned_scientificname, worms_valid_name, worms_id)
+    res
+}
+
+capwords <- function(s, strict = FALSE) {
+    cap <- function(s) paste(toupper(substring(s, 1, 1)),
+                       {s <- substring(s, 2); if(strict) tolower(s) else s},
+                       sep = "", collapse = " " )
+    sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
+}
+
+
 ####
 ### By Scott Chamberlain http://r.789695.n4.nabble.com/Geographic-distance-between-lat-long-points-in-R-td3442338.html
 ## Convert degrees to radians

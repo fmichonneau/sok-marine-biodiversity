@@ -184,3 +184,121 @@ cleanup_idigbio_raw <- function(idig) {
 
     res
 }
+
+
+plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
+    n_spp <- idigbio_records %>%
+        dplyr::filter(!is.na(is_marine),
+                      is_marine == TRUE,
+                      worms_valid_name != "not in worms") %>%
+        mutate(phylum = tolower(`data.dwc:phylum`)) %>%
+        group_by(phylum) %>%
+        summarize(
+            n_spp = n_distinct(worms_valid_name)
+        )
+
+    n_bold <- idigbio_bold %>%
+        mutate(phylum = tolower(taxon_name)) %>%
+        group_by(phylum) %>%
+        summarize(
+            n_spp_bold = sum(n_bold_records > 0)
+        )
+
+    res <- left_join(n_spp, n_bold, by = "phylum") %>%
+        mutate(p_bold = n_spp_bold/n_spp)
+
+    ggplot(res, aes(x = reorder(phylum, p_bold), y = p_bold)) +
+        geom_col() +
+        coord_flip()
+
+}
+
+us_raster <- function()
+    raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .5)
+
+make_data_map_sampling_effort <- function(idig) {
+    us_raster <- us_raster()
+    pts <- SpatialPoints(data.frame(lon = idig$geopoint.lon,
+                                    lat = idig$geopoint.lat))
+    r <- rasterize(pts, us_raster, fun = "count")
+    gg_r <- as.data.frame(as(r, "SpatialPixelsDataFrame"))
+    colnames(gg_r) <- c("value", "x", "y")
+    gg_r
+}
+
+
+make_data_map_diversity <- function(idig) {
+    us_raster <- us_raster()
+    raster_cell <- mapply(function(x, y) cellFromXY(us_raster, c(x, y)),
+                          idig$geopoint.lon, idig$geopoint.lat)
+
+    idig_r <- data.frame(idig, rastercell = raster_cell) %>%
+        group_by(rastercell) %>%
+        summarize(
+            n_spp = length(unique(scientificname))
+        )
+    us_raster[na.omit(idig_r$rastercell)] <- idig_r$n_spp[!is.na(idig_r$rastercell)]
+    gg_r <- as.data.frame(as(us_raster, "SpatialPixelsDataFrame"))
+    colnames(gg_r) <- c("value", "x", "y")
+    gg_r
+}
+
+make_data_map_standardized_diversity <- function(sampling, diversity) {
+    sampling <- sampling %>%
+        rename(n_specimen = value)
+    diversity <- diversity %>%
+        rename(n_species = value)
+
+    res <- bind_cols(sampling, dplyr::select(diversity, n_species)) %>%
+        dplyr::select(x, y, n_specimen, n_species) %>%
+        mutate(value = n_species*n_species/n_specimen)
+
+    res
+}
+
+
+make_heatmap_sampling <- function(gg_r, title) {
+    state <- maps::map("world", fill = TRUE, plot = FALSE)
+    ## convert the 'map' to something we can work with via geom_map
+    IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
+    state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
+
+    us_bathy <- suppressMessages(getNOAA.bathy(lon1 = -128, lon2 = -60, lat1 = 22, lat2 = 51, keep = TRUE)) %>%
+        fortify %>%
+        filter(z < 0 & z > -1500)
+
+    ## this does the magic for geom_map
+    state_map <- fortify(state)
+    ggplot() +
+        geom_raster(data = gg_r, aes(x = x, y = y, fill = value)) +
+        geom_map(data=state_map, map=state_map,
+                 aes(x=long, y=lat, map_id=id),
+                 fill="gray20", colour = "gray20", size = .05) +
+        geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
+                     colour = "gray80", binwidth = 500, size = .1) +
+        coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
+        scale_fill_viridis(trans = "log", breaks = c(1, 10, 100, 1000, 10000)) +
+        theme_bw() +
+        theme(legend.title = element_blank()) +
+        ggtitle(title)
+}
+
+make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata", "Annelida", "Arthropoda", "Mollusca", "Porifera")) {
+    idig %>%
+        filter(is_marine == TRUE) %>%
+        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
+        mutate(year = year(parsed_date)) %>%
+        mutate(year = replace(year, year > 2016 | year < 1800, NA)) %>%
+        filter(!is.na(year)) %>%
+        mutate(`data.dwc:phylum` = capwords(`data.dwc:phylum`, strict = TRUE)) %>%
+        filter(year >=  1900,
+               `data.dwc:phylum` %in% to_keep) %>%
+        group_by(year, institutioncode, `data.dwc:phylum`) %>%
+        tally %>%
+        ggplot(aes(x = year, y = n)) +
+        geom_bar(aes(fill=institutioncode), stat = "identity") +
+        geom_smooth(method = "lm", formula = y ~ splines::bs(x, 6), se = FALSE) + #geom_smooth() +
+        scale_y_log10() +
+        facet_wrap(~ `data.dwc:phylum`) +
+        scale_fill_viridis(discrete = TRUE)
+}
