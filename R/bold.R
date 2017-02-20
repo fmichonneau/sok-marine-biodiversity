@@ -32,10 +32,18 @@ store_bold_specimens_per_species <- function(store_path = "data/bold_specimens_p
 ## this function takes a data frame, for which the column named with
 ## the content of `col_nm` contains the species names to look up in
 ## BOLD. It returns a data frame.
-internal_add_bold <- function(res, col_nm) {
+internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
     bold_rcrd <- bold_bin <- numeric(nrow(res))
 
+    if (show_progress) {
+        to_find <- !store_bold_specimens_per_species()$exists(tolower(res[[col_nm]]))
+        if (sum(to_find) > 0)
+            pb <- progress::progress_bar$new(total = sum(to_find))
+    }
+
     for (i in seq_len(nrow(res))) {
+        if ((!store_bold_specimens_per_species()$exists(tolower(res[[col_nm]][i]))) &&
+            show_progress) pb$tick()
         bold <- store_bold_specimens_per_species()$get(tolower(res[[col_nm]][i]))
         bold_rcrd[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
                                0, nrow(bold))
