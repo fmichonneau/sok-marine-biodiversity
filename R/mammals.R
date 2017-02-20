@@ -81,7 +81,7 @@ asm_mammals_idigbio <- function(mam) {
     res
 }
 
-add_bold_mammals <- function(mam_asm) {
+find_bold_mammals <- function(mam_asm) {
     mam_spp <- mam_asm %>%
         dplyr::select(species_name) %>%
         unique
