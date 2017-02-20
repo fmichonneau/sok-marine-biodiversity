@@ -35,6 +35,7 @@ packages:
   ## other utils
   - rmarkdown
   - labmanager
+  - progress
 
 
 targets:
@@ -232,7 +233,7 @@ targets:
   mammals_asm_bold:
     ## this produces messages about not finding a valid WoRMS ID, but it's OK here as
     ## it happens as we are trying to look for synonyms in case there is no match
-    command: find_bold_records_mammals(mammals_species_asm)
+    command: find_bold_mammals(mammals_species_asm)
 
   mammals_asm_summary:
     command: asm_summary(mammals_asm_idigbio, mammals_asm_bold)
