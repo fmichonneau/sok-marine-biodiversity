@@ -25,6 +25,7 @@ packages:
   ## data visualization
   - ggplot2
   - viridis
+  - scales
   ## APIs
   - taxizesoap
   - ridigbio

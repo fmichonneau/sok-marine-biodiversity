@@ -9,6 +9,7 @@ plot_sampling_effort <- function(id) {
     id %>%
         prepare_sampling_effort_data %>%
         ggplot(aes(x = n_specimen, y = n_species, shape = east_west, colour = latitude)) +
+        scale_colour_gradient2(low = muted("red"), high = muted("blue"), mid = "gray50", midpoint = 35) +
         geom_point(position = "jitter") +
         geom_abline(slope = 1, intercept = 0) +
         xlab("Number of records") + ylab("Number of species") +

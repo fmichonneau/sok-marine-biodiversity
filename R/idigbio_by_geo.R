@@ -214,7 +214,7 @@ plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
 }
 
 us_raster <- function()
-    raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .5)
+    raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .2)
 
 make_data_map_sampling_effort <- function(idig) {
     us_raster <- us_raster()
@@ -271,16 +271,22 @@ make_heatmap_sampling <- function(gg_r, title) {
     state_map <- fortify(state)
     ggplot() +
         geom_raster(data = gg_r, aes(x = x, y = y, fill = value)) +
+        scale_fill_gradient2(low = muted("blue"), mid = "gray", high = "red",
+                             midpoint = log(quantile(seq(min(gg_r$value),
+                                                         max(gg_r$value),
+                                                       by = 1), .05)),
+                             breaks = c(1, 10, 100, 1000), trans = "log") +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
                      colour = "gray80", binwidth = 500, size = .1) +
         coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
-        scale_fill_viridis(trans = "log", breaks = c(1, 10, 100, 1000, 10000)) +
+        #scale_fill_viridis(trans = "log", breaks = c(1, 10, 100, 1000, 10000)) +
         theme_bw() +
         theme(legend.title = element_blank()) +
-        ggtitle(title)
+        ggtitle(title) +
+        xlab("Longitude") + ylab("Latitude")
 }
 
 make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata", "Annelida", "Arthropoda", "Mollusca", "Porifera")) {
