@@ -69,15 +69,63 @@ make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
 
     left_join(n_samples, n_species, by = c("database", "fauna", "phylum", "year"))
 
+}
+
+
+make_knowledge_through_time_idigbio <- function(idigbio) {
+
+    idigbio <- idigbio %>%
+        filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
+        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z")),
+               year = year(parsed_date)) %>%
+        mutate(year = replace(year, year > 2017 | year < 1800, NA)) %>%
+        filter(!is.na(year))
+
+    spp_total <-  idigbio %>%
+        group_by(clean_phylum) %>%
+        summarize(
+            n_spp_total = n_distinct(worms_valid_name)
+        )
+
+    n_samples <- idigbio %>%
+        group_by(clean_phylum, year) %>%
+        arrange(year) %>%
+        summarize(
+            n_samples = n()
+        ) %>%
+        mutate(cum_n_samples = cumsum(n_samples))
+
+    n_species <- idigbio %>%
+        group_by(clean_phylum, worms_valid_name, year) %>%
+        arrange(year) %>%
+        tally() %>%
+        mutate(min_year = min(year)) %>%
+        select(-n) %>%
+        distinct(clean_phylum, worms_valid_name, min_year, .keep_all = TRUE) %>%
+        group_by(clean_phylum, min_year) %>%
+        arrange(min_year) %>%
+        summarize(
+            n_new_spp = n()
+        ) %>%
+        rename(year = min_year) %>%
+        right_join(n_samples, by = c("clean_phylum", "year")) %>%
+        mutate(n_new_spp = replace(n_new_spp, is.na(n_new_spp), 0)) %>%
+        mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
+        left_join(spp_total, by = "clean_phylum") %>%
+        mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total) %>%
+        rename(phylum = clean_phylum)
+
+    n_species
 
 
 }
 
-filter_phyla <- function(ktt) {
+
+filter_phyla <- function(ktt, n_min = 100) {
     ktt %>%
         group_by(phylum) %>%
         filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
-        filter(cum_n_new_spp > 100) %>%
+        filter(cum_n_new_spp > n_min) %>%
         unique(x = .$phylum)
 }
 
