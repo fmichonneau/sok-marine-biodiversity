@@ -144,28 +144,37 @@ filter_phyla <- function(ktt, n_min = 100) {
 }
 
 
-plot_cum_samples_through_time <- function(knowledge_through_time)  {
+plot_cum_samples_through_time <- function(knowledge_through_time, facet = TRUE)  {
     phy_to_keep <- filter_phyla(knowledge_through_time)
 
-    knowledge_through_time %>%
+    res <- knowledge_through_time %>%
         filter(phylum %in% phy_to_keep) %>%
         ggplot(aes(x = year, y = cum_n_samples, colour = phylum)) +
         geom_line() +
-        facet_grid(fauna ~ database)  +
         xlim(c(1850, 2017))
+
+     if (facet)
+        res <- res + facet_grid(fauna ~ database)
+
+    res
+
 }
 
-plot_cum_spp_through_time <- function(knowledge_through_time) {
+plot_cum_spp_through_time <- function(knowledge_through_time, facet = TRUE) {
 
     phy_to_keep <- filter_phyla(knowledge_through_time)
 
-    knowledge_through_time %>%
+    res <- knowledge_through_time %>%
         filter(phylum %in% phy_to_keep,
                !is.na(cum_n_new_spp)) %>%
-        ggplot( aes(x = year, y = cum_n_new_spp, colour = phylum)) +
+        ggplot(aes(x = year, y = cum_n_new_spp, colour = phylum)) +
         geom_line() +
-        facet_grid(fauna ~ database)  +
         xlim(c(1850, 2017))
+
+    if (facet)
+        res <- res + facet_grid(fauna ~ database)
+
+    res
 
 }
 

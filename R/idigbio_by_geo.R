@@ -178,7 +178,7 @@ cleanup_idigbio_raw <- function(idig) {
         mutate(cleaned_scientificname = cleanup_species_names(scientificname),
                is_binomial = is_binomial(cleaned_scientificname),
                rank = rep("phylum", nrow(.)),
-               taxon_name = `data.dwc:phylum`) %>%
+               taxon_name = tolower(`data.dwc:phylum`)) %>%
         distinct(uuid, .keep_all = TRUE) %>%
         add_worms()
 
@@ -289,14 +289,19 @@ make_heatmap_sampling <- function(gg_r, title) {
         xlab("Longitude") + ylab("Latitude")
 }
 
+idigbio_parse_year <- function(idig) {
+    idig %>%
+        dplyr::mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
+        dplyr::mutate(year = year(parsed_date)) %>%
+        dplyr::mutate(year = replace(year, year > 2016 | year < 1800, NA)) %>%
+        dplyr::filter(!is.na(year))
+}
+
 make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata", "Annelida", "Arthropoda", "Mollusca", "Porifera")) {
     idig %>%
         filter(is_marine == TRUE) %>%
-        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
-        mutate(year = year(parsed_date)) %>%
-        mutate(year = replace(year, year > 2016 | year < 1800, NA)) %>%
-        filter(!is.na(year)) %>%
-        mutate(`data.dwc:phylum` = capwords(`data.dwc:phylum`, strict = TRUE)) %>%
+        idigbio_parse_year() %>%
+        mutate(`data.dwc:phylum` = capitalize(`data.dwc:phylum`, strict = TRUE)) %>%
         filter(year >=  1900,
                `data.dwc:phylum` %in% to_keep) %>%
         group_by(year, institutioncode, `data.dwc:phylum`) %>%

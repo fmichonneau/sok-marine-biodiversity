@@ -24,19 +24,21 @@ model_sampling_effort <- function(id) {
 
 }
 
-calc_prop_singleton_species <- function(idig_dates) {
-    res <- idig_dates %>%
-        group_by(scientificname) %>%
+calc_prop_singleton_species <- function(idig) {
+    res <- idig %>%
+        group_by(worms_valid_name) %>%
         tally
 
     format_output(nrow(dplyr::filter(res, n == 1))/nrow(res)*100)
 }
 
-calc_prop_species_not_collected_since <- function(idig_dates, date) {
-    res <- idig_dates %>%
-        group_by(scientificname) %>%
+calc_prop_species_not_collected_since <- function(idig, max_year) {
+    res <- idig %>%
+        dplyr::filter(is_marine == TRUE) %>%
+        idigbio_parse_year() %>%
+        group_by(worms_valid_name) %>%
         summarize(
             last_collected = max(year, na.rm = TRUE)
         )
-    format_output(nrow(dplyr::filter(res, last_collected< date))/nrow(res)*100)
+    format_output(nrow(dplyr::filter(res, last_collected < max_year))/nrow(res)*100)
 }
