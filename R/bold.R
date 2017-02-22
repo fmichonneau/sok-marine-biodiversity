@@ -130,3 +130,38 @@ get_bold_bins <- function(gom, koz) {
         dplyr::filter(nzchar(gsub("\\s+", "", bins)))
 
 }
+
+
+bold_status <- function(idig) {
+    idig %>%
+        dplyr::mutate(taxon_name = tolower(taxon_name)) %>%
+        dplyr::group_by(taxon_name) %>%
+        dplyr::summarize(
+            p_has_bold = mean(n_bold_records > 0)
+        )
+}
+
+summary_bold_status <- function(gom_bold, koz_bold, idig_bold) {
+    dplyr::bind_rows(
+               gom = bold_status(gom_bold),
+               koz = bold_status(koz_bold),
+               all_idigbio = bold_status(idig_bold),
+               .id = "data_source"
+           ) %>%
+        dplyr::filter(
+                   taxon_name %in% c("annelida", "arthropoda",
+                                     "bryozoa",
+                                     "chordata", "cnidaria",
+                                     "echinodermata", "mollusca",
+                                     "porifera"
+                                     )
+               ) %>%
+            dplyr::mutate(taxon_name = capitalize(taxon_name)) %>%
+            ggplot(aes(x = reorder(taxon_name, p_has_bold), y = p_has_bold, fill = data_source)) +
+            geom_col(position = "dodge") +
+            xlab("") + ylab("Proportion of species with available DNA barcodes") +
+            scale_fill_viridis(discrete = TRUE,
+                               name = "Data source",
+                               labels = c("all iDigBio", "Gulf of Mexico", "Salish Sea")) +
+            coord_flip()
+}

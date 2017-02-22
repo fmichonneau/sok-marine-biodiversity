@@ -276,7 +276,7 @@ targets:
       height: 8
 
   figures/proportion_barcoded.pdf:
-    command: make_plot_proportion_barcoded(table_idigbio_species_sequenced, prop_plankton_with_species_match_by_phylum)
+    command: summary_bold_status(gom_bold, kozloff_bold, idigbio_bold)
     plot: true
 
   #table_records_per_species:
