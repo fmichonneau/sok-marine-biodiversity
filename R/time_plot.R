@@ -120,6 +120,20 @@ make_knowledge_through_time_idigbio <- function(idigbio) {
 
 }
 
+calc_n_spp_comparison <- function(idig_time) {
+    res <- idig_time %>%
+        group_by(year) %>%
+        summarize(
+            n_new_spp = sum(n_new_spp),
+            cum_n_new_spp = sum(cum_n_new_spp)
+        )
+
+    list(
+        n_spp_1970_1960 = res[res$year == 1970, "cum_n_new_spp"] - res[res$year == 1960, "cum_n_new_spp"],
+        n_spp_2017_2000 = res[res$year == max(res$year), "cum_n_new_spp"] - res[res$year == 2000, "cum_n_new_spp"]
+    )
+
+}
 
 filter_phyla <- function(ktt, n_min = 100) {
     ktt %>%
