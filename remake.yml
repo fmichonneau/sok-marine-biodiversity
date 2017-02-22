@@ -407,6 +407,8 @@ targets:
 
   prop_singleton_species:
     command: calc_prop_singleton_species(idigbio_species_list_dates)
+  stat_bold:
+    command: make_stat_bold(gom_bold, kozloff_bold, gom_worms, kozloff_worms)
 
   prop_species_not_collected_since_1950:
     command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1950))

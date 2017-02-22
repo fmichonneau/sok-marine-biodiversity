@@ -33,7 +33,7 @@ store_bold_specimens_per_species <- function(store_path = "data/bold_specimens_p
 ## the content of `col_nm` contains the species names to look up in
 ## BOLD. It returns a data frame.
 internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
-    bold_rcrd <- bold_bin <- numeric(nrow(res))
+    bold_rcrd <- bold_bin <- n_country <- n_coords <- numeric(nrow(res))
 
     if (show_progress) {
         to_find <- !store_bold_specimens_per_species()$exists(tolower(res[[col_nm]]))
@@ -49,9 +49,16 @@ internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
                                0, nrow(bold))
         bold_bin[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
                               0, length(unique(na.omit(bold$bin_uri))))
+        n_country[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
+                               0, sum(!is.na(bold$country)))
+        n_coords[i] <-  ifelse(is.null(bold) || inherits(bold, "character"),
+                               0, sum((!is.na(bold$lat)) & (!is.na(bold$lon))))
     }
     res$n_bold_records <- bold_rcrd
     res$n_bins <- bold_bin
+    res$n_country <- n_country
+    res$n_coords <- n_coords
+
     res
 }
 
@@ -68,4 +75,58 @@ find_bold_records <- function(worms, use_worms = TRUE) {
 
     internal_add_bold(res, col_nm) %>%
         dplyr::filter_(.dots = lazyeval::interp(~ !is.na(var.), var. = as.name(col_nm)))
+}
+
+
+make_stat_bold <- function(gom_bld, koz_bld, gom_wrm, koz_wrm) {
+    res <- dplyr::bind_rows(gom_bld, koz_bld) %>%
+        dplyr::distinct(worms_valid_name, .keep_all = TRUE)
+
+    bin_data <- get_bold_bins(gom_wrm, koz_wrm)
+
+    n_shared_bins <- bin_data %>%
+        group_by(bins) %>%
+        summarize(
+            n_shared_bins = n_distinct(worms_valid_name)
+        ) %>%
+        filter(n_shared_bins > 1) %>%
+        nrow()
+
+    n_spp_multi_bin <- bin_data %>%
+        group_by(worms_valid_name) %>%
+        summarize(
+            n_spp_multi_bin = n_distinct(bins)
+        ) %>%
+        filter(n_spp_multi_bin > 1) %>%
+        nrow()
+
+    list(
+        p_no_country = 1 - (sum(res$n_country)/sum(res$n_bold_records)),
+        p_no_coords = 1 - (sum(res$n_coords)/sum(res$n_bold_records)),
+        n_total_records = sum(res$n_bold_records),
+        n_shared_bins = n_shared_bins,
+        n_spp_multi_bin = n_spp_multi_bin,
+        n_bins = length(unique(bin_data$bins)),
+        n_spp = length(unique(bin_data$worms_valid_name))
+    )
+}
+
+get_bold_bins <- function(gom, koz) {
+    spp <- dplyr::bind_rows(gom, koz) %>%
+        dplyr::filter(is_marine == TRUE, !is.na(worms_id)) %>%
+        dplyr::distinct(worms_valid_name)
+
+    res <- lapply(spp$worms_valid_name, function(x) {
+        bd <- store_bold_specimens_per_species()$get(tolower(x))
+        if ((!is.null(bd)) && (!inherits(bd, "character")) && nrow(bd) > 0) {
+            bins <- unique(bd$bin_uri)
+            data.frame(worms_valid_name = rep(x, length(bins)),
+                       bins = bins, stringsAsFactors = FALSE)
+        } else
+            NULL
+    })
+
+    dplyr::bind_rows(res) %>%
+        dplyr::filter(nzchar(gsub("\\s+", "", bins)))
+
 }
