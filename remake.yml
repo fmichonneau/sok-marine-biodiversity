@@ -40,10 +40,9 @@ packages:
 
 
 targets:
+
   all:
-    depends:
-      - manuscript.pdf
-      - manuscript.docx
+    depends: manuscript.pdf
 
 
 ### Kozloff species list--------------------------------------------------------
@@ -108,25 +107,6 @@ targets:
     command: plot_spp_not_in_idigbio(kozloff_spp_records_idigbio)
     plot: true
 
-### ITIS common names of mollusks ----------------------------------------------
-
-  itis_common_names:
-    command: get_common_names()
-
-  itis_binomial:
-    command: binomial_common_names(itis_common_names)
-
-  itis_worms:
-    command: add_worms(itis_binomial)
-
-  itis_bold:
-    command: add_bold(itis_worms)
-
-  itis_idigbio:
-    command: fetch_spp_from_idigbio(itis_worms)
-
-  itis_spp_not_in_idigbio:
-    command: spp_not_in_idigbio(itis_worms, itis_idigbio)
 
 ### Gulf of Mexico species list ------------------------------------------------
 
@@ -191,6 +171,26 @@ targets:
     plot:
       height: 8
       width: 12
+
+### ITIS common names of mollusks ----------------------------------------------
+
+  itis_common_names:
+    command: get_common_names()
+
+  itis_binomial:
+    command: binomial_common_names(itis_common_names)
+
+  itis_worms:
+    command: add_worms(itis_binomial)
+
+  itis_bold:
+    command: find_bold_records(itis_worms)
+
+  itis_idigbio:
+    command: fetch_spp_from_idigbio(itis_worms)
+
+  itis_spp_not_in_idigbio:
+    command: spp_not_in_idigbio(itis_worms, itis_idigbio)
 
 ### IRL checklist --------------------------------------------------------------
   irl_species:
@@ -257,23 +257,34 @@ targets:
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
 
-### summary tables
-  table_idigbio_species_sequenced:
-    command: make_table_bold_records_per_idigbio_species(global=global_idigbio_species_with_bold_info, east_coast=east_idigbio_species_with_bold_info, west_coast=west_idigbio_species_with_bold_info, florida=florida_idigbio_species_with_bold_info)
+  idigbio_samples_through_time:
+    command: make_knowledge_through_time_idigbio(idigbio_records)
 
-  figures/plot_idigbio_species_sequenced.pdf:
-    command: make_plot_bold_records_per_idigbio_species(table_idigbio_species_sequenced)
+  figures/plot_idigbio_samples_through_time.pdf:
+    command: plot_cum_samples_through_time(idigbio_samples_through_time, facet=I(FALSE))
     plot: true
 
-  idigbio_species_list_dates:
-    command: assemble_idigbio_species_list_dates(global_idigbio_species_with_worms_info)
-    depends: idigbio_records
+  figures/plot_idigbio_species_through_time.pdf:
+    command: plot_cum_spp_through_time(idigbio_samples_through_time, facet=I(FALSE))
+    plot: true
 
-  figures/plot_idigbio_species_dates.pdf:
-    command: make_plot_idigbio_records_per_date(idigbio_species_list_dates)
-    plot:
-      width: 12
-      height: 8
+### summary tables
+  # table_idigbio_species_sequenced:
+  #   command: make_table_bold_records_per_idigbio_species(global=global_idigbio_species_with_bold_info, east_coast=east_idigbio_species_with_bold_info, west_coast=west_idigbio_species_with_bold_info, florida=florida_idigbio_species_with_bold_info)
+
+  # figures/plot_idigbio_species_sequenced.pdf:
+  #   command: make_plot_bold_records_per_idigbio_species(table_idigbio_species_sequenced)
+  #   plot: true
+
+  # idigbio_species_list_dates:
+  #   command: assemble_idigbio_species_list_dates(global_idigbio_species_with_worms_info)
+  #   depends: idigbio_records
+
+  # figures/plot_idigbio_species_dates.pdf:
+  #   command: make_plot_idigbio_records_per_date(idigbio_species_list_dates)
+  #   plot:
+  #     width: 12
+  #     height: 8
 
   figures/proportion_barcoded.pdf:
     command: summary_bold_status(gom_bold, kozloff_bold, idigbio_bold)
@@ -307,12 +318,12 @@ targets:
 
 
   data_map_sampling_effort:
-    command: make_data_map_sampling_effort()
-    depends: idigbio_records
+    command: make_data_map_sampling_effort(idigbio_records)
+    #depends: idigbio_records
 
   data_map_diversity:
-    command: make_data_map_diversity()
-    depends: idigbio_records
+    command: make_data_map_diversity(idigbio_records)
+    #depends: idigbio_records
 
   data_map_standardized_diversity:
     command: make_data_map_standardized_diversity(data_map_sampling_effort, data_map_diversity)
@@ -376,7 +387,7 @@ targets:
       height: 10
       width: 8
 
-### plot sampling effort -------------------------------------------------------
+### plot sampling effort (correlation between number of samples vs number species
 
   figures/plot_sampling_effort.pdf:
     command: plot_sampling_effort(data_map_standardized_diversity)
@@ -386,43 +397,53 @@ targets:
 
   in_text_stats:
     depends:
-      - average_prop_species_seq
-      - n_esus
-      - n_larvae
-      - prop_plankton_with_match
+      - stat_bold
       - prop_singleton_species
-      - prop_species_not_collected_since_1950
+      - prop_species_not_collected_since_1980
+      - n_spp_comparison
 
-  average_prop_species_seq:
-    command: calc_average_prop_species_seq(table_idigbio_species_sequenced)
+  # n_esus:
+  #   command: calc_n_esus()
 
-  n_esus:
-    command: calc_n_esus()
-
-  n_larvae:
-    command: calc_n_larvae()
+  # n_larvae:
+  #   command: calc_n_larvae()
 
   prop_plankton_with_match:
     command: calc_prop_plankton_with_species_match(plankton_ids)
 
-  prop_singleton_species:
-    command: calc_prop_singleton_species(idigbio_species_list_dates)
   stat_bold:
     command: make_stat_bold(gom_bold, kozloff_bold, gom_worms, kozloff_worms)
 
-  prop_species_not_collected_since_1950:
-    command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1950))
+  prop_singleton_species:
+    command: calc_prop_singleton_species(idigbio_records)
 
-  prop_species_not_collected_since_1990:
-    command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1990))
+  prop_species_not_collected_since_1980:
+    command: calc_prop_species_not_collected_since(idigbio_records, I(1980))
 
-### Manuscript -----------------------------------------------------------------
+  n_spp_comparison:
+    command: calc_n_spp_comparison(idigbio_samples_through_time)
+
+  #prop_species_not_collected_since_1990:
+  #  command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1990))
+
+### Manuscript --------------------------------------------------------------
+
+  text_figures:
+    depends:
+      - figures/map_sampling_effort.pdf
+      - figures/map_diversity.pdf
+      - figures/proportion_barcoded.pdf
+      - figures/plot_richness_per_db_koz.pdf
+      - figures/plot_richness_per_db_gom.pdf
 
   manuscript.md:
-    depends: in_text_stats
+    depends:
+      - in_text_stats
     knitr: true
 
   manuscript.pdf:
+    depends:
+      - text_figures
     command: render("manuscript.md")
 
   manuscript.docx:
