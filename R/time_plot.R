@@ -13,6 +13,15 @@ preprocess_gbif <- function(gom_gbif, koz_gbif) {
 ## }
 
 
+idigbio_add_year <- function(idig) {
+    idig %>%
+        filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
+        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z")),
+               year = year(parsed_date)) %>%
+        mutate(year = replace(year, year > 2017 | year < 1800, NA)) %>%
+        filter(!is.na(year))
+}
+
 preprocess_idigbio <- function(gom_idig, koz_idig) {
     res <- bind_rows(gom = gom_idig, koz = koz_idig, .id = "fauna")  %>%
         mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
@@ -74,12 +83,7 @@ make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
 
 make_knowledge_through_time_idigbio <- function(idigbio) {
 
-    idigbio <- idigbio %>%
-        filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
-        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z")),
-               year = year(parsed_date)) %>%
-        mutate(year = replace(year, year > 2017 | year < 1800, NA)) %>%
-        filter(!is.na(year))
+    idigbio <- idigbio_add_year(idigbio)
 
     spp_total <-  idigbio %>%
         group_by(clean_phylum) %>%
