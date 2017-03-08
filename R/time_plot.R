@@ -155,7 +155,9 @@ plot_cum_samples_through_time <- function(knowledge_through_time, facet = TRUE) 
         filter(phylum %in% phy_to_keep) %>%
         ggplot(aes(x = year, y = cum_n_samples, colour = phylum)) +
         geom_line() +
-        xlim(c(1850, 2017))
+        xlim(c(1850, 2017)) +
+        ylab("Cumulative Number of Samples") +
+        xlab("Year")
 
      if (facet)
         res <- res + facet_grid(fauna ~ database)
@@ -173,7 +175,9 @@ plot_cum_spp_through_time <- function(knowledge_through_time, facet = TRUE) {
                !is.na(cum_n_new_spp)) %>%
         ggplot(aes(x = year, y = cum_n_new_spp, colour = phylum)) +
         geom_line() +
-        xlim(c(1850, 2017))
+        xlim(c(1850, 2017)) +
+        ylab("Cumulative Number of Species") +
+        xlab("Year")
 
     if (facet)
         res <- res + facet_grid(fauna ~ database)
