@@ -42,7 +42,9 @@ packages:
 targets:
 
   all:
-    depends: manuscript.pdf
+    depends:
+      - manuscript.pdf
+      - manuscript.docx
 
 
 ### Kozloff species list--------------------------------------------------------
