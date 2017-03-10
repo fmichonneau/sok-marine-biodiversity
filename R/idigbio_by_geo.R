@@ -271,11 +271,11 @@ make_heatmap_sampling <- function(gg_r, title) {
     state_map <- fortify(state)
     ggplot() +
         geom_raster(data = gg_r, aes(x = x, y = y, fill = value)) +
-        scale_fill_gradient2(low = muted("blue"), mid = "gray", high = "red",
+        scale_fill_gradient2(low = "#5E98AE", mid = "#E3C94A", high = "#D5331E",
                              midpoint = log(quantile(seq(min(gg_r$value),
                                                          max(gg_r$value),
-                                                       by = 1), .05)),
-                             breaks = c(1, 10, 100, 1000), trans = "log") +
+                                                       by = 1), .02)),
+                             breaks = c(1, 10, 100, 1000, 5000), trans = "log") +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
