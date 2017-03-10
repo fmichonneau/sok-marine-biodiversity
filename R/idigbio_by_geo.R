@@ -257,7 +257,7 @@ make_data_map_standardized_diversity <- function(sampling, diversity) {
 }
 
 
-make_heatmap_sampling <- function(gg_r, title) {
+make_heatmap_sampling <- function(gg_r, title, limits = NULL) {
     state <- maps::map("world", fill = TRUE, plot = FALSE)
     ## convert the 'map' to something we can work with via geom_map
     IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
@@ -269,13 +269,24 @@ make_heatmap_sampling <- function(gg_r, title) {
 
     ## this does the magic for geom_map
     state_map <- fortify(state)
+
+    if (!is.null(limits)) {
+        limits <- c(1, limits)
+        mid_point <-  log(quantile(seq(min(gg_r$value),
+                                       max(limits),
+                                       by = 1), .02))
+    } else {
+        mid_point <-  log(quantile(seq(min(gg_r$value),
+                                       max(gg_r$value),
+                                       by = 1), .02))
+    }
+
     ggplot() +
         geom_raster(data = gg_r, aes(x = x, y = y, fill = value)) +
         scale_fill_gradient2(low = "#5E98AE", mid = "#E3C94A", high = "#D5331E",
-                             midpoint = log(quantile(seq(min(gg_r$value),
-                                                         max(gg_r$value),
-                                                       by = 1), .02)),
-                             breaks = c(1, 10, 100, 1000, 5000), trans = "log") +
+                             midpoint = mid_point,
+                             breaks = c(1, 10, 100, 1000, 5000), trans = "log",
+                             limits = limits) +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
@@ -300,10 +311,13 @@ make_heatmap_by_phylum <- function(idig, file = "figures/map_diversity_per_phylu
                      }, mc.cores = 8L)
     has_data <- !vapply(res, is.null, logical(1))
     res <- res[has_data]
+    max_limit <- dplyr::bind_rows(res) %>%
+        max(.$value)
     names(res) <- uniq_phyla[has_data]
     pmaps <- parallel::mclapply(seq_along(res),
                        function(gg) {
-                  make_heatmap_sampling(res[[gg]], names(res)[gg])
+                           make_heatmap_sampling(res[[gg]], names(res)[gg],
+                                                 limits = max_limit)
                   }, mc.cores = 8L)
     pdf(file = file)
     on.exit(dev.off())
