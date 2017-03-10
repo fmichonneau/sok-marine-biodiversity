@@ -289,6 +289,29 @@ make_heatmap_sampling <- function(gg_r, title) {
         xlab("Longitude") + ylab("Latitude")
 }
 
+make_heatmap_by_phylum <- function(idig, file) {
+    uniq_phyla <- unique(idig$clean_phylum)
+
+    res <- parallel::mclapply(uniq_phyla, function(p) {
+                         idig_sub <- idig[idig$clean_phylum == p, ]
+                         if (nrow(idig_sub) < 10) return(NULL)
+                         ggr <- make_data_map_diversity(idig_sub)
+                         ggr
+                     }, mc.cores = 8L)
+    has_data <- !vapply(res, is.null, logical(1))
+    res <- res[has_data]
+    names(res) <- uniq_phyla[has_data]
+    pmaps <- parallel::mclapply(seq_along(res),
+                       function(gg) {
+                  make_heatmap_sampling(res[[gg]], names(res)[gg])
+                  }, mc.cores = 8L)
+    pdf(file = file)
+    on.exit(dev.off())
+    for (i in seq_along(pmaps)) {
+       print( pmaps[[i]])
+    }
+}
+
 idigbio_parse_year <- function(idig) {
     idig %>%
         dplyr::mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
