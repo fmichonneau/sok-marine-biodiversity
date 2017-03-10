@@ -289,7 +289,7 @@ make_heatmap_sampling <- function(gg_r, title) {
         xlab("Longitude") + ylab("Latitude")
 }
 
-make_heatmap_by_phylum <- function(idig, file) {
+make_heatmap_by_phylum <- function(idig, file = "figures/map_diversity_per_phylum.pdf") {
     uniq_phyla <- unique(idig$clean_phylum)
 
     res <- parallel::mclapply(uniq_phyla, function(p) {
