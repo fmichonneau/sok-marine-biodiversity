@@ -60,25 +60,10 @@ read_asm_mammals <- function(file) {
     ## phenacomys ungava: only records are in Canada
 }
 
-fetch_mammals_from_idigbio <- function(mam) {
-    fields <- idigbio_fields()
-    split_species <- split_by_n(na.omit(mam$species_name), 10)
-    res <- lapply(split_species, function(x) {
-        qry <- list(scientificname = as.list(x),
-                    basisofrecord = "PreservedSpecimen"
-                    )
-        ridigbio::idig_search_records(rq = qry, fields = fields)
-    })
-    res <- dplyr::bind_rows(res) %>%
-        dplyr::distinct(uuid, .keep_all = TRUE) %>%
-        dplyr::rename(decimallatitude = geopoint.lat,
-                      decimallongitude = geopoint.lon)
-}
-
 
 asm_mammals_idigbio <- function(mam) {
-    res <- fetch_mammals_from_idigbio(mam)
-    res
+    internal_fetch_idigbio(mam$species_name, 10) %>%
+        rename(scientificname = species_name)
 }
 
 find_bold_mammals <- function(mam_asm) {
@@ -90,23 +75,9 @@ find_bold_mammals <- function(mam_asm) {
 }
 
 asm_mammals_idigbio_summary <- function(mam_asm, mam_idig) {
-
-    idig <- mam_idig %>%
-        filter(country == "united states") %>%
-        group_by(scientificname) %>%
-        tally() %>%
-        rename(n_idigbio = n)
-
-    asm <- mam_asm %>%
-        mutate(scientificname = tolower(species_name)) %>%
-        select(order, family, scientificname) %>%
-        left_join(idig, by = "scientificname")
-
-    asm
+    summarize_raw_idigbio(mam_idig, mam_asm)
 }
 
-asm_summary <- function(mam_idig, mam_bold) {
-    mam_bold <- rename(mam_bold,
-                       scientificname = species_name)
-    dplyr::left_join(mam_idig, mam_bold, by = "scientificname")
+make_idig_bold_summary <- function(idig, bold) {
+    dplyr::left_join(idig, bold, by = "species_name")
 }
