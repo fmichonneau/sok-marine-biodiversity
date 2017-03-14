@@ -15,19 +15,30 @@ idigbio_fields <- function() {
       'geopoint')
 }
 
-fetch_spp_from_idigbio <- function(wrm) {
-    stopifnot(inherits(wrm, "data.frame"))
-    stopifnot("worms_valid_name" %in% names(wrm))
+internal_fetch_idigbio <- function(spp, split_size) {
+    assertthat::assert_that(assertthat::is.number(split_size))
+    assertthat::assert_that(is.character(spp))
+
     fields <- idigbio_fields()
-    split_species <- split_by_n(na.omit(wrm$worms_valid_name), 150)
+    split_species <- split_by_n(na.omit(spp), split_size)
     res <- lapply(split_species, function(x) {
-        qry <- list(scientificname = as.list(x))
+        qry <- list(scientificname = as.list(x),
+                    basisofrecord = "PreservedSpecimen"
+                    )
         ridigbio::idig_search_records(rq = qry, fields = fields)
     })
     res <- dplyr::bind_rows(res) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::rename(decimallatitude = geopoint.lat,
                       decimallongitude = geopoint.lon)
+    res
+}
+
+
+fetch_spp_from_idigbio <- function(wrm) {
+    stopifnot(inherits(wrm, "data.frame"))
+    stopifnot("worms_valid_name" %in% names(wrm))
+    internal_fetch_idigbio(wrm$worms_valid_name, split_size = 150)
 }
 
 extract_species_from_idigbio <- function(koz_idig, koz) {
@@ -39,6 +50,28 @@ extract_species_from_idigbio <- function(koz_idig, koz) {
     dplyr::left_join(res, koz, by = c("cleaned_scientificname" = "worms_valid_name"))
 }
 
+summarize_raw_idigbio <- function(idig, list_spp) {
+    assertthat::assert_that(inherits(idig, "data.frame"))
+    assertthat::assert_that(exists("country", idig))
+    assertthat::assert_that(exists("scientificname", idig))
+    assertthat::assert_that(exists("species_name", list_spp))
+    assertthat::assert_that(exists("order", list_spp))
+    assertthat::assert_that(exists("family", list_spp))
+
+    idig <- idig %>%
+        filter(country == "united states") %>%
+        group_by(scientificname) %>%
+        tally() %>%
+        rename(n_idigbio = n)
+
+    asm <- mam_asm %>%
+        mutate(scientificname = tolower(species_name)) %>%
+        select(order, family, scientificname) %>%
+        left_join(idig, by = "scientificname")
+
+    asm
+
+}
 
 calc_prop_spp_not_in_idigbio <- function(not_idig) {
     sum(is.na(not_idig$uuid_lst))/nrow(not_idig)
