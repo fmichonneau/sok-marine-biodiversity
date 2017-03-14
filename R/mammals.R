@@ -63,7 +63,7 @@ read_asm_mammals <- function(file) {
 
 asm_mammals_idigbio <- function(mam) {
     internal_fetch_idigbio(mam$species_name, 10) %>%
-        rename(scientificname = species_name)
+        rename(species_name = scientificname)
 }
 
 find_bold_mammals <- function(mam_asm) {

@@ -53,23 +53,21 @@ extract_species_from_idigbio <- function(koz_idig, koz) {
 summarize_raw_idigbio <- function(idig, list_spp) {
     assertthat::assert_that(inherits(idig, "data.frame"))
     assertthat::assert_that(exists("country", idig))
-    assertthat::assert_that(exists("scientificname", idig))
+    assertthat::assert_that(exists("species_name", idig))
     assertthat::assert_that(exists("species_name", list_spp))
     assertthat::assert_that(exists("order", list_spp))
     assertthat::assert_that(exists("family", list_spp))
 
     idig <- idig %>%
         filter(country == "united states") %>%
-        group_by(scientificname) %>%
+        group_by(species_name) %>%
         tally() %>%
         rename(n_idigbio = n)
 
-    asm <- mam_asm %>%
+    list_spp %>%
         mutate(scientificname = tolower(species_name)) %>%
-        select(order, family, scientificname) %>%
-        left_join(idig, by = "scientificname")
-
-    asm
+        select(order, family, species_name) %>%
+        left_join(idig, by = "species_name")
 
 }
 
