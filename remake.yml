@@ -239,8 +239,20 @@ targets:
     command: find_bold_mammals(mammals_species_asm)
 
   mammals_asm_summary:
-    command: asm_summary(mammals_asm_idigbio, mammals_asm_bold)
+    command: make_idig_bold_summary(mammals_asm_idigbio, mammals_asm_bold)
+### American Amphibians --------------------------------------------------------
 
+  amphibian_species:
+    command: list_us_amphibians()
+
+  amphibian_idigbio:
+    command: fetch_amphibian_idigbio(amphibian_species)
+
+  amphibian_bold:
+    command: fetch_amphibian_bold(amphibian_species)
+
+  amphibian_summary:
+    command: make_idig_bold_summary(amphibian_idigbio, amphibian_bold)
 
 ### get species list from the US using iDigBio ---------------------------------
 
