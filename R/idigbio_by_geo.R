@@ -207,6 +207,15 @@ select_koz_from_idigbio <- function(idig) {
 }
 
 
+## Generate a data frame for species that occur in iDigBio but are not
+## listed in the Gulf of Mexico checklist or the Kozloff
+diff_list_idigbio <- function(idig, check_list) {
+    idig %>%
+        dplyr::anti_join(check_list, by = "worms_valid_name") %>%
+        dplyr::filter(is_binomial == TRUE, is_marine == TRUE)##  %>%
+        ## dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
+        ## dplyr::count(clean_phylum)
+}
 
 n_spp_from_idigbio <- function(idigbio_records) {
     idigbio_records %>%
@@ -376,3 +385,59 @@ make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata"
         facet_wrap(~ `data.dwc:phylum`) +
         scale_fill_viridis(discrete = TRUE)
 }
+
+
+
+compare_records <- function(idig_gom, gom_wrm,
+                            idig_koz, koz_wrm) {
+    diff_gom <- diff_list_idigbio(idig_gom, gom_wrm)
+    diff_koz <- diff_list_idigbio(idig_koz, koz_wrm)
+
+    gom_wrm <- dplyr::mutate(gom_wrm, `data.dwc:phylum` = tolower(taxon_name))
+    koz_wrm <- dplyr::mutate(koz_wrm, `data.dwc:phylum` = tolower(taxon_name))
+
+    res <- purrr::map_df(
+                      list(diff_gom = diff_gom,
+                           list_gom = gom_wrm,
+                           idig_gom = idig_gom,
+                           diff_koz = diff_koz,
+                           list_koz = koz_wrm,
+                           idig_koz = idig_koz),
+                      n_spp_from_idigbio, .id = "source") %>%
+        tidyr::spread(source, n_spp) %>%
+        dplyr::mutate(
+                   ymin_list_gom = -diff_gom,
+                   ymax_list_gom = list_gom - diff_gom,
+                   ymin_list_koz = -diff_koz,
+                   ymax_list_koz = list_koz - diff_koz
+               ) %>%
+        dplyr::select(phylum, starts_with("y"), starts_with("idig")) %>%
+        dplyr::mutate(ymin_idig_gom = rep(0, nrow(.)),
+                      ymin_idig_koz = rep(0, nrow(.))) %>%
+        dplyr::rename(ymax_idig_gom = idig_gom,
+                      ymax_idig_koz = idig_koz) %>%
+        tidyr::gather(source, n_spp, -phylum) %>%
+        tidyr::extract(source, into = c("coord", "data_source", "location"),
+                       regex = "([a-z]+)_([a-z]+)_([a-z]+)") %>%
+        tidyr::spread(coord, n_spp)
+
+    res
+}
+
+plot_compare_records <- function(rec) {
+
+    rec <- rec[(!(is.na(rec$ymin) & is.na(rec$ymax))), ]
+
+    to_keep <- rec$phylum[rec$ymax > 100]
+    to_keep <- unique(to_keep)
+    rec <- rec[complete.cases(rec), ]
+    rec <- rec[rec$phylum %in% to_keep, ]
+    rec$phylum <- factor(rec$phylum)
+    ggplot(rec, aes(x = phylum, ymin = ymin, ymax = ymax, color = data_source)) +
+        geom_linerange(size = 5, position = position_dodge(width = .35)) +
+        coord_flip() +
+        facet_grid(. ~ location)
+
+}
+
+

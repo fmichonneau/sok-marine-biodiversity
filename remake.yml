@@ -271,8 +271,22 @@ targets:
   idigbio_kozloff_records:
     command: select_koz_from_idigbio(idigbio_records)
 
+  idigbio_not_in_gom:
+    command: diff_list_idigbio(idigbio_gom_records, gom_worms)
+
+  idigbio_not_in_kozloff:
+    command: diff_list_idigbio(idigbio_kozloff_records, kozloff_worms)
+
   idigbio_bold:
     command: find_bold_records(idigbio_records)
+
+
+  compare_idigbio_records:
+    command: compare_records(idigbio_gom_records, gom_worms, idigbio_kozloff_records, kozloff_worms)
+
+  figures/compare_idigbio_records.pdf:
+    command: plot_compare_records(compare_idigbio_records)
+    plot: true
 
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
