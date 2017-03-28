@@ -77,6 +77,19 @@ get_classification_store <- function(irl_checklist) {
     })
 }
 
+worms_phylum_by_wid <- function(wid) {
+    vapply(wid, function(x) {
+        stopifnot(is.character(x), length(x) == 1L)
+        if (is.na(x)) return("")
+        tmp_res <- store_worms_classification()$get(x)
+        message(x, " --- ", appendLF = FALSE)
+        res <- tmp_res[[1]]
+        res <- res$name[res$rank == "Phylum"]
+        message(res)
+        as.character(res)
+    },  character(1))
+}
+
 
 rescue_store <- function(store) {
     all_content <- store$list()
