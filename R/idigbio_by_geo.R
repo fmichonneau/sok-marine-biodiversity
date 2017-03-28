@@ -186,6 +186,28 @@ cleanup_idigbio_raw <- function(idig) {
 }
 
 
+## select only the the records from the Gulf of Mexico from all the
+## iDigBio records. It might be more efficient to do it earlier in the
+## pipeline, but doing it there ensures that we are working with
+## cleaned/pre-processed data.
+select_gom_from_idigbio <- function(idig) {
+    ## coordinates used by Felder et al, but in our case, it will
+    ## cover a smaller area as the iDigBio query currently only
+    ## applies to EEZ waters
+    res <- idig[(idig$geopoint.lon > -100 & idig$geopoint.lon < -80.5) &
+                (idig$geopoint.lat > 17 & idig$geopoint.lat < 31), ]
+    ## remove Jacksonville area points
+    res[!(res$geopoint.lon > -82 & res$geopoint.lat > 27), ]
+}
+
+
+select_koz_from_idigbio <- function(idig) {
+    idig[(idig$geopoint.lon > -125 & idig$geopoint.lon < -122) &
+        (idig$geopoint.lat > 47 & idig$geopoint.lat < 49), ]
+}
+
+
+
 plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
     n_spp <- idigbio_records %>%
         dplyr::filter(!is.na(is_marine),

@@ -265,6 +265,12 @@ targets:
   idigbio_records:
     command: cleanup_idigbio_raw(idigbio_records_raw)
 
+  idigbio_gom_records:
+    command: select_gom_from_idigbio(idigbio_records)
+
+  idigbio_kozloff_records:
+    command: select_koz_from_idigbio(idigbio_records)
+
   idigbio_bold:
     command: find_bold_records(idigbio_records)
 
