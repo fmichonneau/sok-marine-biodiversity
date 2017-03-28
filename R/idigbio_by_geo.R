@@ -208,8 +208,8 @@ select_koz_from_idigbio <- function(idig) {
 
 
 
-plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
-    n_spp <- idigbio_records %>%
+n_spp_from_idigbio <- function(idigbio_records) {
+    idigbio_records %>%
         dplyr::filter(!is.na(is_marine),
                       is_marine == TRUE,
                       worms_valid_name != "not in worms") %>%
@@ -218,6 +218,10 @@ plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
         summarize(
             n_spp = n_distinct(worms_valid_name)
         )
+}
+
+plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
+    n_spp <- n_spp_from_idigbio(idigbio_records)
 
     n_bold <- idigbio_bold %>%
         mutate(phylum = tolower(taxon_name)) %>%
