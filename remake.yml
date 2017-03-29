@@ -121,6 +121,9 @@ targets:
   gom_worms:
     command: add_worms(gom_species)
 
+  gom_iucn:
+    command: add_iucn_status(gom_worms)
+
   gom_bold:
     command: find_bold_records(gom_worms)
 
