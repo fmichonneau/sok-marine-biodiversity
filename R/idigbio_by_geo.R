@@ -406,16 +406,16 @@ compare_records <- function(idig_gom, gom_wrm,
                       n_spp_from_idigbio, .id = "source") %>%
         tidyr::spread(source, n_spp) %>%
         dplyr::mutate(
-                   ymin_list_gom = -diff_gom,
-                   ymax_list_gom = list_gom - diff_gom,
-                   ymin_list_koz = -diff_koz,
-                   ymax_list_koz = list_koz - diff_koz
+                   ymin_idig_gom = -diff_gom,
+                   ymax_idig_gom = idig_gom - diff_gom,
+                   ymin_idig_koz = -diff_koz,
+                   ymax_idig_koz = idig_koz - diff_koz
                ) %>%
-        dplyr::select(phylum, starts_with("y"), starts_with("idig")) %>%
-        dplyr::mutate(ymin_idig_gom = rep(0, nrow(.)),
-                      ymin_idig_koz = rep(0, nrow(.))) %>%
-        dplyr::rename(ymax_idig_gom = idig_gom,
-                      ymax_idig_koz = idig_koz) %>%
+        dplyr::select(phylum, starts_with("y"), starts_with("list")) %>%
+        dplyr::mutate(ymin_list_gom = rep(0, nrow(.)),
+                      ymin_list_koz = rep(0, nrow(.))) %>%
+        dplyr::rename(ymax_list_gom = list_gom,
+                      ymax_list_koz = list_koz) %>%
         tidyr::gather(source, n_spp, -phylum) %>%
         tidyr::extract(source, into = c("coord", "data_source", "location"),
                        regex = "([a-z]+)_([a-z]+)_([a-z]+)") %>%
@@ -433,11 +433,10 @@ plot_compare_records <- function(rec) {
     rec <- rec[complete.cases(rec), ]
     rec <- rec[rec$phylum %in% to_keep, ]
     rec$phylum <- factor(rec$phylum)
+
     ggplot(rec, aes(x = phylum, ymin = ymin, ymax = ymax, color = data_source)) +
         geom_linerange(size = 5, position = position_dodge(width = .35)) +
         coord_flip() +
         facet_grid(. ~ location)
 
 }
-
-
