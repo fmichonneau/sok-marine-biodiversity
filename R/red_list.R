@@ -19,15 +19,7 @@ store_red_list <- function(store_path = "data/store_red_list") {
 
 get_iucn_info <- function(name) {
     iucn_res <- store_red_list()$get(tolower(name))
-    if (!is.null(nrow(iucn_res))) {
-        tibble::tibble(
-                    worms_valid_name = iucn_res[["name"]][1],
-                    iucn_species_name = iucn_res[["result"]][1, "scientific_name"],
-                    iucn_marine_system = iucn_res[["result"]][1, "is_marine"],
-                    iucn_category = iucn_res[["result"]][1, "category"],
-                    iunc_criteria = iunc_res[["results"]][1, "criteria"]
-                )
-    } else {
+    if (is.null(iucn_res) || is.null(nrow(iucn_res))) {
         tibble::tibble(
                     worms_valid_name = iucn_res[["name"]][1],
                     iucn_species_name = NA,
@@ -35,6 +27,15 @@ get_iucn_info <- function(name) {
                     iucn_category = NA,
                     iunc_criteria = NA
                 )
+    } else {
+        tibble::tibble(
+                    worms_valid_name = iucn_res[["name"]][1],
+                    iucn_species_name = iucn_res[["result"]][1, "scientific_name"],
+                    iucn_marine_system = iucn_res[["result"]][1, "is_marine"],
+                    iucn_category = iucn_res[["result"]][1, "category"],
+                    iunc_criteria = iunc_res[["results"]][1, "criteria"]
+                )
+
     }
 
 }
