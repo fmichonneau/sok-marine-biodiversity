@@ -1,6 +1,6 @@
 
 fetch_hook_red_list <- function(key, namespace) {
-    if (is.na(key)) return(NULL)
+    if (is.na(key)) return(list(name = key, result = NULL))
     is_lower_case(key)
     message("Getting info about ", key, appendLF = FALSE)
     res <- try(rredlist::rl_search(name = key), silent = TRUE)
