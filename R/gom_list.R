@@ -118,21 +118,24 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
         dplyr::group_by(taxon_name) %>%
         dplyr::summarize(
             n_idigbio = sum(!is.na(n_idigbio)),
-            n_idigbio_in_us = sum(!is.na(n_idigbio_in_us))
+            n_idigbio_in_us = sum(!is.na(n_idigbio_in_us)),
+            n_idigbio_in_gom = sum(!is.na(n_idigbio_in_gom))
         )
 
     obis_ <- obis_db %>%
         dplyr::group_by(taxon_name) %>%
         dplyr::summarize(
             n_obis = sum(!is.na(n_obis)),
-            n_obis_in_us = sum(!is.na(n_obis_in_us))
+            n_obis_in_us = sum(!is.na(n_obis_in_us)),
+            n_obis_in_gom = sum(!is.na(n_obis_in_gom))
         )
 
     gbif_ <- gbif_db %>%
         group_by(taxon_name) %>%
         summarize(
             n_gbif = sum(!is.na(n_gbif)),
-            n_gbif_in_us = sum(!is.na(n_gbif_in_us))
+            n_gbif_in_us = sum(!is.na(n_gbif_in_us)),
+            n_gbif_in_gom = sum(!is.na(n_gbif_in_gom))
         )
 
     bold_db %>%
@@ -144,7 +147,6 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
         dplyr::left_join(idig_, by = "taxon_name") %>%
         dplyr::left_join(obis_, by = "taxon_name") %>%
         dplyr::left_join(gbif_, by = "taxon_name") %>%
-
         dplyr::filter(taxon_name %in% c("Arthropoda", "Mollusca", "Annelida",
                                         "Cnidaria", "Echinodermata", "Platyhelminthes",
                                         "Porifera", "Bryozoa", "Nematoda", "Chordata"
@@ -154,16 +156,39 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
 
 plot_richness_per_db <- function(smry_db, data_source) {
     smry_db %>%
-        dplyr::mutate(n_idigbio_diff = n_idigbio - n_idigbio_in_us,
-                      n_obis_diff = n_obis - n_obis_in_us,
-                      n_gbif_diff = n_gbif - n_gbif_in_us) %>%
-        dplyr::select(-n_idigbio, -n_obis, -n_gbif) %>%
+        dplyr::mutate(n_idigbio_us_diff = n_idigbio - n_idigbio_in_us,
+                      n_obis_us_diff = n_obis - n_obis_in_us,
+                      n_gbif_us_diff = n_gbif - n_gbif_in_us,
+                      n_idigbio_gom_diff = n_idigbio_in_us - n_idigbio_in_gom,
+                      n_obis_gom_diff = n_obis_in_us - n_obis_in_gom,
+                      n_gbif_gom_diff = n_gbif_in_us - n_gbif_in_gom
+                      ) %>%
+        dplyr::select(-n_idigbio, -n_obis, -n_gbif,
+                      -n_idigbio_in_us, -n_obis_in_us, -n_gbif_in_us
+                      ) %>%
         tidyr::gather(source_n_spp, n_spp, -taxon_name) %>%
-        dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>%
+        dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>% #write_csv("/tmp/nb.csv"); return(NULL)
         ggplot(aes(x = factor(source_db,
                               levels = rev(c("n_total", "n_obis", "n_gbif", "n_idigbio", "n_barcoded")),
-                              labels = c("BOLD", "iDigBio", "GBIF", "OBIS", "Total")),
-                              y = n_spp, fill = source_n_spp)) +
+                              labels = c("BOLD", "iDigBio", "GBIF", "OBIS", "Total")
+                              ),
+                   y = n_spp,
+                   fill = factor(source_n_spp,
+                                 levels = rev(c("n_total",
+                                                "n_obis_in_gom", "n_obis_gom_diff", "n_obis_us_diff",
+                                                "n_gbif_in_gom", "n_gbif_gom_diff", "n_gbif_us_diff",
+                                                "n_idigbio_in_gom", "n_idigbio_gom_diff", "n_idigbio_us_diff",
+                                                "n_barcoded"
+                                                )),
+                                 labels = rev(c("Total",
+                                                "OBIS in GoM", "OBIS in US EEZ", "OBIS global",
+                                                "GBIF in GoM", "GBIF in US EEZ", "GBIF global",
+                                                "iDigBio in GoM", "iDigBio in US EEZ", "iDigBio global",
+                                                "BOLD"
+                                                ))
+                                 )
+                   )
+               ) +
             geom_bar(stat = "identity", position = "stack") +
         facet_grid(factor(taxon_name,
                           levels = c("Arthropoda", "Mollusca", "Annelida", "Cnidaria", "Echinodermata",
@@ -171,87 +196,6 @@ plot_richness_per_db <- function(smry_db, data_source) {
         xlab("Phylum") + ylab("Number of species") +
         labs(title = "Number of species in databases", subtitle = data_source,
              caption = "(only marine taxa)") +
-        scale_fill_viridis(option = "inferno", discrete = TRUE) +
-        coord_flip() #+
-        #theme(panel.spacing = unit(-.1, "lines"))
-}
-
-
-## plot_proportion_per_db <- function(smry_db) {
-##     # TODO
-##     smry_
-
-## }
-
-#gom_not_in_idigbio <- function(gom)
-
-##
-if (FALSE) {
-
-
-
-    n_spp_gom <- length(unique(gom_worms$worms_valid_name))
-    n_spp_gom_bold <- sum(gom_bold$n_bold_records > 0)
-    n_spp_gom_idigbio <- sum(!is.na(gom_spp_not_in_idigbio$n_idigbio))
-    n_spp_gom_bold_idigbio <- sum(gom_bold$worms_valid_name[gom_bold$n_bold_records > 0] %in%
-                                  gom_spp_not_in_idigbio$worms_valid_name[!is.na(gom_spp_not_in_idigbio$n_idigbio)])
-    fit1 <- eulerr::eulerr(c("GOM" = n_spp_gom,
-                             "BOLD" = n_spp_gom_bold,
-                             "idigbio" = n_spp_gom_idigbio,
-                             "GOM&BOLD" = n_spp_gom_bold,
-                             "GOM&idigbio" = n_spp_gom_idigbio,
-                             "GOM&idigbio&BOLD" = n_spp_gom_bold_idigbio))
-    plot(fit1)
-
-}
-
-
-## test caching
-if (FALSE) {
-    ## first let's figure out a reasonable resolution
-    eez_shp <- rgdal::readOGR(dsn = "data-raw/USA-EEZ", "eez")
-    eez_df <- ggplot2::fortify(eez_shp, region = "geoname")
-
-    pt_grid <- expand.grid(
-        x = seq(-130, -70, by = .1),
-        y = seq(22, 48, by = .1)
-    )
-    ggplot() +
-        geom_map(data = eez_df, map = eez_df, aes(x = long, y = lat, map_id = id)) +
-        geom_point(data = pt_grid, aes(x = x, y = y), color = "red", size = .2) +
-        coord_quickmap(xlim = c(-84, -80), ylim = c(23, 27))
-
-    ## let's use 1000 random points
-    rnd <- gom_idigbio %>%
-        sample_n(50) %>%
-        mutate(
-            lat = round(decimallatitude, 1),
-            long = round(decimallongitude, 1)
-        )
-
-    ## map_usa_ <- remake::fetch("map_usa")
-
-
-    lawn_direct <- function() {
-        res <- is_in_eez(rnd, map_usa_)
-        rnd$is_in_eez <- rnd$uuid %in% res$features$properties$uuid
-        rnd
-    }
-
-    lawn_cached <- function() {
-        rnd <- rnd %>%
-            rowwise() %>%
-            mutate(
-                is_in_eez = eez_coords_store$get(paste(lat, long, sep = "|"))
-            )
-        rnd
-    }
-
-    microbenchmark::microbenchmark(
-                        lawn_direct(),
-                        lawn_cached(),
-                        n = 10
-                    )
-
-
+        scale_fill_viridis(name = "Data source", option = "inferno", discrete = TRUE) +
+        coord_flip()
 }

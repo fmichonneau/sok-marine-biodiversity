@@ -32,9 +32,41 @@ is_in_eez_records <- function(filtered_data, map_usa, coords_store = eez_coords_
                         dplyr::bind_rows()
 
     res_lawn$is_in_eez <- res_lawn$coord_key %in% res_is_in_eez$coord_key
-    res_lawn
+    dplyr::select(res_lawn, -lat, -long, -coord_key)
 }
 
+
+is_in_gulf_of_mexico <- function(lon, lat) {
+    if (is.null(lon) | is.null(lat))
+        stop("NULL values for the coordinates. Incorrect column specified?")
+    ## coordinates used by Felder et al, but in our case, it will
+    ## cover a smaller area as the iDigBio query currently only
+    ## applies to EEZ waters
+    res <- (lon > -100 & lon < -80.5) &
+        (lat > 17 & lat < 31)
+    ## remove Jacksonville area points
+    res[lon > -82 & lat > 27] <- FALSE
+    res
+}
+
+is_in_pnw <- function(lon, lat) {
+    if (is.null(lon) | is.null(lat))
+        stop("NULL values for the coordinates. Incorrect column specified?")
+    (lon > -125 & lon < -122) &
+        (lat > 47 & lat < 49)
+}
+
+is_in_gulf_of_mexico_records <- function(idig) {
+    ## TODO -- this is quick as it potentially includes records that
+    ## don't have correct GPS coordinates and are in land. So, we use
+    ## the intersect of being both in the EEZ and in the GOM. If we
+    ## extend the iDigBio search outside de US EEZ to also include
+    ## Mexico and Cuba waters, then this will need to be modified.
+    idig$is_in_gom <- is_in_gulf_of_mexico(idig$decimallongitude,
+                                           idig$decimallatitude) &
+        idig$is_in_eez
+    idig
+}
 
 ### this approach was way too slow!
 

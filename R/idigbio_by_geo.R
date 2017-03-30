@@ -191,19 +191,12 @@ cleanup_idigbio_raw <- function(idig) {
 ## pipeline, but doing it there ensures that we are working with
 ## cleaned/pre-processed data.
 select_gom_from_idigbio <- function(idig) {
-    ## coordinates used by Felder et al, but in our case, it will
-    ## cover a smaller area as the iDigBio query currently only
-    ## applies to EEZ waters
-    res <- idig[(idig$geopoint.lon > -100 & idig$geopoint.lon < -80.5) &
-                (idig$geopoint.lat > 17 & idig$geopoint.lat < 31), ]
-    ## remove Jacksonville area points
-    res[!(res$geopoint.lon > -82 & res$geopoint.lat > 27), ]
+    idig[is_in_gulf_of_mexico(idig$geopoint.lon, idig$geopoint.lat), ]
 }
 
 
 select_koz_from_idigbio <- function(idig) {
-    idig[(idig$geopoint.lon > -125 & idig$geopoint.lon < -122) &
-        (idig$geopoint.lat > 47 & idig$geopoint.lat < 49), ]
+    idig[is_in_pnw(idig$geopoint.lon, idig$geopoint.lat), ]
 }
 
 

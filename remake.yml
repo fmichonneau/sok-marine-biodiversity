@@ -22,6 +22,7 @@ packages:
   - tidyr
   - lubridate
   - purrr
+  - lazyeval
   ## data visualization
   - ggplot2
   - viridis
@@ -54,6 +55,9 @@ targets:
 
   kozloff_worms:
     command: add_worms(kozloff_species)
+
+  kozloff_iucn:
+    command: add_iucn_status(kozloff_worms)
 
   kozloff_bold:
     command: find_bold_records(kozloff_worms)
@@ -137,8 +141,11 @@ targets:
   gom_idigbio_in_us:
     command: is_in_eez_records(gom_idigbio, map_usa)
 
+  gom_idigbio_in_gom:
+    command: is_in_gulf_of_mexico_records(gom_idigbio_in_us)
+
   gom_spp_records_idigbio:
-    command: get_n_records_in_db(gom_worms, gom_idigbio_in_us, field_name=I("n_idigbio"))
+    command: get_n_records_in_db(gom_worms, gom_idigbio_in_gom, field_name=I("n_idigbio"), region=I("gom"))
 
   ## OBIS ----------------------------------------------------------------------
   data/gom_obis.feather:
@@ -150,8 +157,11 @@ targets:
   gom_obis_in_us:
     command: is_in_eez_records(gom_obis, map_usa)
 
+  gom_obis_in_gom:
+    command: is_in_gulf_of_mexico_records(gom_obis_in_us)
+
   gom_spp_records_obis:
-    command: get_n_records_in_db(gom_worms, gom_obis_in_us, field_name=I("n_obis"))
+    command: get_n_records_in_db(gom_worms, gom_obis_in_gom, field_name=I("n_obis"))
 
   ## GBIF ----------------------------------------------------------------------
   data/gom_gbif.feather:
@@ -163,8 +173,11 @@ targets:
   gom_gbif_in_us:
     command: is_in_eez_records(gom_gbif, map_usa)
 
+  gom_gbif_in_gom:
+    command: is_in_gulf_of_mexico_records(gom_gbif_in_us)
+
   gom_spp_records_gbif:
-    command: get_n_records_in_db(gom_worms, gom_gbif_in_us, field_name=I("n_gbif"))
+    command: get_n_records_in_db(gom_worms, gom_gbif_in_gom, field_name=I("n_gbif"))
 
   ## figures -------------------------------------------------------------------
   figures/gom_not_in_idigbio.pdf:
@@ -282,7 +295,6 @@ targets:
 
   idigbio_bold:
     command: find_bold_records(idigbio_records)
-
 
   compare_idigbio_records:
     command: compare_records(idigbio_gom_records, gom_worms, idigbio_kozloff_records, kozloff_worms)
