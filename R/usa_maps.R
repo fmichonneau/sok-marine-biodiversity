@@ -68,6 +68,13 @@ is_in_gulf_of_mexico_records <- function(idig) {
     idig
 }
 
+is_in_pnw_records <- function(idig) {
+    idig$is_in_pnw <- is_in_pnw(idig$decimallongitude,
+                                idig$decimallatitude)
+    idig
+}
+
+
 ### this approach was way too slow!
 
 ## fetch_eez_coords <- function(key, namespace) {

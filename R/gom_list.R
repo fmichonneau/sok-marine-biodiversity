@@ -112,30 +112,56 @@ standardize_gom <- function(gom_spp) {
                    "taxon_name")
 }
 
-summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
+summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region = c("gom", "pnw")) {
+
+    region <- match.arg(region)
 
     idig_ <- idig_db %>%
         dplyr::group_by(taxon_name) %>%
-        dplyr::summarize(
-            n_idigbio = sum(!is.na(n_idigbio)),
-            n_idigbio_in_us = sum(!is.na(n_idigbio_in_us)),
-            n_idigbio_in_gom = sum(!is.na(n_idigbio_in_gom))
+        dplyr::summarize_(
+                   .dots = setNames(
+                       list(
+                           "sum(!is.na(n_idigbio))",
+                           "sum(!is.na(n_idigbio_in_us))",
+                           lazyeval::interp("sum(!is.na(n_idigbio_in_region))",
+                                            n_idigbio_in_region = as.name(paste0("n_idigbio_in_", region)))
+                       ),
+                       c("n_idigbio", "n_idigbio_in_us",
+                         paste0("n_idigbio_in_", region)
+                         )
+                   )
         )
 
     obis_ <- obis_db %>%
         dplyr::group_by(taxon_name) %>%
-        dplyr::summarize(
-            n_obis = sum(!is.na(n_obis)),
-            n_obis_in_us = sum(!is.na(n_obis_in_us)),
-            n_obis_in_gom = sum(!is.na(n_obis_in_gom))
+       dplyr::summarize_(
+                   .dots = setNames(
+                       list(
+                           "sum(!is.na(n_obis))",
+                           "sum(!is.na(n_obis_in_us))",
+                           lazyeval::interp("sum(!is.na(n_obis_in_region))",
+                                            n_obis_in_region = as.name(paste0("n_obis_in_", region)))
+                       ),
+                       c("n_obis", "n_obis_in_us",
+                         paste0("n_obis_in_", region)
+                         )
+                   )
         )
 
     gbif_ <- gbif_db %>%
         group_by(taxon_name) %>%
-        summarize(
-            n_gbif = sum(!is.na(n_gbif)),
-            n_gbif_in_us = sum(!is.na(n_gbif_in_us)),
-            n_gbif_in_gom = sum(!is.na(n_gbif_in_gom))
+        dplyr::summarize_(
+                   .dots = setNames(
+                       list(
+                           "sum(!is.na(n_gbif))",
+                           "sum(!is.na(n_gbif_in_us))",
+                           lazyeval::interp("sum(!is.na(n_gbif_in_region))",
+                                            n_gbif_in_region = as.name(paste0("n_gbif_in_", region)))
+                       ),
+                       c("n_gbif", "n_gbif_in_us",
+                         paste0("n_gbif_in_", region)
+                         )
+                   )
         )
 
     bold_db %>%
@@ -154,15 +180,28 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db) {
 
 }
 
-plot_richness_per_db <- function(smry_db, data_source) {
+plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw")) {
+    region <- match.arg(region)
+
+    full_region <- c(gom = "GoM", pnw = "PNW")
+
     smry_db %>%
-        dplyr::mutate(n_idigbio_us_diff = n_idigbio - n_idigbio_in_us,
-                      n_obis_us_diff = n_obis - n_obis_in_us,
-                      n_gbif_us_diff = n_gbif - n_gbif_in_us,
-                      n_idigbio_gom_diff = n_idigbio_in_us - n_idigbio_in_gom,
-                      n_obis_gom_diff = n_obis_in_us - n_obis_in_gom,
-                      n_gbif_gom_diff = n_gbif_in_us - n_gbif_in_gom
-                      ) %>%
+        dplyr::mutate(
+                   n_idigbio_us_diff = n_idigbio - n_idigbio_in_us,
+                   n_obis_us_diff = n_obis - n_obis_in_us,
+                   n_gbif_us_diff = n_gbif - n_gbif_in_us) %>%
+        dplyr::mutate_(.dots = setNames(list(
+                           lazyeval::interp("n_idigbio_in_us - n_idigbio_in_region",
+                                            n_idigbio_in_region = as.name(paste0("n_idigbio_in_", region))),
+                           lazyeval::interp("n_obis_in_us - n_obis_in_region",
+                                            n_obis_in_region = as.name(paste0("n_obis_in_", region))),
+                           lazyeval::interp("n_gbif_in_us - n_gbif_in_region",
+                                            n_gbif_in_region = as.name(paste0("n_gbif_in_", region)))
+                           ), c(paste0("n_idigbio_", region, "_diff"),
+                                paste0("n_obis_", region, "_diff"),
+                                paste0("n_gbif_", region, "_diff")
+                                ))
+                       )  %>%
         dplyr::select(-n_idigbio, -n_obis, -n_gbif,
                       -n_idigbio_in_us, -n_obis_in_us, -n_gbif_in_us
                       ) %>%
@@ -174,18 +213,22 @@ plot_richness_per_db <- function(smry_db, data_source) {
                               ),
                    y = n_spp,
                    fill = factor(source_n_spp,
-                                 levels = rev(c("n_total",
-                                                "n_obis_in_gom", "n_obis_gom_diff", "n_obis_us_diff",
-                                                "n_gbif_in_gom", "n_gbif_gom_diff", "n_gbif_us_diff",
-                                                "n_idigbio_in_gom", "n_idigbio_gom_diff", "n_idigbio_us_diff",
-                                                "n_barcoded"
-                                                )),
-                                 labels = rev(c("Total",
-                                                "OBIS in GoM", "OBIS in US EEZ", "OBIS global",
-                                                "GBIF in GoM", "GBIF in US EEZ", "GBIF global",
-                                                "iDigBio in GoM", "iDigBio in US EEZ", "iDigBio global",
-                                                "BOLD"
-                                                ))
+                                 levels = rev(
+                                     gsub("XXX", region,
+                                          c("n_total",
+                                            "n_obis_in_XXX", "n_obis_XXX_diff", "n_obis_us_diff",
+                                            "n_gbif_in_XXX", "n_gbif_XXX_diff", "n_gbif_us_diff",
+                                            "n_idigbio_in_XXX", "n_idigbio_XXX_diff", "n_idigbio_us_diff",
+                                            "n_barcoded"
+                                            ))),
+                                 labels = rev(
+                                     gsub("XXX", full_region[region],
+                                          c("Total",
+                                            "OBIS in XXX", "OBIS in US EEZ", "OBIS global",
+                                            "GBIF in XXX", "GBIF in US EEZ", "GBIF global",
+                                            "iDigBio in XXX", "iDigBio in US EEZ", "iDigBio global",
+                                            "BOLD"
+                                            )))
                                  )
                    )
                ) +
