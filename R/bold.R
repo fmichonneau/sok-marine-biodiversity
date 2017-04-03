@@ -62,14 +62,23 @@ internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
     res
 }
 
-find_bold_records <- function(worms, use_worms = TRUE) {
+preprocess_bold <- function(worms, use_worms) {
     if (use_worms) {
         res <- keep_marine_taxa(worms)
-        col_nm <- "worms_valid_name"
     } else {
         res <- worms %>%
             dplyr::filter(is_binomial == TRUE) %>%
             dplyr::disctint(cleaned_scientificname, .keep_all = TRUE)
+    }
+}
+
+find_bold_records <- function(worms, use_worms = TRUE) {
+
+    res <- preprocess_bold(worms, use_worms)
+
+    if (use_worms)
+        col_nm <- "worms_valid_name"
+    else {
         col_nm <- "cleaned_scientificname"
     }
 
@@ -164,4 +173,36 @@ summary_bold_status <- function(gom_bold, koz_bold, idig_bold) {
                                name = "Data source",
                                labels = c("all iDigBio", "Gulf of Mexico", "Salish Sea")) +
             coord_flip()
+}
+
+
+project_contribution <- function(db, use_worms, col_nm) {
+
+    db <- preprocess_bold(db, use_worms)
+
+
+    res <- as.list(unique(db[[col_nm]])) %>%
+        map_df(function(x) {
+            .r <- store_bold_specimens_per_species()$get(tolower(x))
+            if (is.null(.r) || inherits(.r, "character"))
+                tibble(species_name = character(0),
+                       projects = character(0),
+                       n =  integer(0))
+            else {
+                .r <- .r %>%
+                    filter(!grepl("Mined from GenBank", institution_storing))
+
+                ## we use the prefix of the processid in BOLD to
+                ## figure out the contribution of each project to the
+                ## total number of barcodes.
+                tibble(
+                        projects = gsub("([A-Z]{3,5}).+", "\\1", .r$processid)
+                    ) %>%
+                    dplyr::count(projects) %>%
+                    dplyr::bind_cols(tibble(species_name = rep(x, nrow(.)))) %>%
+                    dplyr::select(species_name, projects, n)
+
+            }
+        })
+    res
 }
