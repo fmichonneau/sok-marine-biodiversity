@@ -106,12 +106,13 @@ fill_store_idigbio_by_geo <- function(map_usa, use_cache) {
         store_idigbio_by_geo(coords)$get(q))
 }
 
-cleanup_idigbio_raw <- function(idig) {
+cleanup_idigbio_raw <- function(idig, map_usa) {
 
     ## We only want:
     ## - unique records
     ## - invertebrates
     ## - marine
+    ## - within the EEZ boundaries
 
     ## First let's get the phylum names from the Gulf of Mexico list,
     ## that will take care of plants, fungi, and records with no
@@ -180,7 +181,12 @@ cleanup_idigbio_raw <- function(idig) {
                rank = rep("phylum", nrow(.)),
                taxon_name = tolower(`data.dwc:phylum`)) %>%
         distinct(uuid, .keep_all = TRUE) %>%
-        add_worms()
+        add_worms()  %>%
+        dplyr::rename(decimallatitude = geopoint.lat,
+                      decimallongitude = geopoint.lon)
+
+    res <- is_in_eez_records(res, map_usa) %>%
+        dplyr::filter(is_in_eez == TRUE)
 
     res
 }
@@ -191,12 +197,12 @@ cleanup_idigbio_raw <- function(idig) {
 ## pipeline, but doing it there ensures that we are working with
 ## cleaned/pre-processed data.
 select_gom_from_idigbio <- function(idig) {
-    idig[is_in_gulf_of_mexico(idig$geopoint.lon, idig$geopoint.lat), ]
+    idig[is_in_gulf_of_mexico(idig$decimallongitude, idig$decimallatitude), ]
 }
 
 
 select_koz_from_idigbio <- function(idig) {
-    idig[is_in_pnw(idig$geopoint.lon, idig$geopoint.lat), ]
+    idig[is_in_pnw(idig$decimallongitude, idig$decimallatitude), ]
 }
 
 
@@ -246,8 +252,8 @@ us_raster <- function()
 
 make_data_map_sampling_effort <- function(idig) {
     us_raster <- us_raster()
-    pts <- SpatialPoints(data.frame(lon = idig$geopoint.lon,
-                                    lat = idig$geopoint.lat))
+    pts <- SpatialPoints(data.frame(lon = idig$decimallongitude,
+                                    lat = idig$decimallatitude))
     r <- rasterize(pts, us_raster, fun = "count")
     gg_r <- as.data.frame(as(r, "SpatialPixelsDataFrame"))
     colnames(gg_r) <- c("value", "x", "y")
@@ -258,7 +264,7 @@ make_data_map_sampling_effort <- function(idig) {
 make_data_map_diversity <- function(idig) {
     us_raster <- us_raster()
     raster_cell <- mapply(function(x, y) cellFromXY(us_raster, c(x, y)),
-                          idig$geopoint.lon, idig$geopoint.lat)
+                          idig$decimallongitude, idig$decimallatitude)
 
     idig_r <- data.frame(idig, rastercell = raster_cell) %>%
         group_by(rastercell) %>%

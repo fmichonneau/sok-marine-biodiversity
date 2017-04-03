@@ -290,7 +290,7 @@ targets:
     command: fill_store_idigbio_by_geo(map_usa, use_cache=I(TRUE))
 
   idigbio_records:
-    command: cleanup_idigbio_raw(idigbio_records_raw)
+    command: cleanup_idigbio_raw(idigbio_records_raw, map_usa)
 
   idigbio_gom_records:
     command: select_gom_from_idigbio(idigbio_records)
