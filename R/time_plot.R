@@ -17,7 +17,7 @@ idigbio_add_year <- function(idig) {
     idig %>%
         mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z")),
                year = year(parsed_date)) %>%
-        mutate(year = replace(year, year > 2017 | year < 1800, NA)) %>%
+        mutate(year = replace(year, year > 2017 | year < 1850, NA)) %>%
         filter(!is.na(year))
 }
 
