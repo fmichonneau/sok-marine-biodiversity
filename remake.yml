@@ -27,6 +27,7 @@ packages:
   - ggplot2
   - viridis
   - scales
+  - hrbrthemes
   ## APIs
   - taxizesoap
   - ridigbio
@@ -286,14 +287,20 @@ targets:
   map_usa:
     command: get_map_usa("data-raw/USA-EEZ/eez.shp")
 
+  felder_gom_map:
+    command: get_felder_gom_map("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
+
   idigbio_records_raw:
     command: fill_store_idigbio_by_geo(map_usa, use_cache=I(TRUE))
 
   idigbio_records:
     command: cleanup_idigbio_raw(idigbio_records_raw, map_usa)
 
+  idigbio_gom_records_raw:
+    command: fill_store_idigbio_by_geo(felder_gom_map, use_cache=I(TRUE))
+
   idigbio_gom_records:
-    command: select_gom_from_idigbio(idigbio_records)
+    command: cleanup_idigbio_raw(idigbio_gom_records_raw, felder_gom_map)
 
   idigbio_kozloff_records:
     command: select_koz_from_idigbio(idigbio_records)
@@ -330,6 +337,8 @@ targets:
   figures/plot_idigbio_species_through_time.pdf:
     command: plot_cum_spp_through_time(idigbio_samples_through_time, facet=I(FALSE))
     plot: true
+
+
 
 ### summary tables
   # table_idigbio_species_sequenced:
