@@ -19,7 +19,7 @@ list_us_amphibians <- function() {
     )
 }
 
-fetch_amphibian_idigbio <- function(amph) {
+fetch_counts_idigbio <- function(amph) {
     ## We can't use the same logic as for mammals or other
     ## invertebrates, as some species have more than 100000, so until
     ## iDigBio fixes the bug, there is no easy way to get the full
@@ -35,6 +35,6 @@ fetch_amphibian_idigbio <- function(amph) {
         dplyr::select(order, family, species_name, count)
 }
 
-fetch_amphibian_bold <- function(amph) {
+fetch_vert_bold <- function(amph) {
     internal_add_bold(amph, "species_name")
 }

@@ -268,27 +268,38 @@ targets:
   mammals_asm_summary:
     command: make_idig_bold_summary(mammals_asm_idigbio, mammals_asm_bold)
 
-    ### American Amphibians ----------------------------------------------------
+  ### American Amphibians ----------------------------------------------------
 
   amphibian_species:
     command: list_us_amphibians()
 
   amphibian_idigbio:
-    command: fetch_amphibian_idigbio(amphibian_species)
+    command: fetch_counts_idigbio(amphibian_species)
 
   amphibian_bold:
-    command: fetch_amphibian_bold(amphibian_species)
+    command: fetch_vert_bold(amphibian_species)
 
   amphibian_summary:
     command: make_idig_bold_summary(amphibian_idigbio, amphibian_bold)
+
+  ### American Birds -----------------------------------------------------------
+
+  bird_species:
+    command: list_us_birds(file="data-raw/vertebrates/NACC_list_species_birds.csv")
+
+  bird_idigbio:
+    command: fetch_counts_idigbio(bird_species)
+
+  bird_bold:
+    command: fetch_vert_bold(bird_species)
+
+  bird_summary:
+    command: make_idig_bold_summary(bird_idigbio, bird_bold)
 
 ### get species list from the US using iDigBio ---------------------------------
 
   map_usa:
     command: get_map_usa("data-raw/USA-EEZ/eez.shp")
-
-  felder_gom_map:
-    command: get_felder_gom_map("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
 
   idigbio_records_raw:
     command: fill_store_idigbio_by_geo(map_usa, use_cache=I(TRUE))
@@ -296,17 +307,8 @@ targets:
   idigbio_records:
     command: cleanup_idigbio_raw(idigbio_records_raw, map_usa)
 
-  idigbio_gom_records_raw:
-    command: fill_store_idigbio_by_geo(felder_gom_map, use_cache=I(TRUE))
-
-  idigbio_gom_records:
-    command: cleanup_idigbio_raw(idigbio_gom_records_raw, felder_gom_map)
-
   idigbio_kozloff_records:
     command: select_koz_from_idigbio(idigbio_records)
-
-  idigbio_not_in_gom:
-    command: diff_list_idigbio(idigbio_gom_records, gom_worms)
 
   idigbio_not_in_kozloff:
     command: diff_list_idigbio(idigbio_kozloff_records, kozloff_worms)
@@ -316,6 +318,26 @@ targets:
 
   idigbio_bold:
     command: find_bold_records(idigbio_records)
+
+  ## Gulf of Mexico ------------------------------------------------------------
+
+  felder_gom_map:
+    command: get_felder_gom_map("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
+
+  idigbio_gom_records_raw:
+    command: fill_store_idigbio_by_geo(felder_gom_map, use_cache=I(TRUE), cellsize=I(.2))
+
+  idigbio_gom_records:
+    command: cleanup_idigbio_raw(idigbio_gom_records_raw, felder_gom_map)
+
+  idigbio_not_in_gom:
+    command: diff_list_idigbio(idigbio_gom_records, gom_worms)
+
+  obis_gom_records_raw:
+    command: fill_store_obis_by_geo(felder_gom_map, use_cache=I(TRUE))
+
+
+  ## Synthesis -----------------------------------------------------------------
 
   compare_idigbio_records:
     command: compare_records(idigbio_gom_records, gom_worms, idigbio_kozloff_records, kozloff_worms)
