@@ -1,7 +1,8 @@
 ## generate the geographic grid from a SpatialPolygons object
-get_bounding_box <- function(map) {
+get_bounding_box <- function(map, cellsize = .5) {
     box <- sp::bbox(map)
-    gt <- sp::GridTopology(c(box[1,1], box[2,1]), rep(.5, 2), rep(100, 2))
+    gt <- sp::GridTopology(c(box[1,1], box[2,1]),
+                           cellsize = rep(cellsize, 2), rep(100, 2))
     gr <- as(as(sp::SpatialGrid(gt), "SpatialPixels"), "SpatialPolygons")
     proj4string(gr) <- CRS(proj4string(map))
     it <- rgeos::gIntersects(map, gr, byid = TRUE)
@@ -26,7 +27,7 @@ bb_to_df <- function(bb) {
 ## from the map of the EEZ from the USA, create a data frame that
 ## contains the coordinates for a grid that spans the area. This grid
 ## will be used to do an iDigBio search by geography
-generate_bounding_boxes <- function(map_usa) {
+generate_bounding_boxes <- function(map_usa, cellsize = .5) {
 
     map_usa_sp_df <- geojson_sp(map_usa)
 
@@ -48,8 +49,8 @@ generate_bounding_boxes <- function(map_usa) {
                     ID = 1)
             ), proj4string = CRS(proj4string(map_usa_sp_df)))
 
-    east_bb <- get_bounding_box(map_usa_east_sp)
-    west_bb <- get_bounding_box(map_usa_west_sp)
+    east_bb <- get_bounding_box(map_usa_east_sp, cellsize = cellsize)
+    west_bb <- get_bounding_box(map_usa_west_sp, cellsize = cellsize)
     east_df <- bb_to_df(east_bb)
     west_df <- bb_to_df(west_bb)
 
@@ -92,9 +93,9 @@ store_idigbio_by_geo <- function(coords, store_path = "data/idigbio_by_geo") {
 }
 
 ## for all the coordinates of the bounding boxes, find the iDigBio
-## records they contains
-fill_store_idigbio_by_geo <- function(map_usa, use_cache) {
-    bb_eez <- generate_bounding_boxes(map_usa)
+## records they contain
+fill_store_idigbio_by_geo <- function(map_usa, use_cache, cellsize = .5) {
+    bb_eez <- generate_bounding_boxes(map_usa, cellsize = cellsize)
     coords <- coords_to_query(bb_eez)
 
     ## if use_cache=FALSE, destroy the storr before fetching the
