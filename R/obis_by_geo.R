@@ -19,7 +19,7 @@ fetch_hook_obis_by_geo <- function(key, namespace) {
         c(coords_qry$xmin, coords_qry$ymin)
     )
     wkt_coords <- wellknown::polygon(coords_poly, fmt = 3)
-    robis::checklist(geometry = wkt_coords)
+    robis::occurrence(geometry = wkt_coords)
 }
 
 
