@@ -34,10 +34,20 @@ fill_store_obis_by_geo <- function(map_geojson, cellsize = .5, use_cache = TRUE)
     if (!use_cache)
         store_obis_by_geo()$destroy()
 
-    lapply(map_grid$key, function(k) {
-        message("Getting info for key: ", k, " ...", appendLF = FALSE)
-        store_obis_by_geo()$get(k)
-        message("DONE.")
+    res <- lapply(map_grid$key, function(k) {
+        .r <- store_obis_by_geo()$get(k)
+        if (nrow(.r) > 0) {
+            .r <- .r[tolower(.r$phylum) %in% gom_phyla() &
+                     (!tolower(.r$class) %in% chordata_classes_to_rm()), ]
+        } else {
+           NULL
+        }
     })
+    dplyr::bind_rows(res) %>%
+        dplyr::mutate(cleaned_scientificname = tolower(cleanup_species_names(scientificName)),
+                      is_binomial = is_binomial(cleaned_scientificname),
+                      taxon_name = tolower(phylum))
+}
+
 
 }
