@@ -239,6 +239,6 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
         xlab("Phylum") + ylab("Number of species") +
         labs(title = "Number of species in databases", subtitle = data_source,
              caption = "(only marine taxa)") +
-        scale_fill_viridis(name = "Data source", option = "inferno", discrete = TRUE) +
+        scale_fill_viridis(name = "Data source", option = "viridis", discrete = TRUE) +
         coord_flip()
 }
