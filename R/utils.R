@@ -10,7 +10,7 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     ## remove trailing spaces
     nm <- gsub("\\s+$", "", nm)
     ## remove cf., aff. and ?
-    nm <- gsub("\\s(cf\\.|aff\\.|\\?|(ex\\.? gr\\.))\\s", " ", nm)
+    nm <- gsub("\\s(cf\\.|f\\.|aff\\.|\\?|(ex\\.? gr\\.))\\s", " ", nm)
     ## remove subgenus
     if (rm_subgenus)
         nm <- gsub("\\s?\\([^)]*\\)\\s?", " ", nm)

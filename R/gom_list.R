@@ -79,7 +79,7 @@ get_gom_species <- function(file) {
     ## ... and quotation marks
     res$Taxon <- gsub("\\\"|\\\'|“|”", "", res$Taxon)
     ## Second extract the first part of the Taxon name
-    taxa <- gsub("([A-z]+\\s?(\\(([A-z]+|\\?)\\)\\s)?((cf\\.|(spp?\\. ex\\. gr\\.)|\\?)\\s)?[a-z]+(\\sf\\.[a-z]+)?),?\\s(.+)", "\\1", res$Taxon)
+    taxa <- gsub("([A-z]+\\s?(\\(([A-z]+|\\?)\\)\\s)?((cf\\.|f\\.|(spp?\\. ex\\. gr\\.)|\\?)\\s)?[a-z]+(\\sf\\.[a-z]+)?),?\\s(.+)", "\\1", res$Taxon)
     taxa <- gsub(", species indet\\.", "", taxa)
     taxa <- gsub(" = .+$", "", taxa)
     taxa[grepl("Genus and", taxa)] <- NA_character_
