@@ -118,10 +118,7 @@ cleanup_idigbio_raw <- function(idig, map_usa) {
     ## First let's get the phylum names from the Gulf of Mexico list,
     ## that will take care of plants, fungi, and records with no
     ## specified phylum
-    taxa <- names(gom_taxa_to_keep())
-    taxa <- strsplit(taxa, "-")
-    taxa <- vapply(taxa, function(x) x[2], character(1))
-    taxa <- tolower(unique(taxa))
+    taxa <- gom_phyla()
 
     res <- idig %>%
         dplyr::bind_rows()
@@ -133,8 +130,8 @@ cleanup_idigbio_raw <- function(idig, map_usa) {
                                       "tolower(`data.dwc:family`)"),
                                  c("clean_phylum", "clean_class", "clean_family")))
 
-    arth_classes_to_rm <- c("arachnida", "myriapoda", "protura", "symphyla", "chilopoda",
-                            "diplopoda", "hexapoda", "insecta", "trilobita", "unknown")
+    arth_classes_to_rm <- arthropod_classes_to_rm()
+
 
     arth_family_to_rm <- res_ %>%
         filter(clean_phylum == "arthropoda" & clean_class %in% arth_classes_to_rm) %>%
@@ -143,13 +140,7 @@ cleanup_idigbio_raw <- function(idig, map_usa) {
         .[[1]] %>%
         na.omit()
 
-    chordata_classes_to_rm <- c("actinopteri", "actinopterygii",
-                                "cephalaspidomorphi", "agnatha",
-                                "amphibia", "aves", "chondrichthyes",
-                                "chondrichthys", "elasmobranchii",
-                                "holocephali", "mammalia", "myxini",
-                                "osteichthyes", "osteichthyes",
-                                "petromyzonti", "pisces", "reptilia", "unknown")
+    chordata_classes_to_rm <- chordata_classes_to_rm()
 
 
     chordata_family_to_rm <- res_ %>%
@@ -159,11 +150,7 @@ cleanup_idigbio_raw <- function(idig, map_usa) {
         .[[1]] %>%
         na.omit()
 
-    chordata_family_to_rm <- c(chordata_family_to_rm, "anarhichantidae", "anthiidae",
-                               "belontiidae", "branchiostegidae", "denticipitidae",
-                               "doliolunidae", "eleotrididae", "fritillariidae",
-                               "gobioididae", "grammistidae", "icelidae", "idiacanthidae",
-                               "macrorhamphosidae", "zaniolepidae", "zaniolepididae")
+    chordata_family_to_rm <- c(chordata_family_to_rm, chordata_families_to_rm())
 
     res. <- res_ %>%
         ## only the phyla found in the gulf of mexico list
