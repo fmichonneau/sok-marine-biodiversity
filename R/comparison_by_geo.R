@@ -38,10 +38,10 @@ compare_with_geo <- function(spp_list, geo_list) {
                                     "cnidaria", "chordata", "bryozoa", "arthropoda",
                                     "annelida")) %>%
         tidyr::spread(data_source, n) %>%
-        dplyr::mutate(ymin_geo = 0,
-                      ymin_list = -not_in_list,
-                      ymax_geo = geo_list,
-                      ymax_list = spp_list - not_in_list) %>%
+        dplyr::mutate(ymin_geo = -not_in_geo,
+                      ymin_list = 0,
+                      ymax_geo = geo_list - not_in_geo,
+                      ymax_list = spp_list) %>%
         dplyr::select(phylum, starts_with("y")) %>%
         tidyr::gather(xx, n_spp, -phylum) %>%
         tidyr::separate(xx, into = c("ym", "list_orig"), sep = "_") %>%
