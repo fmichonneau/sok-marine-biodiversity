@@ -55,12 +55,11 @@ generate_upsetr_csv <- function(..., file) {
         dplyr::mutate_if(is.integer, funs(if_else(is.na(.), 0L, 1L))) %>%
         readr::write_csv(path = file)
 
+    file
 }
 
 
-if (FALSE) {
-
-    upset(xx, order.by="freq")
-
-
+plot_upsetr <- function(csv_file, ...) {
+    readr::read_csv(csv_file) %>%
+        UpSetR::upset(order.by="freq", ...)
 }

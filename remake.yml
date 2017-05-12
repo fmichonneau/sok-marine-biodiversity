@@ -28,6 +28,7 @@ packages:
   - viridis
   - scales
   - hrbrthemes
+  - UpSetR
   ## APIs
   - taxizesoap
   - ridigbio
@@ -330,18 +331,17 @@ targets:
   idigbio_gom_records:
     command: cleanup_idigbio_raw(idigbio_gom_records_raw, felder_gom_map)
 
-  figures/compare_idigbio_records.pdf:
-    command: compare_with_geo(gom_worms, idigbio_gom_records)
-    plot: true
-
   obis_gom_records_raw:
     command: fill_store_obis_by_geo(felder_gom_map, use_cache=I(TRUE))
 
-  obis_gom_records_worms:
+  obis_gom_records:
     command: add_worms(obis_gom_records_raw)
 
-  figures/compare_obis_records.pdf:
-    command: compare_with_geo(gom_worms, obis_gom_records_worms)
+  data/compare_database_coverage.csv:
+    command: generate_upsetr_csv(list = gom_worms, idigbio = idigbio_gom_records, obis = obis_gom_records)
+
+  figures/gom_database_coverage.pdf:
+    command: plot_upsetr("data/compare_database_coverage.csv")
     plot: true
 
   ## Synthesis -----------------------------------------------------------------
