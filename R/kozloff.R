@@ -1,6 +1,5 @@
 get_kozloff_species <- function(koz_raw) {
-    readxl::read_excel(koz_raw, col_types = rep("text", 43)) %>%
-        .[, c(1:3, 6:25)] %>%
+    readxl::read_excel(koz_raw) %>%
         dplyr::select(
             counter = Counter,
             phylum = Phylum,
