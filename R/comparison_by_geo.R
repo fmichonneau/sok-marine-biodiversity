@@ -34,10 +34,12 @@ compare_with_geo <- function(spp_list, geo_list) {
 generate_upsetr_csv <- function(..., file) {
 
     has_bold_record <- function(worms_sp) {
-        r <- store_bold_specimens_per_species()$get(tolower(worms_sp))
-        if (is.null(r) || inherits(r, "character"))
-            0L
-        else nrow(r)
+        vapply(worms_sp, function(w) {
+            r <- store_bold_specimens_per_species()$get(tolower(w))
+            if (is.null(r) || inherits(r, "character"))
+                0L
+            else nrow(r)
+        }, integer(1))
     }
 
     d <- list(...)
@@ -52,7 +54,7 @@ generate_upsetr_csv <- function(..., file) {
         tidyr::spread(database, n) %>%
         dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::mutate(bold = has_bold_record(worms_valid_name)) %>%
-        dplyr::mutate_if(is.integer, funs(if_else(is.na(.), 0L, 1L))) %>%
+        dplyr::mutate_if(is.integer, funs(if_else(is.na(.) | . == 0L, 0L, 1L))) %>%
         readr::write_csv(path = file)
 
     file

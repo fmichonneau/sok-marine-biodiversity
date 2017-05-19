@@ -308,11 +308,11 @@ targets:
   idigbio_records:
     command: cleanup_idigbio_raw(idigbio_records_raw, map_usa)
 
-  idigbio_kozloff_records:
+  kozloff_idigbio_records:
     command: select_koz_from_idigbio(idigbio_records)
 
   idigbio_not_in_kozloff:
-    command: diff_list_idigbio(idigbio_kozloff_records, kozloff_worms)
+    command: diff_list_idigbio(kozloff_idigbio_records, kozloff_worms)
 
   idigbio_iucn:
     command: add_iucn_status(idigbio_records)
@@ -338,10 +338,34 @@ targets:
     command: add_worms(obis_gom_records_raw)
 
   data/compare_database_coverage.csv:
-    command: generate_upsetr_csv(list = gom_worms, idigbio = idigbio_gom_records, obis = obis_gom_records)
+    command: generate_upsetr_csv(list = gom_worms, idigbio = idigbio_gom_records, obis = obis_gom_records, file="data/compare_database_coverage.csv")
 
   figures/gom_database_coverage.pdf:
     command: plot_upsetr("data/compare_database_coverage.csv")
+    plot: true
+
+  ## Salish Sea ----------------------------------------------------------------
+
+  kozloff_map:
+    command: get_kozloff_map()
+
+  idigbio_kozloff_records_raw:
+    command: fill_store_idigbio_by_geo(kozloff_map, use_cache=I(TRUE))
+
+  idigbio_kozloff_records:
+    command: cleanup_idigbio_raw(idigbio_kozloff_records_raw, kozloff_map)
+
+  obis_kozloff_records_raw:
+    command: fill_store_obis_by_geo(kozloff_map, use_cache=I(TRUE))
+
+  obis_kozloff_records:
+    command: add_worms(obis_kozloff_records_raw)
+
+  data/compare_database_coverage_kozloff.csv:
+    command: generate_upsetr_csv(list = kozloff_worms, idigbio = idigbio_kozloff_records, obis = obis_kozloff_records, file = "data/compare_database_coverage_kozloff.csv")
+
+  figures/kozloff_database_coverage.pdf:
+    command: plot_upsetr("data/compare_database_coverage_kozloff.csv")
     plot: true
 
   ## Synthesis -----------------------------------------------------------------
