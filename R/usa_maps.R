@@ -7,15 +7,19 @@ get_map_usa <- function(file) {
 
 
 get_felder_gom_map <- function(file) {
-    gom_b <- rgdal::readOGR("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
+    gom_b <- rgdal::readOGR(file)
     wkt_string <- "POLYGON((-83.3 25.2, -80.4 25.2, -81.1 23.2, -83.3 23.01, -83.3 25.2))"
     east_gom <- rgeos::readWKT(wkt_string)
     proj4string(east_gom) <- proj4string(gom_b)
-
     rgeos::gUnion(gom_b, east_gom) %>%
         geojsonio::geojson_json()
 }
 
+get_kozloff_map <- function() {
+    wkt_string <- "POLYGON((-129.43 51.29, -126.9 51.29, -122.2 49.18, -122.2 47, -124.3 46.9, -129.43 51.29))"
+    rgeos::readWKT(wkt_string, p4s = "+proj=longlat +datum=WGS84") %>%
+        geojsonio::geojson_json()
+}
 
 is_in_eez <- function(points, map_usa) {
     ##message("Sit back, relax, it's going to be a while...")
