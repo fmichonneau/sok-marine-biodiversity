@@ -3,8 +3,8 @@ get_bounding_box <- function(map, cellsize = .5) {
     box <- sp::bbox(map)
     gt <- sp::GridTopology(c(box[1,1], box[2,1]),
                            cellsize = rep(cellsize, 2), rep(100, 2))
-    gr <- as(as(sp::SpatialGrid(gt), "SpatialPixels"), "SpatialPolygons")
-    proj4string(gr) <- CRS(proj4string(map))
+    gr <- as(as(sp::SpatialGrid(gt, CRS(proj4string(map))), "SpatialPixels"),
+             "SpatialPolygons")
     it <- rgeos::gIntersects(map, gr, byid = TRUE)
     gr[it]
 }
@@ -32,30 +32,21 @@ generate_bounding_boxes <- function(map_usa, cellsize = .5) {
     map_usa_sp_df <- geojson_sp(map_usa)
 
     map_usa_fort <- ggplot2::fortify(map_usa_sp_df)
-
-    map_usa_east_sp <-
+    res <- lapply(levels(map_usa_fort$piece), function(i) {
         SpatialPolygons(
             list(
                 Polygons(
-                    list(Polygon(subset(map_usa_fort, piece == 1)[, c("long", "lat")])),
+                    list(Polygon(subset(map_usa_fort, piece == i)[, c("long", "lat")])),
                     ID = 1)
             ), proj4string = CRS(proj4string(map_usa_sp_df)))
+    }) %>%
+        lapply(get_bounding_box, cellsize = cellsize) %>%
+        lapply(bb_to_df)
+    names(res) <- levels(map_usa_fort$piece)
 
-    map_usa_west_sp <-
-        SpatialPolygons(
-            list(
-                Polygons(
-                    list(Polygon(subset(map_usa_fort, piece == 2)[, c("long", "lat")])),
-                    ID = 1)
-            ), proj4string = CRS(proj4string(map_usa_sp_df)))
-
-    east_bb <- get_bounding_box(map_usa_east_sp, cellsize = cellsize)
-    west_bb <- get_bounding_box(map_usa_west_sp, cellsize = cellsize)
-    east_df <- bb_to_df(east_bb)
-    west_df <- bb_to_df(west_bb)
-
-    dplyr::bind_rows(list(east = east_df, west = west_df), .id = "coast")
+    dplyr::bind_rows(res, .id = "piece")
 }
+
 
 ## build the list of iDigBio queries based on the data frame that
 ## contains the coordinates of each element of the geographic grid.
@@ -80,6 +71,7 @@ coords_to_query <- function(coords) {
 make_hook_idigbio_by_geo <- function(coords_qry) {
     force(coords_qry)
     function(key, namespace) {
+        message("... ", appendLF = FALSE)
         ridigbio::idig_search_records(rq = coords_qry[[key]], fields = idigbio_fields())
     }
 }
@@ -103,8 +95,12 @@ fill_store_idigbio_by_geo <- function(map_usa, use_cache, cellsize = .5) {
     if (! use_cache)
         store_idigbio_by_geo(coords)$destroy()
 
-    lapply(names(coords), function(q)
-        store_idigbio_by_geo(coords)$get(q))
+    lapply(names(coords), function(q) {
+        message("Getting iDigBio records for ", q, appendLF = FALSE)
+        r <- store_idigbio_by_geo(coords)$get(q)
+        message(" DONE")
+        r
+    })
 }
 
 cleanup_idigbio_raw <- function(idig, map_usa) {
