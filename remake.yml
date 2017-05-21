@@ -24,6 +24,7 @@ packages:
   - purrr
   - lazyeval
   ## data visualization
+  - grid
   - ggplot2
   - viridis
   - scales
@@ -37,6 +38,7 @@ packages:
   - rgbif
   - ritis
   ## other utils
+  - extrafont
   - rmarkdown
   - labmanager
   - progress
@@ -369,6 +371,9 @@ targets:
     plot: true
 
   ## Synthesis -----------------------------------------------------------------
+
+  database_overlap:
+    command: compare_database_overlap(gom_worms, kozloff_worms, idigbio_gom_records, obis_gom_records, idigbio_kozloff_records, obis_kozloff_records)
 
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
