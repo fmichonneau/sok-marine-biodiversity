@@ -1,33 +1,51 @@
-compare_with_geo <- function(spp_list, geo_list) {
+compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
+    get_classification <- function(x) {
+        lapply(x, function(i) {
+            if (verbose) message("getting classification for aphiaid ", i)
+            res <- store_worms_classification()$get(as.character(i))
+            res <- res[[as.character(i)]]
+            res %>% mutate_if(is.factor, as.character)
+        })
+    }
+
+    unfold_classification <- function(classif, rank) {
+        empty_classif <- data_frame(Phylum = character(0),
+                                    Class = character(0),
+                                    Order = character(0),
+                                    Family = character(0))
+        cols_keep <- c("Phylum", "Class", "Order", "Family")
+        to_keep <- intersect(classif$rank, cols_keep)
+        dplyr::distinct(classif, rank, .keep_all = TRUE) %>%
+            tidyr::spread(rank, name) %>%
+            dplyr::select_(.dots = to_keep) %>%
+            dplyr::bind_rows(empty_classif)
+    }
 
     list(
         ## in spp_list but not in geo_list
-        not_in_geo =
+        not_in_list =
             as_data_frame(geo_list) %>%
             dplyr::anti_join(spp_list, by = "worms_valid_name") %>%
             dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
-                          phylum = taxon_name),
+                          phylum = taxon_name) %>%
+            dplyr::mutate(classification = get_classification(worms_id),
+                          classification_df = map(classification, unfold_classification)) %>%
+            tidyr::unnest(classification_df)
+       ,
         ## in geo_list but not in spp_list
-        not_in_list =
+        not_in_geo =
             as_data_frame(spp_list) %>%
             dplyr::anti_join(geo_list, by = "worms_valid_name") %>%
             dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
                           phylum = taxon_name) %>%
-            dplyr::mutate(phylum = tolower(phylum)),
-        spp_list =
-            as_data_frame(spp_list) %>%
-            dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
-            dplyr::select(worms_id, worms_valid_name, phylum = taxon_name) %>%
-            dplyr::mutate(phylum = tolower(phylum)),
-        geo_list =
-            as_data_frame(geo_list) %>%
-            dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
-            dplyr::select(worms_id, worms_valid_name,
-                          phylum = taxon_name)
+            dplyr::mutate(classification = get_classification(worms_id),
+                          classification_df = map(classification, unfold_classification)) %>%
+            tidyr::unnest(classification_df)
+
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
 
@@ -67,10 +85,11 @@ plot_upsetr <- function(csv_file, ...) {
         UpSetR::upset(order.by="freq", ...)
 }
 
-###
 
-if (FALSE) {
-
+compare_database_overlap <- function(gom_worms, kozloff_worms,
+                                     idigbio_gom_records, obis_gom_records,
+                                     idigbio_kozloff_records, obis_kozloff_records
+                                     ) {
     idig_gom <- compare_with_geo(gom_worms, idigbio_gom_records)
     obis_gom <- compare_with_geo(gom_worms, obis_gom_records)
 
@@ -84,8 +103,20 @@ if (FALSE) {
                                  .id = "database")
 
     comp_db <- dplyr::bind_rows(list(gom = comp_gom,
-                                     kozloff = comp_koz), .id = "region") %>%
-        dplyr::filter(data_source %in% c("not_in_geo", "not_in_list"))
+                                     kozloff = comp_koz), .id = "region")
+}
+
+compare_taxonomy_database_overlap <- function(database_overlap) {
+    database_overlap %>%
+        dplyr::count(region, database, data_source, Phylum, Order)
+}
+
+
+###
+
+if (FALSE) {
+
+
 
     phyla_to_keep <- distinct(comp_db, region, phylum) %>%
         count(phylum) %>%
@@ -109,6 +140,8 @@ if (FALSE) {
         .[[1]]
 
     rr$phylum <- factor(rr$phylum, levels = rev(XX))
+
+    extrafont::loadfonts(quiet = TRUE)
 
     pdf("figures/test_compare_dbs.pdf", height = 9.5, width = 15)
     offset <- 250
@@ -163,14 +196,14 @@ if (FALSE) {
                panel.spacing.x = unit(5, "lines")
                ) +
             annotation_custom(
-                grob = grid::textGrob(label = "Not in database", hjust = -1,
+                grob = grid::textGrob(label = "Not in list", hjust = -1,
                                       gp = gpar(fontfamily = "Ubuntu Condensed")),
                 ymin = 100,
                 ymax = 100,
                 xmin = -.6,
                 xmax = -.6) +
             annotation_custom(
-                grob = grid::textGrob(label = "Not in list", hjust = 1,
+                grob = grid::textGrob(label = "Not in database", hjust = 1,
                                       gp = gpar(fontfamily = "Ubuntu Condensed")
                                       ),
                 ymin = -100 - offset,
@@ -183,4 +216,4 @@ if (FALSE) {
     dev.off()
 
 
-k}
+}
