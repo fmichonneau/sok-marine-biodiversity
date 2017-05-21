@@ -1,11 +1,13 @@
 ## key the OBIS occurrences from the AphiaID (worms_id)
 fetch_hook_obis_occurrences <- function(key, namespace) {
     if (!is.na(key))
-        res <- robis::occurrence(aphiaid = key)
+        res <- try(robis::occurrence(aphiaid = key), silent = TRUE)
     else return(NULL)
     if (nrow(res) == 0)
         return(NULL)
-    else
+    else if (inherits(res, "try-error")) {
+        stop("something's wrong")
+    } else
         res
 }
 
@@ -17,8 +19,10 @@ store_obis_occurrences <- function(store_path = "data/obis_occurrences_storr") {
 fetch_spp_from_obis <- function(wrm, feather_out) {
     stopifnot(inherits(wrm, "data.frame"))
     stopifnot("worms_id" %in% names(wrm))
-    res <- lapply(wrm$worms_id, function(x)
-        store_obis_occurrences()$get(x))
+    res <- lapply(wrm$worms_id, function(x) {
+        message("getting obis for ", x)
+        store_obis_occurrences()$get(as.character(x))
+    })
     res <- dplyr::bind_rows(res)
     names(res) <- tolower(names(res))
     res <- dplyr::rename(res, uuid = id) %>%
