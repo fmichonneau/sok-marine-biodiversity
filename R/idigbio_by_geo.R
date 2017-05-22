@@ -65,7 +65,7 @@ coords_to_query <- function(coords) {
 }
 
 
-## fetch hook for the idigbio by geography storr. The use a closure to
+## fetch hook for the idigbio by geography storr. We use a closure to
 ## enforce the remake dependency on the data frame that contains the
 ## coordinates for each element of the grid.
 make_hook_idigbio_by_geo <- function(coords_qry) {
@@ -84,6 +84,32 @@ store_idigbio_by_geo <- function(coords, store_path = "data/idigbio_by_geo") {
                           fetch_hook_idigbio_by_geo)
 }
 
+
+## Work around the 1e5 records idigbio api limit. We try to get the
+## results for the coordinates, if we fail because of the limit, we
+## split the area into 4 squares, and look for records within
+## them. Its recursive nature should make it work.
+get_idigbio_by_geo <- function(coords, q) {
+    res <- try(store_idigbio_by_geo(coords)$get(q), silent = TRUE)
+    if (inherits(res, "try-error")) {
+        if (grepl("return more than", res)) {
+            crds <- unlist(strsplit(q, "\\|"))
+            mid_lon <- mean(as.numeric(c(crds[1], crds[3])))
+            mid_lat <- mean(as.numeric(c(crds[2], crds[4])))
+            .r <- list(
+                top_left     = get_idigbio_by_geo(coords, paste(crds[1], crds[2], mid_lon, mid_lat, sep = "|")),
+                top_right    = get_idigbio_by_geo(coords, paste(mid_lon, crds[2], crds[3], mid_lat, sep = "|")),
+                bottom_left  = get_idigbio_by_geo(coords, paste(crds[1], mid_lat, mid_lon, crds[4], sep = "|")),
+                bottom_right = get_idigbio_by_geo(coords, paste(mid_lon, mid_lat, crds[3], crds[4], sep = "|"))
+            )
+            return(dplyr::bind_rows(.r))
+        } else stop("Error with iDigBio query")
+    } else {
+        return(res)
+    }
+}
+
+
 get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
     bb_eez <- generate_bounding_boxes(map_usa, cellsize = cellsize)
     coords_to_query(bb_eez)
@@ -100,7 +126,7 @@ fill_store_idigbio_by_geo <- function(coords, use_cache) {
 
     lapply(names(coords), function(q) {
         message("Getting iDigBio records for ", q, appendLF = FALSE)
-        r <- store_idigbio_by_geo(coords)$get(q)
+        r <- get_idigbio_by_geo(coords, q)
         message(" DONE")
         r
     })
