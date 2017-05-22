@@ -304,8 +304,11 @@ targets:
   map_usa:
     command: get_map_usa("data-raw/USA-EEZ/eez.shp")
 
+  coords_idigbio_usa:
+    command: get_coords_idigbio_query(map_usa)
+
   idigbio_records_raw:
-    command: fill_store_idigbio_by_geo(map_usa, use_cache=I(TRUE))
+    command: fill_store_idigbio_by_geo(coords_idigbio_usa, use_cache=I(TRUE))
 
   idigbio_records:
     command: cleanup_idigbio_raw(idigbio_records_raw, map_usa)
@@ -327,8 +330,11 @@ targets:
   felder_gom_map:
     command: get_felder_gom_map("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
 
+  coords_gom_query:
+    command: get_coords_idigbio_query(felder_gom_map, cellsize=I(.2))
+
   idigbio_gom_records_raw:
-    command: fill_store_idigbio_by_geo(felder_gom_map, use_cache=I(TRUE), cellsize=I(.2))
+    command: fill_store_idigbio_by_geo(coords_gom_query, use_cache=I(TRUE))
 
   idigbio_gom_records:
     command: cleanup_idigbio_raw(idigbio_gom_records_raw, felder_gom_map)
@@ -351,8 +357,11 @@ targets:
   kozloff_map:
     command: get_kozloff_map()
 
+  coords_kozloff_query:
+    command: get_coords_idigbio_query(kozloff_map, cellsize=I(.5))
+
   idigbio_kozloff_records_raw:
-    command: fill_store_idigbio_by_geo(kozloff_map, use_cache=I(TRUE))
+    command: fill_store_idigbio_by_geo(coords_kozloff_query, use_cache=I(TRUE))
 
   idigbio_kozloff_records:
     command: cleanup_idigbio_raw(idigbio_kozloff_records_raw, kozloff_map)

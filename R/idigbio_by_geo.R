@@ -84,11 +84,14 @@ store_idigbio_by_geo <- function(coords, store_path = "data/idigbio_by_geo") {
                           fetch_hook_idigbio_by_geo)
 }
 
+get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
+    bb_eez <- generate_bounding_boxes(map_usa, cellsize = cellsize)
+    coords_to_query(bb_eez)
+}
+
 ## for all the coordinates of the bounding boxes, find the iDigBio
 ## records they contain
-fill_store_idigbio_by_geo <- function(map_usa, use_cache, cellsize = .5) {
-    bb_eez <- generate_bounding_boxes(map_usa, cellsize = cellsize)
-    coords <- coords_to_query(bb_eez)
+fill_store_idigbio_by_geo <- function(coords, use_cache) {
 
     ## if use_cache=FALSE, destroy the storr before fetching the
     ## results from iDigBio, otherwise, we'll use the cached results
