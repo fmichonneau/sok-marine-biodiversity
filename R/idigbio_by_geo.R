@@ -97,12 +97,18 @@ get_idigbio_by_geo <- function(coords, q) {
             mid_lon <- mean(as.numeric(c(crds[1], crds[3])))
             mid_lat <- mean(as.numeric(c(crds[2], crds[4])))
             .r <- list(
-                top_left     = get_idigbio_by_geo(coords, paste(crds[1], crds[2], mid_lon, mid_lat, sep = "|")),
-                top_right    = get_idigbio_by_geo(coords, paste(mid_lon, crds[2], crds[3], mid_lat, sep = "|")),
-                bottom_left  = get_idigbio_by_geo(coords, paste(crds[1], mid_lat, mid_lon, crds[4], sep = "|")),
-                bottom_right = get_idigbio_by_geo(coords, paste(mid_lon, mid_lat, crds[3], crds[4], sep = "|"))
-            )
-            return(dplyr::bind_rows(.r))
+                top_left     = c(crds[1], crds[2], mid_lon, mid_lat),
+                top_right    = c(mid_lon, crds[2], crds[3], mid_lat),
+                bottom_left  = c(crds[1], mid_lat, mid_lon, crds[4]),
+                bottom_right = c(mid_lon, mid_lat, crds[3], crds[4])
+            ) %>%
+                map(function(x) set_names(x, c("xmin", "ymax", "xmax", "ymin"))) %>%
+                map(as.list) %>%
+                map_df(as_tibble) %>%
+                bind_cols(data_frame(key = rep(q, 4))) %>%
+                coords_to_query()
+            return(lapply(names(.r), function(x)
+                get_idigbio_by_geo(.r, x)))
         } else stop("Error with iDigBio query")
     } else {
         return(res)
