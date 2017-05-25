@@ -307,11 +307,8 @@ targets:
   coords_idigbio_usa:
     command: get_coords_idigbio_query(map_usa)
 
-  idigbio_records_raw:
-    command: fill_store_idigbio_by_geo(coords_idigbio_usa, use_cache=I(TRUE))
-
   idigbio_records:
-    command: cleanup_idigbio_raw(idigbio_records_raw, map_usa)
+    command: fill_store_idigbio_by_geo(coords_idigbio_usa, map_usa, use_cache=I(TRUE))
 
   kozloff_idigbio_records:
     command: select_koz_from_idigbio(idigbio_records)

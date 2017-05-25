@@ -123,7 +123,31 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 
 ## for all the coordinates of the bounding boxes, find the iDigBio
 ## records they contain
-fill_store_idigbio_by_geo <- function(coords, use_cache) {
+fill_store_idigbio_by_geo <- function(coords, map_usa, use_cache) {
+
+    idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
+                              "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
+                              "TEXT", "TEXT", "REAL", "REAL", "TEXT",
+                              "TEXT", "TEXT"),
+                            .Names = c("uuid", "catalognumber",
+                                  "datecollected", "institutioncode",
+                                  "phylum", "data.dwc:phylum",
+                                  "data.dwc:class", "data.dwc:order",
+                                  "data.dwc:family", "data.dwc:genus",
+                                  "scientificname", "country",
+                                  "geopoint.lon", "geopoint.lat",
+                                  "clean_phylum", "clean_class", "clean_family"))
+
+    idig_data_db <- dplyr::src_postgres("idigbio", host = "localhost",
+                                        user = "marinediversity",
+                                        password = "password")#dplyr::src_sqlite(db, create = TRUE)
+    con <- idig_data_db$con
+    db_begin(con)
+    on.exit(db_rollback(con))
+    if (db_has_table(con, "idigbio_data"))
+        db_drop_table(con, "idigbio_data")
+
+    db_create_table(con, "idigbio_data", types = idig_types, temporary = FALSE)
 
     ## if use_cache=FALSE, destroy the storr before fetching the
     ## results from iDigBio, otherwise, we'll use the cached results
@@ -132,13 +156,23 @@ fill_store_idigbio_by_geo <- function(coords, use_cache) {
 
     lapply(names(coords), function(q) {
         message("Getting iDigBio records for ", q, appendLF = FALSE)
-        r <- get_idigbio_by_geo(coords, q)
+        r <- get_idigbio_by_geo(coords, q) %>%
+            mutate_(.dots = setNames(list("tolower(`data.dwc:phylum`)",
+                                          "tolower(`data.dwc:class`)",
+                                          "tolower(`data.dwc:family`)"),
+                                     c("clean_phylum", "clean_class", "clean_family"))) %>%
+            ## First let's get the phylum names from the Gulf of Mexico list,
+            ## that will take care of plants, fungi, and records with no
+            ## specified phylum
+            filter(clean_phylum %in% gom_phyla())
         message(" DONE")
-        r
+        db_insert_into(con, "idigbio_data", r)
     })
-}
-
-cleanup_idigbio_raw <- function(idig, map_usa) {
+    db_create_indexes(con, "idigbio_data", indexes = list(c("clean_phylum", "clean_class", "clean_family"),
+                                                          c("country")))
+    db_analyze(con, "idigbio_data")
+    db_commit(con)
+    on.exit(NULL)
 
     ## We only want:
     ## - unique records
@@ -146,65 +180,42 @@ cleanup_idigbio_raw <- function(idig, map_usa) {
     ## - marine
     ## - within the EEZ boundaries
 
-    ## First let's get the phylum names from the Gulf of Mexico list,
-    ## that will take care of plants, fungi, and records with no
-    ## specified phylum
-    taxa <- gom_phyla()
+    db <- idig_data_db %>%
+        dplyr::tbl("idigbio_data")
 
-    res <- idig %>%
-        dplyr::bind_rows()
+    arth_class_to_rm <- arthropod_classes_to_rm()
+    chr_class_to_rm <- chordata_classes_to_rm()
+    chr_fam_to_rm <- chordata_families_to_rm()
 
+    arth_family_to_rm <- db %>%
+        filter(clean_phylum == "arthropoda" & clean_class %in% arth_class_to_rm) %>%
+        select(clean_phylum, clean_family) %>%
+        distinct(clean_phylum, clean_family) %>%
+        filter(!is.na(clean_family))
 
-    res_ <- res %>%
-        mutate_(.dots = setNames(list("tolower(`data.dwc:phylum`)",
-                                      "tolower(`data.dwc:class`)",
-                                      "tolower(`data.dwc:family`)"),
-                                 c("clean_phylum", "clean_class", "clean_family")))
+    chordata_family_to_rm <- db %>%
+        filter(clean_phylum == "chordata" & (clean_class %in% chr_class_to_rm |
+                                             clean_family %in% chr_fam_to_rm)) %>%
+        select(clean_phylum, clean_class, clean_family) %>%
+        distinct(clean_phylum, clean_class, clean_family)
 
-    arth_classes_to_rm <- arthropod_classes_to_rm()
-
-
-    arth_family_to_rm <- res_ %>%
-        filter(clean_phylum == "arthropoda" & clean_class %in% arth_classes_to_rm) %>%
-        select(clean_family) %>%
-        distinct() %>%
-        .[[1]] %>%
-        na.omit()
-
-    chordata_classes_to_rm <- chordata_classes_to_rm()
-
-
-    chordata_family_to_rm <- res_ %>%
-        filter(clean_phylum == "chordata" & clean_class %in% chordata_classes_to_rm) %>%
-        select(clean_family) %>%
-        distinct() %>%
-        .[[1]] %>%
-        na.omit()
-
-    chordata_family_to_rm <- c(chordata_family_to_rm, chordata_families_to_rm())
-
-    res. <- res_ %>%
+    res <- db %>%
         ## only the phyla found in the gulf of mexico list
-        filter(clean_phylum %in%  taxa) %>%
+        filter(country != "canada") %>%
         ## only the obviously non-marine arthropods and the vertebrates
-        filter(! (clean_phylum == "arthropoda" &
-                  (clean_class %in% arth_classes_to_rm | clean_family %in% arth_family_to_rm)),
-               ! (clean_phylum == "chordata" &
-                  (clean_class %in% chordata_classes_to_rm | clean_family %in% chordata_family_to_rm))
-               ) %>%
-        filter(country != "canada")
-
-    res <- res. %>%
+        anti_join(arth_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
+        anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
+        anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_class")) %>%
+        collect(n = Inf) %>%
+        distinct(uuid, .keep_all = TRUE) %>%
         mutate(cleaned_scientificname = cleanup_species_names(scientificname),
                is_binomial = is_binomial(cleaned_scientificname),
-               rank = rep("phylum", nrow(.)),
-               taxon_name = tolower(`data.dwc:phylum`)) %>%
-        distinct(uuid, .keep_all = TRUE) %>%
+               rank = rep("phylum", n()),
+               taxon_name = clean_phylum) %>%
         add_worms()  %>%
         dplyr::rename(decimallatitude = geopoint.lat,
-                      decimallongitude = geopoint.lon)
-
-    res <- is_in_eez_records(res, map_usa) %>%
+                      decimallongitude = geopoint.lon) %>%
+        is_in_eez_records(map_usa) %>%
         dplyr::filter(is_in_eez == TRUE)
 
     res
