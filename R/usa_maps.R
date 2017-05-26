@@ -16,7 +16,7 @@ get_felder_gom_map <- function(file) {
 }
 
 get_kozloff_map <- function() {
-    wkt_string <- "POLYGON((-129.43 51.29, -126.9 51.29, -122.2 49.18, -122.2 47, -124.3 46.9, -129.43 51.29))"
+    wkt_string <- "POLYGON((-129.43 51.29, -126.9 51.29, -122.2 49.18, -122.2 47, -123.5 46.8, -123.5 43.3, -124 43.3, -124.3 46.9, -129.43 51.29))"
     rgeos::readWKT(wkt_string, p4s = "+proj=longlat +datum=WGS84") %>%
         geojsonio::geojson_json()
 }
