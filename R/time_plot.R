@@ -37,45 +37,45 @@ make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
     idig <- preprocess_idigbio(gom_idig, koz_idig)
     gbif <- preprocess_gbif(gom_gbif, koz_gbif)
 
-    res <- bind_rows(idigbio = idig, gbif = gbif, .id = "database") %>%
-        mutate(year = replace(year, year > 2017 | year < 1800, NA)) %>%
-        filter(!is.na(year) & is_in_eez == TRUE)
+    res <- dplyr::bind_rows(idigbio = idig, gbif = gbif, .id = "database") %>%
+        dplyr::mutate(year = replace(year, year > 2017 | year < 1800, NA)) %>%
+        dplyr::filter(!is.na(year) & is_in_eez == TRUE)
 
     ## Combine the species lists from GOM and Kozloff
-    spp_total <- bind_rows(gom = gom_spp, koz = koz_spp, .id = "fauna") %>%
-        filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
-        group_by(fauna, taxon_name) %>%
-        tally() %>%
-        mutate(phylum = tolower(taxon_name)) %>%
-        rename(n_spp_total = n) %>%
-        select(-taxon_name)
+    spp_total <- dplyr::bind_rows(gom = gom_spp, koz = koz_spp, .id = "fauna") %>%
+        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
+        dplyr::group_by(fauna, taxon_name) %>%
+        dplyr::tally() %>%
+        dplyr::mutate(phylum = tolower(taxon_name)) %>%
+        dplyr::rename(n_spp_total = n) %>%
+        dplyr::select(-taxon_name)
 
     ## Get number of samples per phylum and year
     n_samples <- res %>%
-        group_by(database, fauna, phylum, year) %>%
-        arrange(year) %>%
-        summarize(n_samples = n()) %>%
-        mutate(cum_n_samples = cumsum(n_samples))
+        dplyr::group_by(database, fauna, phylum, year) %>%
+        dplyr::arrange(year) %>%
+        dplyr::summarize(n_samples = n()) %>%
+        dplyr::mutate(cum_n_samples = cumsum(n_samples))
 
     ## Get number of "new" species by phylum through time
     n_species <- res %>%
-        group_by(database, fauna, phylum, scientificname, year) %>%
-        arrange(year) %>%
-        tally() %>%
-        mutate(min_year = min(year)) %>%
-        select(-n) %>%
-        distinct(database, fauna, phylum, scientificname, min_year, .keep_all = TRUE) %>%
-        group_by(database, fauna, phylum, min_year) %>%
-        arrange(min_year) %>%
-        summarize(
+        dplyr::group_by(database, fauna, phylum, scientificname, year) %>%
+        dplyr::arrange(year) %>%
+        dplyr::tally() %>%
+        dplyr::mutate(min_year = min(year)) %>%
+        dplyr::select(-n) %>%
+        dplyr::distinct(database, fauna, phylum, scientificname, min_year, .keep_all = TRUE) %>%
+        dplyr::group_by(database, fauna, phylum, min_year) %>%
+        dplyr::arrange(min_year) %>%
+        dplyr::summarize(
             n_new_spp = n()
         ) %>%
-        mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
-        rename(year =  min_year) %>%
-        left_join(spp_total, by = c("fauna", "phylum")) %>%
-        mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total)
+        dplyr::mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
+        dplyr::rename(year =  min_year) %>%
+        dplyr::left_join(spp_total, by = c("fauna", "phylum")) %>%
+        dplyr::mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total)
 
-    left_join(n_samples, n_species, by = c("database", "fauna", "phylum", "year"))
+    dplyr::left_join(n_samples, n_species, by = c("database", "fauna", "phylum", "year"))
 
 }
 
@@ -83,42 +83,42 @@ make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
 make_knowledge_through_time_idigbio <- function(idigbio) {
 
     idigbio <- idigbio_add_year(idigbio) %>%
-        filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
+        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
 
 
     spp_total <-  idigbio %>%
-        group_by(clean_phylum) %>%
-        summarize(
+        dplyr::group_by(clean_phylum) %>%
+        dplyr::summarize(
             n_spp_total = n_distinct(worms_valid_name)
         )
 
     n_samples <- idigbio %>%
-        group_by(clean_phylum, year) %>%
-        arrange(year) %>%
-        summarize(
+        dplyr::group_by(clean_phylum, year) %>%
+        dplyr::arrange(year) %>%
+        dplyr::summarize(
             n_samples = n()
         ) %>%
-        mutate(cum_n_samples = cumsum(n_samples))
+        dplyr::mutate(cum_n_samples = cumsum(n_samples))
 
     n_species <- idigbio %>%
-        group_by(clean_phylum, worms_valid_name, year) %>%
-        arrange(year) %>%
-        tally() %>%
-        mutate(min_year = min(year)) %>%
-        select(-n) %>%
-        distinct(clean_phylum, worms_valid_name, min_year, .keep_all = TRUE) %>%
-        group_by(clean_phylum, min_year) %>%
-        arrange(min_year) %>%
-        summarize(
+        dplyr::group_by(clean_phylum, worms_valid_name, year) %>%
+        dplyr::arrange(year) %>%
+        dplyr::tally() %>%
+        dplyr::mutate(min_year = min(year)) %>%
+        dplyr::select(-n) %>%
+        dplyr::distinct(clean_phylum, worms_valid_name, min_year, .keep_all = TRUE) %>%
+        dplyr::group_by(clean_phylum, min_year) %>%
+        dplyr::arrange(min_year) %>%
+        dplyr::summarize(
             n_new_spp = n()
         ) %>%
-        rename(year = min_year) %>%
-        right_join(n_samples, by = c("clean_phylum", "year")) %>%
-        mutate(n_new_spp = replace(n_new_spp, is.na(n_new_spp), 0)) %>%
-        mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
-        left_join(spp_total, by = "clean_phylum") %>%
-        mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total) %>%
-        rename(phylum = clean_phylum)
+        dplyr::rename(year = min_year) %>%
+        dplyr::right_join(n_samples, by = c("clean_phylum", "year")) %>%
+        dplyr::mutate(n_new_spp = replace(n_new_spp, is.na(n_new_spp), 0)) %>%
+        dplyr::mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
+        dplyr::left_join(spp_total, by = "clean_phylum") %>%
+        dplyr::mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total) %>%
+        dplyr::rename(phylum = clean_phylum)
 
     n_species
 
