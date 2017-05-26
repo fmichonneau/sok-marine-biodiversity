@@ -355,11 +355,8 @@ targets:
   coords_kozloff_query:
     command: get_coords_idigbio_query(kozloff_map, cellsize=I(.5))
 
-  idigbio_kozloff_records_raw:
-    command: fill_store_idigbio_by_geo(coords_kozloff_query, kozloff_map, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
-
   idigbio_kozloff_records:
-    command: cleanup_idigbio_raw(idigbio_kozloff_records_raw, kozloff_map)
+    command: fill_store_idigbio_by_geo(coords_kozloff_query, kozloff_map, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
 
   obis_kozloff_records_raw:
     command: fill_store_obis_by_geo(kozloff_map, use_cache=I(TRUE))
@@ -378,6 +375,12 @@ targets:
 
   database_overlap:
     command: compare_database_overlap(gom_worms, kozloff_worms, idigbio_gom_records, obis_gom_records, idigbio_kozloff_records, obis_kozloff_records)
+
+  figures/database_overlap.pdf:
+    command: plot_database_overlap(database_overlap)
+    plot:
+      width: 12
+      height: 8
 
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
@@ -564,10 +567,22 @@ targets:
       - figures/plot_richness_per_db_gom.pdf
       - figures/kozloff_database_coverage.pdf
       - figures/gom_database_coverage.pdf
+      - figures/database_overlap.pdf
 
   manuscript.md:
     depends:
+      - idigbio_records
+      - idigbio_gom_records
+      - obis_gom_records
+      - gom_worms
+      - kozloff_worms
       - in_text_stats
+      - mammals_species_asm
+      - amphibian_summary
+      - stat_bold
+      - prop_singleton_species
+      - prop_species_not_collected_since_1980
+      - n_spp_comparison
     knitr: true
 
   manuscript.pdf:
