@@ -19,6 +19,7 @@ packages:
   - lawn
   ## data manipulation
   - dplyr
+  - dbplyr
   - tidyr
   - lubridate
   - purrr
@@ -308,7 +309,7 @@ targets:
     command: get_coords_idigbio_query(map_usa)
 
   idigbio_records:
-    command: fill_store_idigbio_by_geo(coords_idigbio_usa, map_usa, use_cache=I(TRUE))
+    command: fill_store_idigbio_by_geo(coords_idigbio_usa, map_usa, db_table=I("us_idigbio"), only_keep_us=I(TRUE), use_cache=I(TRUE))
 
   kozloff_idigbio_records:
     command: select_koz_from_idigbio(idigbio_records)
@@ -330,11 +331,8 @@ targets:
   coords_gom_query:
     command: get_coords_idigbio_query(felder_gom_map, cellsize=I(.2))
 
-  idigbio_gom_records_raw:
-    command: fill_store_idigbio_by_geo(coords_gom_query, use_cache=I(TRUE))
-
   idigbio_gom_records:
-    command: cleanup_idigbio_raw(idigbio_gom_records_raw, felder_gom_map)
+    command: fill_store_idigbio_by_geo(coords_gom_query, felder_gom_map, db_table=I("gom_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
 
   obis_gom_records_raw:
     command: fill_store_obis_by_geo(felder_gom_map, use_cache=I(TRUE))
@@ -358,7 +356,7 @@ targets:
     command: get_coords_idigbio_query(kozloff_map, cellsize=I(.5))
 
   idigbio_kozloff_records_raw:
-    command: fill_store_idigbio_by_geo(coords_kozloff_query, use_cache=I(TRUE))
+    command: fill_store_idigbio_by_geo(coords_kozloff_query, kozloff_map, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
 
   idigbio_kozloff_records:
     command: cleanup_idigbio_raw(idigbio_kozloff_records_raw, kozloff_map)
@@ -564,6 +562,8 @@ targets:
       - figures/proportion_barcoded.pdf
       - figures/plot_richness_per_db_koz.pdf
       - figures/plot_richness_per_db_gom.pdf
+      - figures/kozloff_database_coverage.pdf
+      - figures/gom_database_coverage.pdf
 
   manuscript.md:
     depends:
