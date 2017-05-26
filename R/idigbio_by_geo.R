@@ -122,7 +122,11 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 }
 
 ## for all the coordinates of the bounding boxes, find the iDigBio
-## records they contain
+## records they contain coords: output of get_coords_idigbio_query
+## map_usa: map in GeoJSON db_table: name of table in the postgres
+## database that will store the results use_cache: if TRUE, this uses
+## the results from the iDigBio storr; if false, the entire storr is
+## destroyed before
 fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, use_cache) {
 
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
@@ -210,7 +214,6 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
                       is_binomial = is_binomial(cleaned_scientificname),
                       rank = rep("phylum", n()),
                       taxon_name = clean_phylum) %>%
-        add_worms()  %>%
         dplyr::rename(decimallatitude = geopoint.lat,
                       decimallongitude = geopoint.lon)
 
@@ -220,7 +223,9 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
             dplyr::filter(is_in_eez == TRUE)
     }
 
-    res
+    res %>%
+        add_worms()
+
 }
 
 
