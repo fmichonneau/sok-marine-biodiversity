@@ -123,7 +123,7 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 
 ## for all the coordinates of the bounding boxes, find the iDigBio
 ## records they contain
-fill_store_idigbio_by_geo <- function(coords, map_usa, use_cache) {
+fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, use_cache) {
 
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
@@ -144,10 +144,10 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, use_cache) {
     con <- idig_data_db$con
     db_begin(con)
     on.exit(db_rollback(con))
-    if (db_has_table(con, "idigbio_data"))
-        db_drop_table(con, "idigbio_data")
+    if (db_has_table(con, db_table))
+        db_drop_table(con, db_table)
 
-    db_create_table(con, "idigbio_data", types = idig_types, temporary = FALSE)
+    db_create_table(con, db_table, types = idig_types, temporary = FALSE)
 
     ## if use_cache=FALSE, destroy the storr before fetching the
     ## results from iDigBio, otherwise, we'll use the cached results
@@ -166,11 +166,11 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, use_cache) {
             ## specified phylum
             filter(clean_phylum %in% gom_phyla())
         message(" DONE")
-        db_insert_into(con, "idigbio_data", r)
+        db_insert_into(con, db_table, r)
     })
-    db_create_indexes(con, "idigbio_data", indexes = list(c("clean_phylum", "clean_class", "clean_family"),
+    db_create_indexes(con, db_table, indexes = list(c("clean_phylum", "clean_class", "clean_family"),
                                                           c("country")))
-    db_analyze(con, "idigbio_data")
+    db_analyze(con, db_table)
     db_commit(con)
     on.exit(NULL)
 
@@ -181,42 +181,44 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, use_cache) {
     ## - within the EEZ boundaries
 
     db <- idig_data_db %>%
-        dplyr::tbl("idigbio_data")
+        dplyr::tbl(db_table)
 
     arth_class_to_rm <- arthropod_classes_to_rm()
     chr_class_to_rm <- chordata_classes_to_rm()
     chr_fam_to_rm <- chordata_families_to_rm()
 
     arth_family_to_rm <- db %>%
-        filter(clean_phylum == "arthropoda" & clean_class %in% arth_class_to_rm) %>%
-        select(clean_phylum, clean_family) %>%
-        distinct(clean_phylum, clean_family) %>%
-        filter(!is.na(clean_family))
+        dplyr::filter(clean_phylum == "arthropoda" & clean_class %in% arth_class_to_rm) %>%
+        dplyr::select(clean_phylum, clean_family) %>%
+        dplyr::distinct(clean_phylum, clean_family) %>%
+        dplyr::filter(!is.na(clean_family))
 
     chordata_family_to_rm <- db %>%
-        filter(clean_phylum == "chordata" & (clean_class %in% chr_class_to_rm |
+        dplyr::filter(clean_phylum == "chordata" & (clean_class %in% chr_class_to_rm |
                                              clean_family %in% chr_fam_to_rm)) %>%
-        select(clean_phylum, clean_class, clean_family) %>%
-        distinct(clean_phylum, clean_class, clean_family)
+        dplyr::select(clean_phylum, clean_class, clean_family) %>%
+        dplyr::distinct(clean_phylum, clean_class, clean_family)
 
     res <- db %>%
-        ## only the phyla found in the gulf of mexico list
-        filter(country != "canada") %>%
         ## only the obviously non-marine arthropods and the vertebrates
-        anti_join(arth_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
-        anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
-        anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_class")) %>%
-        collect(n = Inf) %>%
-        distinct(uuid, .keep_all = TRUE) %>%
-        mutate(cleaned_scientificname = cleanup_species_names(scientificname),
-               is_binomial = is_binomial(cleaned_scientificname),
-               rank = rep("phylum", n()),
-               taxon_name = clean_phylum) %>%
+        dplyr::anti_join(arth_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
+        dplyr::anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
+        dplyr::anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_class")) %>%
+        dplyr::collect(n = Inf) %>%
+        dplyr::distinct(uuid, .keep_all = TRUE) %>%
+        dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
+                      is_binomial = is_binomial(cleaned_scientificname),
+                      rank = rep("phylum", n()),
+                      taxon_name = clean_phylum) %>%
         add_worms()  %>%
         dplyr::rename(decimallatitude = geopoint.lat,
-                      decimallongitude = geopoint.lon) %>%
-        is_in_eez_records(map_usa) %>%
-        dplyr::filter(is_in_eez == TRUE)
+                      decimallongitude = geopoint.lon)
+
+    if (only_keep_us)  {
+        res <- res %>%
+            is_in_eez_records(map_usa) %>%
+            dplyr::filter(is_in_eez == TRUE)
+    }
 
     res
 }
