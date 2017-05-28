@@ -115,3 +115,15 @@ first_5 <- function(x) {
     n <- ifelse(length(x) > 5, 5, length(x))
     paste(x[seq_len(n)], collapse = ", ")
 }
+
+
+combine_plots <- function(..., output) {
+    files <- c(...)
+    if (length(files) > 2) stop("can't deal with this now.")
+    if (all(file.exists(files))) {
+        cmd <- paste("pdfjam ", paste(files, collapse = "  "),
+                     "--nup 2x1 --papersize '{8.5in,4.5in}' --outfile",
+                     output)
+        system(cmd)
+    }
+}
