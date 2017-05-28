@@ -215,3 +215,37 @@ plot_database_overlap <- function(comp_db) {
     grid.draw(gt)
 
 }
+
+
+get_species_in_common <- function(gom_worms, idigbio_gom_records, obis_gom_records,
+                                  kozloff_worms, idigbio_kozloff_records, obis_kozloff_records) {
+
+    list(
+        n_spp_gom = gom_worms %>%
+            dplyr::select(worms_valid_name) %>%
+            dplyr::n_distinct(),
+        n_spp_gom_idigbio_obis =  gom_worms %>%
+            dplyr::semi_join(idigbio_gom_records, by = "worms_valid_name") %>%
+            dplyr::semi_join(obis_gom_records, by = "worms_valid_name") %>%
+            dplyr::select(worms_valid_name) %>%
+            dplyr::n_distinct(),
+        n_spp_gom_obis =  gom_worms %>%
+            dplyr::semi_join(idigbio_gom_records, by = "worms_valid_name") %>%
+            dplyr::select(worms_valid_name) %>%
+            dplyr::n_distinct(),
+        ###
+        n_spp_kozloff = kozloff_worms %>%
+            dplyr::select(worms_valid_name) %>%
+            dplyr::n_distinct(),
+        n_spp_kozloff_idigbio_obis =  kozloff_worms %>%
+            dplyr::semi_join(idigbio_kozloff_records, by = "worms_valid_name") %>%
+            dplyr::semi_join(obis_kozloff_records, by = "worms_valid_name") %>%
+            dplyr::select(worms_valid_name) %>%
+            dplyr::n_distinct(),
+        n_spp_kozloff_obis = kozloff_worms %>%
+            dplyr::semi_join(idigbio_kozloff_records, by = "worms_valid_name") %>%
+            dplyr::select(worms_valid_name) %>%
+            dplyr::n_distinct()
+
+        )
+}

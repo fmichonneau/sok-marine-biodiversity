@@ -41,6 +41,7 @@ packages:
   ## other utils
   - extrafont
   - rmarkdown
+  - bookdown
   - labmanager
   - progress
 
@@ -376,6 +377,8 @@ targets:
   figures/database_coverage.pdf:
     command: combine_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
 
+  species_in_common:
+    command: get_species_in_common(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_worms, idigbio_kozloff_records, obis_kozloff_records)
 
   database_overlap:
     command: compare_database_overlap(gom_worms, kozloff_worms, idigbio_gom_records, obis_gom_records, idigbio_kozloff_records, obis_kozloff_records)
@@ -577,6 +580,8 @@ targets:
       - idigbio_records
       - idigbio_gom_records
       - obis_gom_records
+      - idigbio_kozloff_records
+      - obis_kozloff_records
       - gom_worms
       - kozloff_worms
       - in_text_stats
@@ -586,11 +591,11 @@ targets:
       - prop_singleton_species
       - prop_species_not_collected_since_1980
       - n_spp_comparison
+      - text_figures
+      - species_in_common
     knitr: true
 
   manuscript.pdf:
-    depends:
-      - text_figures
     command: render("manuscript.md")
 
   manuscript.docx:
