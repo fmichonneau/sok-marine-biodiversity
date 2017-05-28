@@ -82,7 +82,8 @@ generate_upsetr_csv <- function(..., file) {
 plot_upsetr <- function(csv_file, ...) {
     readr::read_csv(csv_file) %>%
         as.data.frame() %>%
-        UpSetR::upset(order.by="freq", ...)
+        UpSetR::upset(order.by="freq", mainbar.y.label = "Number of species (intersection size)",
+                      sets.x.label = "Number of species (set size)", ...)
 }
 
 
