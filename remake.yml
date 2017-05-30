@@ -27,6 +27,7 @@ packages:
   ## data visualization
   - grid
   - ggplot2
+  - cowplot
   - viridis
   - scales
   - hrbrthemes
@@ -509,20 +510,22 @@ targets:
   summary_richness_per_db_gom:
     command: summarize_richness_per_db(gom_bold, gom_spp_records_idigbio, gom_spp_records_obis, gom_spp_records_gbif, region=I("gom"))
 
-  figures/plot_richness_per_db_gom.pdf:
-    command: plot_richness_per_db(summary_richness_per_db_gom, data_source=I("Gulf of Mexico"), region=I("gom"))
-    plot:
-      height: 10
-      width: 8
-
   summary_richness_per_db_koz:
     command: summarize_richness_per_db(kozloff_bold, kozloff_spp_records_idigbio, kozloff_spp_records_obis, kozloff_spp_records_gbif, region=I("pnw"))
 
-  figures/plot_richness_per_db_koz.pdf:
+  #figures/plot_richness_per_db_koz.pdf:
+  plot_richness_per_db_koz:
     command: plot_richness_per_db(summary_richness_per_db_koz, data_source=I("Kozloff"), region=I("pnw"))
+
+  #figures/plot_richness_per_db_gom.pdf:
+  plot_richness_per_db_gom:
+    command: plot_richness_per_db(summary_richness_per_db_gom, data_source=I("Gulf of Mexico"), region=I("gom"))
+
+  figures/richness_per_db.pdf:
+    command: combine_cowplots(plot_richness_per_db_gom, plot_richness_per_db_koz)
     plot:
+      width: 12
       height: 10
-      width: 8
 
 ### plot sampling effort (correlation between number of samples vs number species
 

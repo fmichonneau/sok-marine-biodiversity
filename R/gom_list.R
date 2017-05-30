@@ -185,7 +185,11 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
 
     full_region <- c(gom = "GoM", pnw = "PNW")
 
+    phyla_to_plot <-  c("Arthropoda", "Mollusca", "Annelida", "Cnidaria", "Echinodermata",
+                        "Platyhelminthes", "Porifera", "Bryozoa", "Chordata")
+
     smry_db %>%
+        dplyr::filter(taxon_name %in% phyla_to_plot) %>%
         dplyr::mutate(
                    n_idigbio_us_diff = n_idigbio - n_idigbio_in_us,
                    n_obis_us_diff = n_obis - n_obis_in_us,
@@ -206,7 +210,7 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
                       -n_idigbio_in_us, -n_obis_in_us, -n_gbif_in_us
                       ) %>%
         tidyr::gather(source_n_spp, n_spp, -taxon_name) %>%
-        dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>% #write_csv("/tmp/nb.csv"); return(NULL)
+        dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>%
         ggplot(aes(x = factor(source_db,
                               levels = rev(c("n_total", "n_obis", "n_gbif", "n_idigbio", "n_barcoded")),
                               labels = c("BOLD", "iDigBio", "GBIF", "OBIS", "Total")
@@ -222,23 +226,37 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
                                             "n_barcoded"
                                             ))),
                                  labels = rev(
-                                     gsub("XXX", full_region[region],
-                                          c("Total",
-                                            "OBIS in XXX", "OBIS in US EEZ", "OBIS global",
-                                            "GBIF in XXX", "GBIF in US EEZ", "GBIF global",
-                                            "iDigBio in XXX", "iDigBio in US EEZ", "iDigBio global",
-                                            "BOLD"
-                                            )))
+                                     #full_region[region],
+                                     c("Species in list",
+                                       "OBIS in region", "OBIS in US EEZ", "OBIS global",
+                                       "GBIF in region", "GBIF in US EEZ", "GBIF global",
+                                       "iDigBio in region", "iDigBio in US EEZ", "iDigBio global",
+                                       "BOLD"
+                                       ))
                                  )
                    )
                ) +
             geom_bar(stat = "identity", position = "stack") +
         facet_grid(factor(taxon_name,
-                          levels = c("Arthropoda", "Mollusca", "Annelida", "Cnidaria", "Echinodermata",
-                                     "Platyhelminthes", "Porifera", "Bryozoa", "Nematoda", "Chordata")) ~ .) +
-        xlab("Phylum") + ylab("Number of species") +
-        labs(title = "Number of species in databases", subtitle = data_source,
-             caption = "(only marine taxa)") +
+                          levels = phyla_to_plot) ~ .) +
+        xlab("") + ylab("Number of species") +
+        labs(title = "") +
         scale_fill_viridis(name = "Data source", option = "viridis", discrete = TRUE) +
+        theme_gray(base_family = "Ubuntu Condensed") +
         coord_flip()
+}
+
+
+combine_cowplots <- function(g1, g2, ...) {
+    legend <- get_legend(g1)
+    prow <- cowplot::plot_grid(
+                         g1 + theme(legend.position = "none"),
+                         g2 + theme(legend.position = "none"),
+                 align = 'vh',
+                 labels = c("A", "B"),
+                 hjust = -1,
+                 nrow = 1
+                 )
+    cowplot::plot_grid(prow, legend, rel_widths = c(3, .4))
+
 }
