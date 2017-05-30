@@ -176,7 +176,31 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
         dplyr::filter(taxon_name %in% c("Arthropoda", "Mollusca", "Annelida",
                                         "Cnidaria", "Echinodermata", "Platyhelminthes",
                                         "Porifera", "Bryozoa", "Nematoda", "Chordata"
-                                        ))
+                                        )) %>%
+        dplyr::mutate_(.dots = setNames(list(
+                           lazyeval::interp("n_idigbio_in_region/n_total",
+                                            n_idigbio_in_region = as.name(paste0("n_idigbio_in_", region))),
+                           "n_idigbio_in_us/n_total",
+                           "n_idigbio/n_total",
+                           lazyeval::interp("n_obis_in_region/n_total",
+                                            n_obis_in_region = as.name(paste0("n_obis_in_", region))),
+                          "n_obis_in_us/n_total",
+                           "n_obis/n_total",
+                           lazyeval::interp("n_gbif_in_region/n_total",
+                                            n_gbif_in_region = as.name(paste0("n_gbif_in_", region))),
+                           "n_gbif_in_us/n_total",
+                           "n_gbif/n_total"
+                       ),
+                       c(paste0("prop_idigbio_in_", region),
+                         "prop_idigbio_in_us",
+                         "prop_idigbio",
+                         paste0("prop_obis_in_", region),
+                         "prop_obis_in_us",
+                         "prop_obis",
+                         paste0("prop_gbif_in_", region),
+                         "prop_gbif_in_us",
+                         "prop_gbif"))
+                       )
 
 }
 
@@ -207,13 +231,14 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
                                 ))
                        )  %>%
         dplyr::select(-n_idigbio, -n_obis, -n_gbif,
-                      -n_idigbio_in_us, -n_obis_in_us, -n_gbif_in_us
+                      -n_idigbio_in_us, -n_obis_in_us, -n_gbif_in_us,
+                      -starts_with("prop")
                       ) %>%
         tidyr::gather(source_n_spp, n_spp, -taxon_name) %>%
         dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>%
         ggplot(aes(x = factor(source_db,
                               levels = rev(c("n_total", "n_obis", "n_gbif", "n_idigbio", "n_barcoded")),
-                              labels = c("BOLD", "iDigBio", "GBIF", "OBIS", "Total")
+                              labels = c("BOLD", "iDigBio", "GBIF", "OBIS", "List")
                               ),
                    y = n_spp,
                    fill = factor(source_n_spp,
@@ -245,7 +270,6 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
         theme_gray(base_family = "Ubuntu Condensed") +
         coord_flip()
 }
-
 
 combine_cowplots <- function(g1, g2, ...) {
     legend <- get_legend(g1)

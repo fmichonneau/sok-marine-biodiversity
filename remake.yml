@@ -596,6 +596,8 @@ targets:
       - n_spp_comparison
       - text_figures
       - species_in_common
+      - summary_richness_per_db_gom
+      - summary_richness_per_db_koz
     knitr: true
 
   manuscript.pdf:
