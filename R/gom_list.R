@@ -226,7 +226,6 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
                                             "n_barcoded"
                                             ))),
                                  labels = rev(
-                                     #full_region[region],
                                      c("Species in list",
                                        "OBIS in region", "OBIS in US EEZ", "OBIS global",
                                        "GBIF in region", "GBIF in US EEZ", "GBIF global",
@@ -241,7 +240,8 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
                           levels = phyla_to_plot) ~ .) +
         xlab("") + ylab("Number of species") +
         labs(title = "") +
-        scale_fill_viridis(name = "Data source", option = "viridis", discrete = TRUE) +
+        scale_fill_viridis(name = "Data source", option = "viridis", discrete = TRUE,
+                           guide = guide_legend(reverse=TRUE)) +
         theme_gray(base_family = "Ubuntu Condensed") +
         coord_flip()
 }
