@@ -147,8 +147,7 @@ plot_database_overlap <- function(comp_db) {
     offset <- 250
     dodge_width <- .6
     gg <- ggplot(data_for_plot, aes(x = phylum, color = database)) +
-        geom_linerange(#data = filter(data_for_plot, data_source == "not_in_geo"),
-                       aes(x = phylum, ymin = -offset, ymax = -offset + not_in_geo),
+        geom_linerange(aes(x = phylum, ymin = -offset, ymax = -offset + not_in_geo),
                        position = position_dodge(width = dodge_width)) +
         geom_point(aes(y = -offset + not_in_geo), size = .7,
                        position = position_dodge(width = dodge_width)) +
@@ -159,11 +158,7 @@ plot_database_overlap <- function(comp_db) {
         geom_text(aes(x = phylum, label = phylum, y = 0),
                   family = "Ubuntu Condensed",
                   inherit.aes = FALSE,
-                  size = 4, color = "#5D646F") +
-   # geom_label(x = 1, y = offset + 300, label = "Not in database", color = "#3A3F4A", family = "Ubuntu Condensed",
-   #            fill = "#EFF2F4", size = 5, label.size = 0) +
-   # geom_label(x = 1, y = -offset - 300, label = "Not in list", color = "#3A3F4A", family = "Ubuntu Condensed",
-   #            fill = "#EFF2f4", size = 5, label.size = 0) +
+                  size = 4) +
         coord_flip() +
         scale_y_continuous(breaks = c(seq(-1500, 0, by = 250) + -offset,
                                       seq(0, 1500, by = 250) + offset),
@@ -171,40 +166,33 @@ plot_database_overlap <- function(comp_db) {
                            ) +
         facet_wrap(~ region, labeller = as_labeller(c(gom = "Gulf of Mexico", kozloff = "Pacific NW"))) +
         theme_ipsum(base_family = "Ubuntu Condensed") +
-        labs(
-            title = "compare db",
-            subtitle = "yo"
-        ) +
-            ylab("Number of species") +
-         theme(text = element_text(color = "#3A3F4A"),
+        scale_color_manual(values = c("#C0DA4C", "#3F1A52")) +
+        ylab("Number of species") +
+        theme(text = element_text(),
                panel.grid.major.y = element_blank(),
                panel.grid.minor = element_blank(),
-               panel.grid.major.x = element_line(linetype = "dotted", size = 0.1, color = "#3A3F4A"),
+               panel.grid.major.x = element_line(linetype = "dotted", size = 0.1),
                axis.title = element_blank(),
-               plot.title = element_blank(), #element_text(face = "bold", size = 36, margin = margin(b = 10), hjust = 0.030),
-               plot.subtitle = element_blank(), #element_text(size = 16, margin = margin(b = 20), hjust = 0.030),
-               plot.caption = element_text(size = 8, margin = margin(b = 10, t = 50), color = "#5D646F"),
-               axis.text.x = element_text(size = 10, color = "#5D646F"),
+               plot.title = element_blank(),
+               plot.subtitle = element_blank(),
+               plot.caption = element_text(size = 8, margin = margin(b = 10, t = 50)),
+               axis.text.x = element_text(size = 10),
                axis.text.y = element_blank(),
-               strip.text = element_text(color = "#5D646F", size = 18, face = "bold", hjust = 0.030),
-               plot.background = element_rect(fill = "#EFF2F4"),
-               #plot.margin = unit(c(2, 2, 2, 2), "cm"),
-               #legend.position = "top",
-               #legend.spacing = unit(0.01, "lines"),
+               strip.text = element_text(size = 18, face = "bold", hjust = 0.030),
+               plot.background = element_rect(),
                legend.text  = element_text(family = "Ubuntu Condensed", size = 10),
-               ##       legend.text.align = 0) +
                panel.spacing.x = unit(5, "lines")
                ) +
             annotation_custom(
                 grob = grid::textGrob(label = "Not in list", hjust = -1,
-                                      gp = gpar(fontfamily = "Ubuntu Condensed", col = "#3A3F4A")),
+                                      gp = gpar(fontfamily = "Ubuntu Condensed")),
                 ymin = 100,
                 ymax = 100,
                 xmin = -.6,
                 xmax = -.6) +
             annotation_custom(
                 grob = grid::textGrob(label = "Not in database", hjust = 1,
-                                      gp = gpar(fontfamily = "Ubuntu Condensed", col = "#3A3F4A")
+                                      gp = gpar(fontfamily = "Ubuntu Condensed")
                                       ),
                 ymin = -100 - offset,
                 ymax = -100 - offset,
