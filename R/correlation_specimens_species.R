@@ -9,8 +9,8 @@ plot_sampling_effort <- function(id) {
     id %>%
         prepare_sampling_effort_data %>%
         ggplot(aes(x = n_specimen, y = n_species, shape = east_west, colour = latitude)) +
-        scale_colour_viridis(option = "magma", direction = -1, end = .95) +
-        geom_point(alpha = .6, position = position_jitter(width = .01, height = .01)) +
+        scale_colour_viridis(option = "magma", direction = -1, end = .95, name = "Latitude") +
+        geom_point(alpha = .6, position = position_jitter(width = .02, height = .02)) +
         geom_abline(slope = 1, intercept = 0) +
         xlab("Number of records") + ylab("Number of species") +
         scale_x_log10() + scale_y_log10() +
