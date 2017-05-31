@@ -271,16 +271,22 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
         coord_flip()
 }
 
-combine_cowplots <- function(g1, g2, ...) {
-    legend <- get_legend(g1)
+combine_cowplots <- function(g1, g2, nrow = 1, common_legend = TRUE, ...) {
+    if (common_legend) {
+        g1 <- g1 + theme(legend.position = "none")
+        g2 <- g2 + theme(legend.position = "none")
+        legend <- get_legend(g1)
+    }
     prow <- cowplot::plot_grid(
-                         g1 + theme(legend.position = "none"),
-                         g2 + theme(legend.position = "none"),
+                         g1,
+                         g2,
                  align = 'vh',
                  labels = c("A", "B"),
                  hjust = -1,
-                 nrow = 1
+                 nrow = nrow
                  )
-    cowplot::plot_grid(prow, legend, rel_widths = c(3, .4))
+    if (common_legend) {
+        cowplot::plot_grid(prow, legend, rel_widths = c(3, .4), ...)
+    } else prow
 
 }
