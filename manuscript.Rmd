@@ -111,14 +111,17 @@ These results suggest that even when considering species lists that have been cu
 
 ### What do we know about marine invertebrates in the US?
 
-We combined `r nrow(idigbio_records)` museum records for marine invertebrates collected in the EEZ waters of the continental US representing `r length(unique(tolower(idigbio_records[["data.dwc:phylum"]])))` phyla and `r length(unique(idigbio_records$worms_valid_name))` species. Most samples were collected on the continental shelf (Fig. 1). For the East coast, species richness is the highest in South Florida but it is relatively uniform along the coastline. For the West coast, the Salish Sea, the Bay Area, and Southern California have the highest richness (Fig. 2).
+We combined `r nrow(idigbio_records)` museum records for marine invertebrates collected in the EEZ waters of the continental US representing `r length(unique(tolower(idigbio_records[["data.dwc:phylum"]])))` phyla and `r length(unique(idigbio_records$worms_valid_name))` species. Most samples were collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A). For the East coast, species richness is the highest in South Florida but it is relatively uniform along the coastline. For the West coast, the Salish Sea, the Bay Area, and Southern California have the highest richness (Fig. \@ref(fig:map-diversity-sampling)B).
 
-```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on specimen data available from iDigBio within the limits of the Exclusive Economic Zone for the contiental USA.'}
+```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on specimen data available from iDigBio within the limits of the Exclusive Economic Zone for the contiental USA. (\\#fig:map-diversity-sampling)'}
 knitr::include_graphics("figures/map_diversity_sampling.pdf")
 ```
 
+These patterns of spatial distribution of the species richness is strongly confounded by the sampling. When investigating the relation between the number of samples and the number of species for each cell of the map (\@ref(fig:correlation-sampling)), we can see that until reaching about 100 records per 0.5° there is little redundancy in the sampled species.
 
-Based on these data, there is no evidence of a diversity gradient.
+```{r correlation-sampling, fig.cap='Relation between number of records and number of species for each cell of the map used in \\@ref(fig:map-diversity-sampling)'}
+knitr::include_graphics("figures/plot_sampling_effort.pdf")
+```
 
 These patterns highlight our lack of knowledge about the marine fauna: `r prop_singleton_species`% of the species are known from a single record. Furthermore, the strong correlation between the number of samples collected and the species richness suggests that any new sampling effort will lead to new records (Fig. 3). This is also reflected in the cumulative numbers of species recorded for the first time and the number of samples through time (Fig. 4). The slowing down of collections in the 1970 has been accompanied with a slowing down in the discovery of new records: `r n_spp_comparison$n_spp_2017_2000` species have been documented for the first time since 2000, while `r n_spp_comparison$n_spp_1970_1960` have been documented between 1960 and 1970.
 
@@ -176,7 +179,6 @@ data); data comprehensiveness (how many species are captured in the database);
 data accuracy (can we trust the data that is found in the databases) -->
 
 
-![Relation between the number of specimen and the number of species collected](figures/plot_sampling_effort.pdf)
 
 ![Cumulative number of samples through time](figures/cum_samples_through_time.pdf)
 
