@@ -25,12 +25,20 @@ model_sampling_effort <- function(id) {
 
 }
 
-calc_prop_singleton_species <- function(idig) {
+## proportion of species known by `n_specimens`.
+calc_prop_nspecimens_species <- function(idig, n_specimens) {
     res <- idig %>%
-        group_by(worms_valid_name) %>%
-        tally
+        filter(!is.na(worms_valid_name)) %>%
+        count(clean_phylum, worms_valid_name, sort = TRUE)
 
-    format_output(nrow(dplyr::filter(res, n == 1))/nrow(res)*100)
+    pdf(file = paste0("figures/distribution_specimens.pdf"))
+    print(
+        ggplot(res, aes(n, fill = clean_phylum)) +
+        geom_bar() + xlim(c(1, 100)) + scale_y_log10()
+    )
+    dev.off()
+
+    format_output(nrow(dplyr::filter(res, n <= n_specimens))/nrow(res)*100)
 }
 
 calc_prop_species_not_collected_since <- function(idig, max_year) {
