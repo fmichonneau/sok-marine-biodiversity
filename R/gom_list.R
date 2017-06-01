@@ -273,9 +273,9 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
 
 combine_cowplots <- function(g1, g2, nrow = 1, common_legend = TRUE, ...) {
     if (common_legend) {
+        legend <- get_legend(g1)
         g1 <- g1 + theme(legend.position = "none")
         g2 <- g2 + theme(legend.position = "none")
-        legend <- get_legend(g1)
     }
     prow <- cowplot::plot_grid(
                          g1,
