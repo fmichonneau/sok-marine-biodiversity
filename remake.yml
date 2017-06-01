@@ -393,17 +393,20 @@ targets:
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
 
-  idigbio_samples_through_time:
+  idigbio_samples_through_time_data:
     command: make_knowledge_through_time_idigbio(idigbio_records)
 
-  figures/plot_idigbio_samples_through_time.pdf:
-    command: plot_cum_samples_through_time(idigbio_samples_through_time, facet=I(FALSE))
-    plot: true
+  idigbio_samples_through_time:
+    command: plot_cum_samples_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
 
-  figures/plot_idigbio_species_through_time.pdf:
-    command: plot_cum_spp_through_time(idigbio_samples_through_time, facet=I(FALSE))
-    plot: true
+  idigbio_species_through_time:
+    command: plot_cum_spp_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
 
+  figures/idigbio_through_time.pdf:
+    command: combine_cowplots(idigbio_samples_through_time, idigbio_species_through_time)
+    plot:
+      width: 12
+      height: 6
 
 
 ### summary tables
@@ -504,11 +507,9 @@ targets:
   summary_richness_per_db_koz:
     command: summarize_richness_per_db(kozloff_bold, kozloff_spp_records_idigbio, kozloff_spp_records_obis, kozloff_spp_records_gbif, region=I("pnw"))
 
-  #figures/plot_richness_per_db_koz.pdf:
   plot_richness_per_db_koz:
     command: plot_richness_per_db(summary_richness_per_db_koz, data_source=I("Kozloff"), region=I("pnw"))
 
-  #figures/plot_richness_per_db_gom.pdf:
   plot_richness_per_db_gom:
     command: plot_richness_per_db(summary_richness_per_db_gom, data_source=I("Gulf of Mexico"), region=I("gom"))
 
@@ -526,19 +527,6 @@ targets:
 
 ### in text statistics ---------------------------------------------------------
 
-  in_text_stats:
-    depends:
-      - stat_bold
-      - prop_singleton_species
-      - prop_species_not_collected_since_1980
-      - n_spp_comparison
-
-  # n_esus:
-  #   command: calc_n_esus()
-
-  # n_larvae:
-  #   command: calc_n_larvae()
-
   prop_plankton_with_match:
     command: calc_prop_plankton_with_species_match(plankton_ids)
 
@@ -546,13 +534,19 @@ targets:
     command: make_stat_bold(gom_bold, kozloff_bold, gom_worms, kozloff_worms)
 
   prop_singleton_species:
-    command: calc_prop_singleton_species(idigbio_records)
+    command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(1))
+
+  prop_10_specimens_species:
+    command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(10))
+
+  prop_30_specimens_species:
+    command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(30))
 
   prop_species_not_collected_since_1980:
     command: calc_prop_species_not_collected_since(idigbio_records, I(1980))
 
   n_spp_comparison:
-    command: calc_n_spp_comparison(idigbio_samples_through_time)
+    command: calc_n_spp_comparison(idigbio_samples_through_time_data)
 
   #prop_species_not_collected_since_1990:
   #  command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1990))
@@ -563,8 +557,7 @@ targets:
     depends:
       - figures/map_diversity_sampling.pdf
       - figures/proportion_barcoded.pdf
-      - figures/plot_richness_per_db_koz.pdf
-      - figures/plot_richness_per_db_gom.pdf
+      - figures/richness_per_db.pdf
       - figures/database_coverage.pdf
       - figures/database_overlap.pdf
 
@@ -577,17 +570,19 @@ targets:
       - obis_kozloff_records
       - gom_worms
       - kozloff_worms
-      - in_text_stats
       - mammals_species_asm
       - amphibian_summary
       - stat_bold
       - prop_singleton_species
+      - prop_10_specimens_species
+      - prop_30_specimens_species
       - prop_species_not_collected_since_1980
       - n_spp_comparison
       - text_figures
       - species_in_common
       - summary_richness_per_db_gom
       - summary_richness_per_db_koz
+
     knitr: true
 
   manuscript.pdf:
