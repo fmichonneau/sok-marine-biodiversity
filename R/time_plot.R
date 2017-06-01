@@ -146,17 +146,18 @@ filter_phyla <- function(ktt, n_min = 100) {
         unique(x = .$phylum)
 }
 
-
 plot_cum_samples_through_time <- function(knowledge_through_time, facet = TRUE)  {
     phy_to_keep <- filter_phyla(knowledge_through_time)
 
     res <- knowledge_through_time %>%
         filter(phylum %in% phy_to_keep) %>%
         ggplot(aes(x = year, y = cum_n_samples, colour = phylum)) +
-        geom_line() +
+        geom_line(size = .7) +
         xlim(c(1850, 2017)) +
         ylab("Cumulative Number of Samples") +
-        xlab("Year")
+        xlab("Year") +
+        theme_ipsum(base_family = "Ubuntu Condensed") +
+        scale_colour_hc(name = "", labels = capitalize(phy_to_keep))
 
      if (facet)
         res <- res + facet_grid(fauna ~ database)
@@ -173,10 +174,12 @@ plot_cum_spp_through_time <- function(knowledge_through_time, facet = TRUE) {
         filter(phylum %in% phy_to_keep,
                !is.na(cum_n_new_spp)) %>%
         ggplot(aes(x = year, y = cum_n_new_spp, colour = phylum)) +
-        geom_line() +
+        geom_line(size = .7) +
         xlim(c(1850, 2017)) +
         ylab("Cumulative Number of Species") +
-        xlab("Year")
+        xlab("Year") +
+        theme_ipsum(base_family = "Ubuntu Condensed")  +
+        scale_colour_hc()
 
     if (facet)
         res <- res + facet_grid(fauna ~ database)
