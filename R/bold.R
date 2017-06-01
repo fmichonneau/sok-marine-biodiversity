@@ -166,12 +166,14 @@ summary_bold_status <- function(gom_bold, koz_bold, idig_bold) {
                                      )
                ) %>%
             dplyr::mutate(taxon_name = capitalize(taxon_name)) %>%
-            ggplot(aes(x = reorder(taxon_name, p_has_bold), y = p_has_bold, fill = data_source)) +
+            ggplot(aes(x = reorder(taxon_name, p_has_bold), y = p_has_bold,
+                       fill = data_source)) +
             geom_col(position = "dodge") +
             xlab("") + ylab("Proportion of species with available DNA barcodes") +
             scale_fill_viridis(discrete = TRUE,
-                               name = "Data source",
-                               labels = c("all iDigBio", "Gulf of Mexico", "Salish Sea")) +
+                               name = "",
+                               labels = c("US EEZ", "Gulf of Mexico", "Pacific Northwest")) +
+            theme_ipsum(base_family = "Ubuntu Condensed") +
             coord_flip()
 }
 
