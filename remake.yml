@@ -542,6 +542,12 @@ targets:
   prop_30_specimens_species:
     command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(30))
 
+  records_rare_phyla:
+    command: calc_records_rare_phyla(idigbio_records)
+
+  n_idigbio_phyla:
+    command: calc_n_idigbio_phyla(idigbio_records)
+
   prop_species_not_collected_since_1980:
     command: calc_prop_species_not_collected_since(idigbio_records, I(1980))
 
@@ -576,6 +582,8 @@ targets:
       - prop_singleton_species
       - prop_10_specimens_species
       - prop_30_specimens_species
+      - n_idigbio_phyla
+      - records_rare_phyla
       - prop_species_not_collected_since_1980
       - n_spp_comparison
       - text_figures

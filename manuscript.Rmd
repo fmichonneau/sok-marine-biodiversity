@@ -129,13 +129,9 @@ The inadequacy of the sampling effort compared to the diversity of the fauna is 
 knitr::include_graphics("figures/idigbio_through_time.pdf")
 ```
 
-
 Modelling the geographic distributions of species, and how they can be impacted by global change has undergone important advances recently. However, it is generally recognized that to obtain reliable results such efforts require to have accurate geographic information for a minimum of 10 specimens but having at least 30 is preferred. Based on iDigBio data, `r prop_10_specimens_species`% of species have less than 10 specimens and `r prop_30_specimens_species`% have less than 30 specimens. This suggests that our understanding of the  geographic range of species is limited as most species are known from only a few locations, while efforts to estimate their current and future ranges based on occurrence data are rendered moot by the low number of data points available.
 
-
-There are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups are well represented in museum collections, the small organisms of the meiofauna are virtually absent: 12 of the 25 phyla represented in the dataset have less than 500 specimens in museums.
-
-However, taxonomic expertise is dwindling, and there are now only a handful of US natural history museums with active marine invertebrates collections. Museum collections have been recording our knowledge about species and their geographic ranges, but until recently, this information was fragmented across institutions and difficult to synthesize. With collection digitization and other large-scale projects have aimed at gathering biodiversity information, public databases can now be used to enable synthesis and highlight knowledge gaps. Here we use these data to synthetic the state of knowledge for marine invertebrates, and demonstrate that the stage is set to combine these data sources to inform where future efforts for documenting biodiversity.
+There are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups represent the bulk of the records for marine invertebrates in museum collections, the small organisms of the meiofauna are virtually absent. Of the `r n_idigbio_phyla` phyla represented in iDigBio, `r records_rare_phyla$n_rare_phyla` are represented by less than 500 records, and make up `r records_rare_phyla$prop_rare_phyla`% of the total number of records.
 
 
 ### Genetic data for the future of biodiversity discovery and monitoring
@@ -157,6 +153,9 @@ The proportion of species that have DNA barcodes available is surprisingly const
   - add and validate geographic information associated with specimens
   - develop infrastructure and tools to continuously check and validate data
     quality in databases.
+
+However, taxonomic expertise is dwindling, and there are now only a handful of US natural history museums with active marine invertebrates collections. Museum collections have been recording our knowledge about species and their geographic ranges, but until recently, this information was fragmented across institutions and difficult to synthesize. With collection digitization and other large-scale projects have aimed at gathering biodiversity information, public databases can now be used to enable synthesis and highlight knowledge gaps. Here we use these data to synthetic the state of knowledge for marine invertebrates, and demonstrate that the stage is set to combine these data sources to inform where future efforts for documenting biodiversity.
+
 
 Based on these results, we recommend that additional field expeditions are organized to sample more thoroughly the marine environment. The data from museum collections make clear that any additional samples will contain new species and new records. However, taxonomists are needed to identify and describe these new species. The samples collected during these expeditions need to be photographed to document live appearance that would otherwise be lost during preservation. We also need to capture metadata associated with the specimens to be able to understand better the physical characteristics of the habitats for these species. The specimens need to be sub-sampled and have tissues suitable for genomic analysis preserved, so we can sequence their DNA barcode, or other genomic resources.
 
