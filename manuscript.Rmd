@@ -117,20 +117,28 @@ We combined `r nrow(idigbio_records)` museum records for marine invertebrates co
 knitr::include_graphics("figures/map_diversity_sampling.pdf")
 ```
 
-These patterns of spatial distribution of the species richness is strongly confounded by the sampling. When investigating the relation between the number of samples and the number of species for each cell of the map (\@ref(fig:correlation-sampling)), we can see that until reaching about 100 records per 0.5° there is little redundancy in the sampled species.
+These patterns of spatial distribution of the species richness are strongly confounded by the sampling effort. When investigating the relation between the number of samples and the number of species for each cell of the map (Fig. \@ref(fig:correlation-sampling)), we can see that until reaching about 100 records per cell there is little redundancy in the sampled species.
 
-```{r correlation-sampling, fig.cap='Relation between number of records and number of species for each cell of the map used in \\@ref(fig:map-diversity-sampling)'}
+```{r correlation-sampling, fig.cap='Relation between number of records and number of species for each cell of the map used in Fig. \\@ref(fig:map-diversity-sampling). (\\#fig:correlation-sampling)'}
 knitr::include_graphics("figures/plot_sampling_effort.pdf")
 ```
 
-These patterns highlight our lack of knowledge about the marine fauna: `r prop_singleton_species`% of the species are known from a single record. Furthermore, the strong correlation between the number of samples collected and the species richness suggests that any new sampling effort will lead to new records (Fig. 3). This is also reflected in the cumulative numbers of species recorded for the first time and the number of samples through time (Fig. 4). The slowing down of collections in the 1970 has been accompanied with a slowing down in the discovery of new records: `r n_spp_comparison$n_spp_2017_2000` species have been documented for the first time since 2000, while `r n_spp_comparison$n_spp_1970_1960` have been documented between 1960 and 1970.
+The inadequacy of the sampling effort compared to the diversity of the fauna is also reflected by the fact that `r prop_singleton_species`% of the species are known from a single record. The strong correlation between the number of samples collected and the species richness suggests that any new sampling effort will lead to new records (Fig. \@ref(fig:map-diversity-sampling)) and new species. Another indication of this inadequacy is the relation between the number of collected specimen and the number of species recorded (Fig. \@ref(fig:idigbio-through-time)). Initial explorations in the late ninteeth century lead to an initial exponential growth in the knowledge of the fauna, that tapered off, until the 1970's when intensive collecting efforts led to an increase in the recording of new taxa (Fig. \@ref(fig:idigbio-through-time)). Since then, the slowing down of collections in the 1970 has been accompanied with a slowing down in the discovery of new records: `r n_spp_comparison$n_spp_2017_2000` species have been documented for the first time since 2000 (`r format_output(n_spp_comparison$n_spp_2017_2000/18)` species.year^-1^), while `r n_spp_comparison$n_spp_1970_1960` have been documented between 1960 and 1970 (`r format_output(n_spp_comparison$n_spp_1970_1960/11)` species.year^-1^). Coordinated large-scale biodiversity expeditions can produce a wealth of data and new records. For instance, a recent study in Western Australia reported that 135 samples led to 805 species of crustaceans and polychates, 94.6% and 72% of which were undescribed [@Poore2014].
 
-There are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups are well represented in museum collections, and have a reasonable proportion of their known species represented in DNA barcode databases, the small organisms of the meiofauna are virtually absent: 12 of the 25 phyla represented in the dataset have less than 500 specimens in museums.
+```{r idigbio-through-time, fig.cap='Cumulative number of samples (A) and species (B) of marine invertebrates recorded through time based on iDigBio records. (\\#fig:idigbio-through-time)'}
+knitr::include_graphics("figures/idigbio_through_time.pdf")
+```
+
+
+Modelling the geographic distributions of species, and how they can be impacted by global change has undergone important advances recently. However, it is generally recognized that to obtain reliable results such efforts require to have accurate geographic information for a minimum of 10 specimens but having at least 30 is preferred. Based on iDigBio data, `r prop_10_specimens_species`% of species have less than 10 specimens and `r prop_30_specimens_species`% have less than 30 specimens. This suggests that our understanding of the  geographic range of species is limited as most species are known from only a few locations, while efforts to estimate their current and future ranges based on occurrence data are rendered moot by the low number of data points available.
+
+
+There are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups are well represented in museum collections, the small organisms of the meiofauna are virtually absent: 12 of the 25 phyla represented in the dataset have less than 500 specimens in museums.
 
 However, taxonomic expertise is dwindling, and there are now only a handful of US natural history museums with active marine invertebrates collections. Museum collections have been recording our knowledge about species and their geographic ranges, but until recently, this information was fragmented across institutions and difficult to synthesize. With collection digitization and other large-scale projects have aimed at gathering biodiversity information, public databases can now be used to enable synthesis and highlight knowledge gaps. Here we use these data to synthetic the state of knowledge for marine invertebrates, and demonstrate that the stage is set to combine these data sources to inform where future efforts for documenting biodiversity.
 
 
-### Current genetic data and the future of biodiveristy discovery and monitoring
+### Genetic data for the future of biodiversity discovery and monitoring
 
 The proportion of species that have DNA barcodes available is surprisingly constant across the better studied phyla. About 20% of species known to occur in the Gulf of Mexico and in the Salish Sea have DNA barcode records.  Because geographic information is missing for most records (`r format_output(100*stat_bold$p_no_coords)`% of the `r format(stat_bold$n_total_records)` records analyzed here have no geographic coordinates information associated with them), and many marine invertebrate species are known to be cryptic complexes that are not as widely distributed as previously thought. Therefore specimens identified under the same species but sampled in distant locations, could represent cryptic species. It is thus crucial to ensure that accurate geographic information is provided when DNA barcodes are published, and that additional samples are collected, to capture more accurately their geographic range and the extent of their genetic diversity. This high level of cryptic diversity is reflected in the fact that `r stat_bold$n_spp_muti_bin` species out of `r stat_bold$n_spp` include more than 1 BIN. This number is confounded by some taxonomic identification issues as `r stat_bold$n_shared_bins` BINs are shared across more than one species.
 
@@ -178,16 +186,9 @@ Recent developments in high-throughput sequencing technologies are giving new ap
 data); data comprehensiveness (how many species are captured in the database);
 data accuracy (can we trust the data that is found in the databases) -->
 
-
-
-![Cumulative number of samples through time](figures/cum_samples_through_time.pdf)
-
-![Cumulative number of species recorded for the first time through time](figures/cum_spp_through_time.pdf)
-
 ![Proportion of species occurring in natural history collections that have been DNA barcoded](figures/proportion_barcoded.pdf)
 
-![Relation between the number of specimen and the number of species collected](figures/plot_sampling_effort.pdf)
-
+## References
 
 
 <!--
