@@ -597,4 +597,4 @@ targets:
     command: render("manuscript.md")
 
   manuscript.docx:
-    command: render("manuscript.md", output_format=I("word_document"))
+    command: render("manuscript.md", output_format=I("bookdown::word_document2"))
