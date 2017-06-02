@@ -219,7 +219,7 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
 
     if (only_keep_us)  {
         res <- res %>%
-            is_in_eez_records(map_usa) %>%
+            is_within_eez_records(map_usa) %>%
             dplyr::filter(is_in_eez == TRUE)
     }
 
@@ -228,19 +228,6 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
 
 }
 
-
-## select only the the records from the Gulf of Mexico from all the
-## iDigBio records. It might be more efficient to do it earlier in the
-## pipeline, but doing it there ensures that we are working with
-## cleaned/pre-processed data.
-select_gom_from_idigbio <- function(idig) {
-    idig[is_in_gulf_of_mexico(idig$decimallongitude, idig$decimallatitude), ]
-}
-
-
-select_koz_from_idigbio <- function(idig) {
-    idig[is_in_pnw(idig$decimallongitude, idig$decimallatitude), ]
-}
 
 n_spp_from_idigbio <- function(idigbio_records) {
     idigbio_records %>%

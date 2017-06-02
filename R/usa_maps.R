@@ -5,8 +5,7 @@ get_map_usa <- function(file) {
     res
 }
 
-
-get_felder_gom_map <- function(file) {
+get_felder_map_gom <- function(file) {
     gom_b <- rgdal::readOGR(file)
     wkt_string <- "POLYGON((-83.3 25.2, -80.4 25.2, -81.1 23.2, -83.3 23.01, -83.3 25.2))"
     east_gom <- rgeos::readWKT(wkt_string)
@@ -15,80 +14,46 @@ get_felder_gom_map <- function(file) {
         geojsonio::geojson_json()
 }
 
-get_kozloff_map <- function() {
+get_map_pnw <- function() {
     wkt_string <- "POLYGON((-129.43 51.29, -126.9 51.29, -122.2 49.18, -122.2 47, -123.5 46.8, -123.5 43.3, -124 43.3, -124.3 46.9, -129.43 51.29))"
     rgeos::readWKT(wkt_string, p4s = "+proj=longlat +datum=WGS84") %>%
         geojsonio::geojson_json()
 }
 
-is_in_eez <- function(points, map_usa) {
-    ##message("Sit back, relax, it's going to be a while...")
+is_within_map <- function(points, map) {
     pts <- geojsonio::geojson_json(points, lat = "lat", lon = "long")
-    res <- lawn::lawn_within(pts, map_usa)
+    res <- lawn::lawn_within(pts, map)
     res
 }
 
-is_in_eez_records <- function(filtered_data, map_usa, coords_store = eez_coords_store()) {
-    res_lawn <- filtered_data %>%
-        dplyr::mutate(
-                   lat = round(decimallatitude, 1),
-                   long = round(decimallongitude, 1),
-                   coord_key = paste(lat, long, sep = "|"))
+is_within_map_records <- function(area) {
+    function(filtered_data, map) {
+        res_lawn <- filtered_data %>%
+            dplyr::mutate(
+                       lat = round(decimallatitude, 1),
+                       long = round(decimallongitude, 1),
+                       coord_key = paste(lat, long, sep = "|"))
 
-    simplified_coords <-  res_lawn %>%
-        dplyr::select(coord_key, lat, long) %>%
-        dplyr::distinct(coord_key, .keep_all = TRUE)
+        simplified_coords <-  res_lawn %>%
+            dplyr::select(coord_key, lat, long) %>%
+            dplyr::distinct(coord_key, .keep_all = TRUE)
 
-    res_is_in_eez <- is_in_eez(simplified_coords, map_usa)$features$geometry$coordinates %>%
-                        lapply(function(x) data.frame(
-                                               coord_key = paste(x[2], x[1], sep = "|"),
-                                               lat = x[2],
-                                               lon = x[1],
-                                               stringsAsFactors = FALSE)) %>%
-                        dplyr::bind_rows()
+        res_is_within <- is_within_map(simplified_coords, map)$features$geometry$coordinates %>%
+                           purrr::map_df(function(x)
+                                      data.frame(
+                                          coord_key = paste(x[2], x[1], sep = "|"),
+                                          lat = x[2],
+                                          lon = x[1],
+                                          stringsAsFactors = FALSE))
 
-    res_lawn$is_in_eez <- res_lawn$coord_key %in% res_is_in_eez$coord_key
-    dplyr::select(res_lawn, -lat, -long, -coord_key)
+        res_lawn[[paste0("is_in_", area)]] <- res_lawn$coord_key %in% res_is_within$coord_key
+        dplyr::select(res_lawn, -lat, -long, -coord_key)
+    }
 }
 
-
-is_in_gulf_of_mexico <- function(lon, lat) {
-    if (is.null(lon) | is.null(lat))
-        stop("NULL values for the coordinates. Incorrect column specified?")
-    ## coordinates used by Felder et al, but in our case, it will
-    ## cover a smaller area as the iDigBio query currently only
-    ## applies to EEZ waters
-    res <- (lon > -100 & lon < -80.5) &
-        (lat > 17 & lat < 31)
-    ## remove Jacksonville area points
-    res[lon > -82 & lat > 27] <- FALSE
-    res
-}
-
-is_in_pnw <- function(lon, lat) {
-    if (is.null(lon) | is.null(lat))
-        stop("NULL values for the coordinates. Incorrect column specified?")
-    (lon > -125 & lon < -122) &
-        (lat > 47 & lat < 49)
-}
-
-is_in_gulf_of_mexico_records <- function(idig) {
-    ## TODO -- this is quick as it potentially includes records that
-    ## don't have correct GPS coordinates and are in land. So, we use
-    ## the intersect of being both in the EEZ and in the GOM. If we
-    ## extend the iDigBio search outside de US EEZ to also include
-    ## Mexico and Cuba waters, then this will need to be modified.
-    idig$is_in_gom <- is_in_gulf_of_mexico(idig$decimallongitude,
-                                           idig$decimallatitude) &
-        idig$is_in_eez
-    idig
-}
-
-is_in_pnw_records <- function(idig) {
-    idig$is_in_pnw <- is_in_pnw(idig$decimallongitude,
-                                idig$decimallatitude)
-    idig
-}
+is_within_eez_records <- is_within_map_records("eez")
+is_within_pnw_records <- is_within_map_records("pnw")
+is_within_gom_records <- is_within_map_records("gom")
 
 
 ### this approach was way too slow!

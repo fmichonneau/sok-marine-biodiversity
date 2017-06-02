@@ -8,7 +8,6 @@ packages:
   - feather
   - RSQLite
   - storr
-  - bold
   - tibble
   ## geospatial tools
   - raster
@@ -33,6 +32,7 @@ packages:
   - hrbrthemes
   - UpSetR
   ## APIs
+  - bold
   - taxizesoap
   - ridigbio
   - marmap
@@ -77,10 +77,10 @@ targets:
     command: filter_raw_records(kozloff_idigbio_raw)
 
   kozloff_idigbio_in_us:
-    command: is_in_eez_records(kozloff_idigbio, map_usa)
+    command: is_within_eez_records(kozloff_idigbio, map_usa)
 
   kozloff_idigbio_in_pnw:
-    command: is_in_pnw_records(kozloff_idigbio_in_us)
+    command: is_within_pnw_records(kozloff_idigbio_in_us, map_pnw)
 
   kozloff_spp_records_idigbio:
     command: get_n_records_in_db(kozloff_worms, kozloff_idigbio_in_pnw, field_name=I("n_idigbio"), region=I("pnw"))
@@ -93,10 +93,10 @@ targets:
     command: filter_raw_records("data/kozloff_obis.feather")
 
   kozloff_obis_in_us:
-    command: is_in_eez_records(kozloff_obis, map_usa)
+    command: is_within_eez_records(kozloff_obis, map_usa)
 
   kozloff_obis_in_pnw:
-    command: is_in_pnw_records(kozloff_obis_in_us)
+    command: is_within_pnw_records(kozloff_obis_in_us, map_pnw)
 
   kozloff_spp_records_obis:
     command: get_n_records_in_db(kozloff_worms, kozloff_obis_in_pnw, field_name=I("n_obis"), region=I("pnw"))
@@ -109,10 +109,10 @@ targets:
     command: filter_raw_records("data/kozloff_gbif.feather")
 
   kozloff_gbif_in_us:
-    command: is_in_eez_records(kozloff_gbif, map_usa)
+    command: is_within_eez_records(kozloff_gbif, map_usa)
 
   kozloff_gbif_in_pnw:
-    command: is_in_pnw_records(kozloff_gbif_in_us)
+    command: is_within_pnw_records(kozloff_gbif_in_us, map_pnw)
 
   kozloff_spp_records_gbif:
     command: get_n_records_in_db(kozloff_worms, kozloff_gbif_in_pnw, field_name=I("n_gbif"), region=I("pnw"))
@@ -155,10 +155,10 @@ targets:
     command: filter_raw_records(gom_idigbio_raw)
 
   gom_idigbio_in_us:
-    command: is_in_eez_records(gom_idigbio, map_usa)
+    command: is_within_eez_records(gom_idigbio, map_usa)
 
   gom_idigbio_in_gom:
-    command: is_in_gulf_of_mexico_records(gom_idigbio_in_us)
+    command: is_within_gom_records(gom_idigbio_in_us, map_gom)
 
   gom_spp_records_idigbio:
     command: get_n_records_in_db(gom_worms, gom_idigbio_in_gom, field_name=I("n_idigbio"), region=I("gom"))
@@ -171,10 +171,10 @@ targets:
     command: filter_raw_records("data/gom_obis.feather")
 
   gom_obis_in_us:
-    command: is_in_eez_records(gom_obis, map_usa)
+    command: is_within_eez_records(gom_obis, map_usa)
 
   gom_obis_in_gom:
-    command: is_in_gulf_of_mexico_records(gom_obis_in_us)
+    command: is_within_gom_records(gom_obis_in_us, map_gom)
 
   gom_spp_records_obis:
     command: get_n_records_in_db(gom_worms, gom_obis_in_gom, field_name=I("n_obis"), region=I("gom"))
@@ -187,10 +187,10 @@ targets:
     command: filter_raw_records("data/gom_gbif.feather")
 
   gom_gbif_in_us:
-    command: is_in_eez_records(gom_gbif, map_usa)
+    command: is_within_eez_records(gom_gbif, map_usa)
 
   gom_gbif_in_gom:
-    command: is_in_gulf_of_mexico_records(gom_gbif_in_us)
+    command: is_within_gom_records(gom_gbif_in_us, map_gom)
 
   gom_spp_records_gbif:
     command: get_n_records_in_db(gom_worms, gom_gbif_in_gom, field_name=I("n_gbif"), region=I("gom"))
@@ -313,12 +313,6 @@ targets:
   idigbio_records:
     command: fill_store_idigbio_by_geo(coords_idigbio_usa, map_usa, db_table=I("us_idigbio"), only_keep_us=I(TRUE), use_cache=I(TRUE))
 
-  kozloff_idigbio_records:
-    command: select_koz_from_idigbio(idigbio_records)
-
-  idigbio_not_in_kozloff:
-    command: diff_list_idigbio(kozloff_idigbio_records, kozloff_worms)
-
   idigbio_iucn:
     command: add_iucn_status(idigbio_records)
 
@@ -327,17 +321,17 @@ targets:
 
   ## Gulf of Mexico ------------------------------------------------------------
 
-  felder_gom_map:
-    command: get_felder_gom_map("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
+  map_gom:
+    command: get_felder_map_gom("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
 
   coords_gom_query:
-    command: get_coords_idigbio_query(felder_gom_map, cellsize=I(.2))
+    command: get_coords_idigbio_query(map_gom, cellsize=I(.2))
 
   idigbio_gom_records:
-    command: fill_store_idigbio_by_geo(coords_gom_query, felder_gom_map, db_table=I("gom_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
+    command: fill_store_idigbio_by_geo(coords_gom_query, map_gom, db_table=I("gom_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
 
   obis_gom_records_raw:
-    command: fill_store_obis_by_geo(felder_gom_map, use_cache=I(TRUE))
+    command: fill_store_obis_by_geo(map_gom, use_cache=I(TRUE))
 
   obis_gom_records:
     command: add_worms(obis_gom_records_raw)
@@ -349,19 +343,19 @@ targets:
     command: plot_upsetr("data/compare_database_coverage.csv")
     plot: true
 
-  ## Salish Sea ----------------------------------------------------------------
+  ## Pacific Northwest ---------------------------------------------------------
 
-  kozloff_map:
-    command: get_kozloff_map()
+  map_pnw:
+    command: get_map_pnw()
 
   coords_kozloff_query:
-    command: get_coords_idigbio_query(kozloff_map, cellsize=I(.5))
+    command: get_coords_idigbio_query(map_pnw, cellsize=I(.5))
 
   idigbio_kozloff_records:
-    command: fill_store_idigbio_by_geo(coords_kozloff_query, kozloff_map, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
+    command: fill_store_idigbio_by_geo(coords_kozloff_query, map_pnw, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
 
   obis_kozloff_records_raw:
-    command: fill_store_obis_by_geo(kozloff_map, use_cache=I(TRUE))
+    command: fill_store_obis_by_geo(map_pnw, use_cache=I(TRUE))
 
   obis_kozloff_records:
     command: add_worms(obis_kozloff_records_raw)
