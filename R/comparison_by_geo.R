@@ -142,8 +142,6 @@ plot_database_overlap <- function(comp_db) {
 
     data_for_plot$phylum <- factor(data_for_plot$phylum, levels = rev(phylum_label))
 
-    extrafont::loadfonts(quiet = TRUE)
-
     offset <- 250
     dodge_width <- .6
     gg <- ggplot(data_for_plot, aes(x = phylum, color = database)) +
