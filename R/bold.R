@@ -94,19 +94,19 @@ make_stat_bold <- function(gom_bld, koz_bld, gom_wrm, koz_wrm) {
     bin_data <- get_bold_bins(gom_wrm, koz_wrm)
 
     n_shared_bins <- bin_data %>%
-        group_by(bins) %>%
-        summarize(
+        dplyr::group_by(bins) %>%
+        dplyr::summarize(
             n_shared_bins = n_distinct(worms_valid_name)
         ) %>%
-        filter(n_shared_bins > 1) %>%
+        dplyr::filter(n_shared_bins > 1) %>%
         nrow()
 
     n_spp_multi_bin <- bin_data %>%
-        group_by(worms_valid_name) %>%
-        summarize(
+        dplyr::group_by(worms_valid_name) %>%
+        dplyr::summarize(
             n_spp_multi_bin = n_distinct(bins)
         ) %>%
-        filter(n_spp_multi_bin > 1) %>%
+        dplyr::filter(n_spp_multi_bin > 1) %>%
         nrow()
 
     list(
