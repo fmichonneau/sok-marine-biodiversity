@@ -1,5 +1,5 @@
-intialize <- function() {
+init <- function() {
     extrafont::loadfonts(quiet = TRUE)
 }
 
-initialize()
+init()
