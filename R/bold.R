@@ -146,11 +146,13 @@ bold_status <- function(idig) {
         dplyr::mutate(taxon_name = tolower(taxon_name)) %>%
         dplyr::group_by(taxon_name) %>%
         dplyr::summarize(
-            p_has_bold = mean(n_bold_records > 0)
+                   p_has_bold = mean(n_bold_records > 0),
+                   n_has_bold = sum(n_bold_records > 0)
         )
 }
 
 summary_bold_status <- function(gom_bold, koz_bold, idig_bold) {
+
     dplyr::bind_rows(
                gom = bold_status(gom_bold),
                koz = bold_status(koz_bold),
@@ -169,6 +171,8 @@ summary_bold_status <- function(gom_bold, koz_bold, idig_bold) {
             ggplot(aes(x = reorder(taxon_name, p_has_bold), y = p_has_bold,
                        fill = data_source)) +
             geom_col(position = "dodge") +
+            geom_text(aes(y = p_has_bold +.01, label = n_has_bold), position = position_dodge(.9),
+                      hjust = .1, family = "Ubuntu Condensed")  +
             xlab("") + ylab("Proportion of species with available DNA barcodes") +
             scale_fill_viridis(discrete = TRUE,
                                name = "",
