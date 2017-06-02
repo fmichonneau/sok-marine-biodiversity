@@ -502,10 +502,10 @@ targets:
     command: summarize_richness_per_db(kozloff_bold, kozloff_spp_records_idigbio, kozloff_spp_records_obis, kozloff_spp_records_gbif, region=I("pnw"))
 
   plot_richness_per_db_koz:
-    command: plot_richness_per_db(summary_richness_per_db_koz, data_source=I("Kozloff"), region=I("pnw"))
+    command: plot_richness_per_db(summary_richness_per_db_koz, region=I("pnw"))
 
   plot_richness_per_db_gom:
-    command: plot_richness_per_db(summary_richness_per_db_gom, data_source=I("Gulf of Mexico"), region=I("gom"))
+    command: plot_richness_per_db(summary_richness_per_db_gom, region=I("gom"))
 
   figures/richness_per_db.pdf:
     command: combine_cowplots(plot_richness_per_db_gom, plot_richness_per_db_koz)
@@ -553,14 +553,6 @@ targets:
 
 ### Manuscript --------------------------------------------------------------
 
-  text_figures:
-    depends:
-      - figures/map_diversity_sampling.pdf
-      - figures/proportion_barcoded.pdf
-      - figures/richness_per_db.pdf
-      - figures/database_coverage.pdf
-      - figures/database_overlap.pdf
-
   manuscript.md:
     depends:
       - idigbio_records
@@ -580,11 +572,15 @@ targets:
       - records_rare_phyla
       - prop_species_not_collected_since_1980
       - n_spp_comparison
-      - text_figures
       - species_in_common
       - summary_richness_per_db_gom
       - summary_richness_per_db_koz
-
+      ## figures
+      - figures/map_diversity_sampling.pdf
+      - figures/proportion_barcoded.pdf
+      - figures/richness_per_db.pdf
+      - figures/database_coverage.pdf
+      - figures/database_overlap.pdf
     knitr: true
 
   manuscript.pdf:

@@ -130,7 +130,9 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
                          paste0("n_idigbio_in_", region)
                          )
                    )
-        )
+               )
+    stopifnot(all(idig_[["n_idigbio"]] >= idig_[["n_idigbio_in_us"]]))
+    stopifnot(all(idig_[["n_idigbio"]] >= idig_[[paste0("n_idigbio_in_", region)]]))
 
     obis_ <- obis_db %>%
         dplyr::group_by(taxon_name) %>%
@@ -146,7 +148,9 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
                          paste0("n_obis_in_", region)
                          )
                    )
-        )
+              )
+    stopifnot(all(idig_[["n_obis"]] >= idig_[["n_obis_in_us"]]))
+    stopifnot(all(idig_[["n_obis"]] >= idig_[[paste0("n_obis_in_", region)]]))
 
     gbif_ <- gbif_db %>%
         group_by(taxon_name) %>%
@@ -162,7 +166,10 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
                          paste0("n_gbif_in_", region)
                          )
                    )
-        )
+               )
+    stopifnot(all(idig_[["n_gbif"]] >= idig_[["n_gbif_in_us"]]))
+    stopifnot(all(idig_[["n_gbif"]] >= idig_[[paste0("n_gbif_in_", region)]]))
+
 
     bold_db %>%
         dplyr::group_by(taxon_name) %>%
@@ -204,7 +211,7 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
 
 }
 
-plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw")) {
+plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
     region <- match.arg(region)
 
     full_region <- c(gom = "GoM", pnw = "PNW")
@@ -214,16 +221,12 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
 
     smry_db %>%
         dplyr::filter(taxon_name %in% phyla_to_plot) %>%
-        dplyr::mutate(
-                   n_idigbio_us_diff = n_idigbio - n_idigbio_in_us,
-                   n_obis_us_diff = n_obis - n_obis_in_us,
-                   n_gbif_us_diff = n_gbif - n_gbif_in_us) %>%
         dplyr::mutate_(.dots = setNames(list(
-                           lazyeval::interp("n_idigbio_in_us - n_idigbio_in_region",
+                           lazyeval::interp("n_idigbio - n_idigbio_in_region",
                                             n_idigbio_in_region = as.name(paste0("n_idigbio_in_", region))),
-                           lazyeval::interp("n_obis_in_us - n_obis_in_region",
+                           lazyeval::interp("n_obis - n_obis_in_region",
                                             n_obis_in_region = as.name(paste0("n_obis_in_", region))),
-                           lazyeval::interp("n_gbif_in_us - n_gbif_in_region",
+                           lazyeval::interp("n_gbif - n_gbif_in_region",
                                             n_gbif_in_region = as.name(paste0("n_gbif_in_", region)))
                            ), c(paste0("n_idigbio_", region, "_diff"),
                                 paste0("n_obis_", region, "_diff"),
@@ -245,16 +248,16 @@ plot_richness_per_db <- function(smry_db, data_source, region = c("gom", "pnw"))
                                  levels = rev(
                                      gsub("XXX", region,
                                           c("n_total",
-                                            "n_obis_in_XXX", "n_obis_XXX_diff", "n_obis_us_diff",
-                                            "n_gbif_in_XXX", "n_gbif_XXX_diff", "n_gbif_us_diff",
-                                            "n_idigbio_in_XXX", "n_idigbio_XXX_diff", "n_idigbio_us_diff",
+                                            "n_obis_in_XXX", "n_obis_XXX_diff",
+                                            "n_gbif_in_XXX", "n_gbif_XXX_diff",
+                                            "n_idigbio_in_XXX", "n_idigbio_XXX_diff",
                                             "n_barcoded"
                                             ))),
                                  labels = rev(
                                      c("Species in list",
-                                       "OBIS in region", "OBIS in US EEZ", "OBIS global",
-                                       "GBIF in region", "GBIF in US EEZ", "GBIF global",
-                                       "iDigBio in region", "iDigBio in US EEZ", "iDigBio global",
+                                       "OBIS in region","OBIS global",
+                                       "GBIF in region", "GBIF global",
+                                       "iDigBio in region", "iDigBio global",
                                        "BOLD"
                                        ))
                                  )
