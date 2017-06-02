@@ -1,7 +1,7 @@
 ---
 #author: Fran\c{c}ois Michonneau
-title: "Data-driven approaches to identifying knowledge gaps in marine invertebrate biodiversity"
-date: '`r format(Sys.time())`'
+title: "The state of knowledge for marine invertebrate biodiversity in the continental US"
+date: ' ' #'`r format(Sys.time())`'
 output:
   bookdown::pdf_document2:
     #includes:
