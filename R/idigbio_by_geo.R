@@ -144,7 +144,7 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
 
     idig_data_db <- dplyr::src_postgres("idigbio", host = "localhost",
                                         user = "marinediversity",
-                                        password = "password")#dplyr::src_sqlite(db, create = TRUE)
+                                        password = "password")
     con <- idig_data_db$con
     db_begin(con)
     on.exit(db_rollback(con))
@@ -182,7 +182,7 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
     ## - unique records
     ## - invertebrates
     ## - marine
-    ## - within the EEZ boundaries
+    ## - within the EEZ boundaries (optional)
 
     db <- idig_data_db %>%
         dplyr::tbl(db_table)
