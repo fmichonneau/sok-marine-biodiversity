@@ -382,7 +382,7 @@ targets:
     command: plot_database_overlap(database_overlap)
     plot:
       width: 12
-      height: 8
+      height: 4
 
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
