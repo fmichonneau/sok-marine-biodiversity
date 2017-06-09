@@ -551,6 +551,9 @@ targets:
   #prop_species_not_collected_since_1990:
   #  command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1990))
 
+  recently_collected:
+    command: not_in_list_collected_recently(database_overlap)
+
 ### Attributions ---------------------------------------------------------------
 
   idigbio_records_attributions:
@@ -589,6 +592,7 @@ targets:
       - species_in_common
       - summary_richness_per_db_gom
       - summary_richness_per_db_koz
+      - recently_collected
       ## figures
       - figures/map_diversity_sampling.pdf
       - figures/proportion_barcoded.pdf

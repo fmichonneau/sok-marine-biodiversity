@@ -189,7 +189,7 @@ plot_database_overlap <- function(comp_db) {
                 xmin = -.6,
                 xmax = -.6) +
             annotation_custom(
-                grob = grid::textGrob(label = "Not in database", hjust = 1,
+                grob = grid::textGrob(label = "Not in databases", hjust = 1,
                                       gp = gpar(fontfamily = "Ubuntu Condensed")
                                       ),
                 ymin = -100 - offset,
@@ -234,4 +234,43 @@ get_species_in_common <- function(gom_worms, idigbio_gom_records, obis_gom_recor
             dplyr::n_distinct()
 
         )
+}
+
+not_in_list_collected_recently <- function(database_overlap) {
+
+    .f <- . %>% fetch_spp_from_idigbio() %>%
+        idigbio_parse_year() %>%
+        dplyr::mutate(
+                   cleaned_scientificname = cleanup_species_names(scientificname),
+                   is_binomial = is_binomial(scientificname)
+               ) %>%
+        add_worms() %>%
+        group_by(phylum, worms_valid_name) %>%
+        summarize(min_year = min(year))
+
+
+    ## for idigbio gom
+    do_idig_gom <- database_overlap %>%
+        dplyr::filter(
+                   region == "gom",
+                   data_source == "not_in_list",
+                   database == "idigbio"
+               )
+
+    spp_gom_in_idig <- do_idig_gom %>% .f
+
+    ## for idigbio pnw
+    do_idig_pnw <- database_overlap %>%
+        dplyr::filter(
+                   region == "kozloff",
+                   data_source == "not_in_list",
+                   database == "idigbio"
+               )
+    spp_pnw_in_idig <- do_idig_pnw %>% .f
+
+    list(
+        gom_in_idig = spp_gom_in_idig,
+        pnw_in_idig = spp_pnw_in_idig
+    )
+
 }
