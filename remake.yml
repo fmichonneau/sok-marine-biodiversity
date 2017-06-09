@@ -348,11 +348,11 @@ targets:
   map_pnw:
     command: get_map_pnw()
 
-  coords_kozloff_query:
+  coords_pnw_query:
     command: get_coords_idigbio_query(map_pnw, cellsize=I(.5))
 
-  idigbio_kozloff_records:
-    command: fill_store_idigbio_by_geo(coords_kozloff_query, map_pnw, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
+  idigbio_pnw_records:
+    command: fill_store_idigbio_by_geo(coords_pnw_query, map_pnw, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
 
   obis_kozloff_records_raw:
     command: fill_store_obis_by_geo(map_pnw, use_cache=I(TRUE))
@@ -361,7 +361,7 @@ targets:
     command: add_worms(obis_kozloff_records_raw)
 
   data/compare_database_coverage_kozloff.csv:
-    command: generate_upsetr_csv(list = kozloff_worms, idigbio = idigbio_kozloff_records, obis = obis_kozloff_records, file = "data/compare_database_coverage_kozloff.csv")
+    command: generate_upsetr_csv(list = kozloff_worms, idigbio = idigbio_pnw_records, obis = obis_kozloff_records, file = "data/compare_database_coverage_kozloff.csv")
 
   figures/kozloff_database_coverage.pdf:
     command: plot_upsetr("data/compare_database_coverage_kozloff.csv")
@@ -373,10 +373,10 @@ targets:
     command: combine_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
 
   species_in_common:
-    command: get_species_in_common(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_worms, idigbio_kozloff_records, obis_kozloff_records)
+    command: get_species_in_common(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_worms, idigbio_pnw_records, obis_kozloff_records)
 
   database_overlap:
-    command: compare_database_overlap(gom_worms, kozloff_worms, idigbio_gom_records, obis_gom_records, idigbio_kozloff_records, obis_kozloff_records)
+    command: compare_database_overlap(gom_worms, kozloff_worms, idigbio_gom_records, obis_gom_records, idigbio_pnw_records, obis_kozloff_records)
 
   figures/database_overlap.pdf:
     command: plot_database_overlap(database_overlap)
@@ -551,14 +551,28 @@ targets:
   #prop_species_not_collected_since_1990:
   #  command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1990))
 
-### Manuscript --------------------------------------------------------------
+### Attributions ---------------------------------------------------------------
+
+  idigbio_records_attributions:
+    command: idigbio_attribution(idigbio_records)
+
+  idigbio_gom_records_attributions:
+    command: idigbio_attribution(idigbio_gom_records)
+
+  idigbio_pnw_records_attributions:
+    command: idigbio_attribution(idigbio_pnw_records)
+
+
+
+
+### Manuscript -----------------------------------------------------------------
 
   manuscript.md:
     depends:
       - idigbio_records
       - idigbio_gom_records
       - obis_gom_records
-      - idigbio_kozloff_records
+      - idigbio_pnw_records
       - obis_kozloff_records
       - gom_worms
       - kozloff_worms
@@ -581,6 +595,10 @@ targets:
       - figures/richness_per_db.pdf
       - figures/database_coverage.pdf
       - figures/database_overlap.pdf
+      ## attributions
+      - idigbio_records_attributions
+      - idigbio_gom_records_attributions
+      - idigbio_pnw_records_attributions
     knitr: true
 
   manuscript.pdf:
