@@ -254,3 +254,32 @@ plot_change_trend_through_time <- function(knowledge_through_time) {
         geom_point() +
         facet_grid(database ~ fauna)
 }
+
+
+plot_institutions_through_time <- function(idig_records) {
+    idig <- idig_records %>%
+        idigbio_add_year() %>%
+        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
+
+    inst_to_keep <- idig %>%
+        dplyr::count(institutioncode, sort = TRUE) %>%
+        dplyr::filter(n  >= 1000) %>%
+        dplyr::distinct() %>%
+        .[["institutioncode"]]
+
+    tmp_data <- data_frame(institutioncode = inst_to_keep)
+
+    idig %>%
+        dplyr::filter(institutioncode %in% inst_to_keep) %>%
+        dplyr::count(institutioncode, year) %>%
+        tidyr::complete(year = 1850:2017, institutioncode,  fill = list(n = 0)) %>%
+        dplyr::filter(year >= 1999) %>%
+        dplyr::group_by(institutioncode) %>%
+        dplyr::arrange(year) %>%
+        dplyr::mutate(cum_n = cumsum(n)) %>% filter(year == 2017) %>% arrange(desc(cum_n))
+        dplyr::ungroup() %>%
+        ggplot(aes(x = year, y = cum_n, #color = institutioncode,
+                   fill = institutioncode)) +
+        geom_col() + facet_wrap(~ institutioncode, scales = "free_y")
+
+}
