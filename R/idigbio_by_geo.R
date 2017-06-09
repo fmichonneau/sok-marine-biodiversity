@@ -341,7 +341,7 @@ make_heatmap_sampling <- function(gg_r, title, limits = NULL) {
                      colour = "gray80", binwidth = 500, size = .1) +
         coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
         #scale_fill_viridis(trans = "log", breaks = c(1, 10, 100, 1000, 10000)) +
-        theme_bw() +
+        theme_bw(base_family = "Ubuntu Condensed") +
         theme(legend.title = element_blank()) +
         ggtitle(title) +
         xlab("Longitude") + ylab("Latitude")
