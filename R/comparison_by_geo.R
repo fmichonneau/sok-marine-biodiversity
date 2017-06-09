@@ -114,13 +114,13 @@ compare_taxonomy_database_overlap <- function(database_overlap) {
 
 
 plot_database_overlap <- function(comp_db) {
-    phyla_to_keep <- comp_db %>%
-        dplyr::distinct(region, phylum) %>%
-        dplyr::count(phylum) %>%
-        dplyr::filter(n == 2) %>%
-        .[["phylum"]]
+
+    phyla_to_keep <- c("mollusca", "arthropoda", "annelida",
+                       "cnidaria", "bryozoa", "porifera",
+                       "echinodermata", "chordata")
 
     comp_db <- comp_db %>%
+        dplyr::mutate(phylum = tolower(phylum)) %>%
         dplyr::filter(phylum %in% phyla_to_keep)
 
     ## to have 2 sided plot, we take the negative value of the count
@@ -151,7 +151,7 @@ plot_database_overlap <- function(comp_db) {
                        position = position_dodge(width = dodge_width)) +
         geom_linerange(aes(x = phylum, ymin = offset, ymax = offset + not_in_list),
                        position = position_dodge(width = dodge_width)) +
-         geom_point(aes(y = offset + not_in_list), size = .7,
+        geom_point(aes(y = offset + not_in_list), size = .7,
                         position = position_dodge(width = dodge_width)) +
         geom_text(aes(x = phylum, label = phylum, y = 0),
                   family = "Ubuntu Condensed",
@@ -177,7 +177,7 @@ plot_database_overlap <- function(comp_db) {
                axis.text.x = element_text(size = 10),
                axis.text.y = element_blank(),
                strip.text = element_text(size = 18, face = "bold", hjust = 0.030),
-               plot.background = element_rect(),
+               plot.background = element_blank(),
                legend.text  = element_text(family = "Ubuntu Condensed", size = 10),
                panel.spacing.x = unit(5, "lines")
                ) +
