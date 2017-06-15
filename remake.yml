@@ -40,6 +40,7 @@ packages:
   - rgbif
   - ritis
   ## other utils
+  - assertthat
   - extrafont
   - rmarkdown
   - bookdown
@@ -554,6 +555,9 @@ targets:
   recently_collected:
     command: not_in_list_collected_recently(database_overlap)
 
+  not_really_in_database:
+    command: get_not_really_in_database(database_overlap, map_usa)
+
 ### Attributions ---------------------------------------------------------------
 
   idigbio_records_attributions:
@@ -593,6 +597,7 @@ targets:
       - summary_richness_per_db_gom
       - summary_richness_per_db_koz
       - recently_collected
+      - not_really_in_database
       ## figures
       - figures/map_diversity_sampling.pdf
       - figures/proportion_barcoded.pdf

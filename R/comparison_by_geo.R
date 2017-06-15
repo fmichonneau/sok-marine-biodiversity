@@ -232,7 +232,6 @@ get_species_in_common <- function(gom_worms, idigbio_gom_records, obis_gom_recor
             dplyr::semi_join(idigbio_kozloff_records, by = "worms_valid_name") %>%
             dplyr::select(worms_valid_name) %>%
             dplyr::n_distinct()
-
         )
 }
 
@@ -273,4 +272,64 @@ not_in_list_collected_recently <- function(database_overlap) {
         pnw_in_idig = spp_pnw_in_idig
     )
 
+}
+
+## Species that appear to not be in iDigbio for the geographical list,
+## either because they do not have GPS coordinates associated with
+## their records, or they have records that fall outside the
+## geographic area.
+## Only GOM for now.
+get_not_really_in_database <- function(database_overlap, map_usa) {
+
+    idig_gom_not_in_db <- database_overlap %>%
+        dplyr::filter(region == "gom",
+                      data_source == "not_in_geo",
+                      database == "idigbio")
+
+    idig_gom_spp_records <- idig_gom_not_in_db %>%
+        fetch_spp_from_idigbio() %>%
+        is_within_eez_records(map_usa)
+
+    ## species that are trully absent
+    idig_gom_n_spp_not_in_db <- length(setdiff(tolower(idig_gom_not_in_db$worms_valid_name),
+                                               unique(idig_gom_spp_records$scientificname)))
+
+    ## species that have no geographic coordinates
+    has_no_coords <- function(lat, lon) {
+        is.na(lat) & is.na(lon)
+    }
+    idig_gom_spp_no_coords <- idig_gom_spp_records %>%
+        dplyr::group_by(scientificname) %>%
+        dplyr::summarize(
+                   n_no_coords = sum(has_no_coords(decimallatitude, decimallongitude)),
+                   p_no_coords = mean(has_no_coords(decimallatitude, decimallongitude))
+               )
+
+    ## total number of species that have records in idigbio
+    idig_gom_n_spp_no_coords <- nrow(idig_gom_spp_no_coords)
+    idig_gom_p_spp_no_coords <- mean(idig_gom_spp_no_coords$p_no_coords == 1)
+
+    ## proportion of species that have at least one record within US EEZ
+    idig_gom_within_usa <- idig_gom_spp_records %>%
+        dplyr::filter(!has_no_coords(decimallatitude, decimallongitude)) %>%
+        ## only East coast records
+        dplyr::filter(decimallongitude > -100 ) %>%
+        dplyr::group_by(scientificname) %>%
+        dplyr::summarize(
+                   is_in_eez = any(is_in_eez)
+               )
+
+    idig_gom_n_spp_within_usa <- nrow(idig_gom_within_usa)
+    idig_gom_p_spp_within_usa <- mean(idig_gom_within_usa$is_in_eez)
+
+    ## WARNING: Here the `n` refers to the denominator for the
+    ## proportions, not the actual number of records
+    list(
+        idig_gom_n_spp_not_in_db = nrow(idig_gom_not_in_db),
+        idig_gom_p_spp_not_in_db = idig_gom_n_spp_not_in_db/n_distinct(idig_gom_not_in_db$worms_valid_name),
+        idig_gom_n_spp_no_coords = idig_gom_n_spp_no_coords,
+        idig_gom_p_spp_no_coords = idig_gom_p_spp_no_coords,
+        idig_gom_n_spp_within_usa = idig_gom_n_spp_within_usa,
+        idig_gom_p_spp_within_usa = idig_gom_p_spp_within_usa
+    )
 }
