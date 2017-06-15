@@ -127,7 +127,7 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 ## database that will store the results use_cache: if TRUE, this uses
 ## the results from the iDigBio storr; if false, the entire storr is
 ## destroyed before
-fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, use_cache) {
+fill_store_idigbio_by_geo <- function(coords, db_table, use_cache) {
 
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
@@ -173,7 +173,7 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
         db_insert_into(con, db_table, r)
     })
     db_create_indexes(con, db_table, indexes = list(c("clean_phylum", "clean_class", "clean_family"),
-                                                          c("country")))
+                                                    c("country")))
     db_analyze(con, db_table)
     db_commit(con)
     on.exit(NULL)
@@ -217,15 +217,14 @@ fill_store_idigbio_by_geo <- function(coords, map_usa, db_table, only_keep_us, u
         dplyr::rename(decimallatitude = geopoint.lat,
                       decimallongitude = geopoint.lon)
 
-    if (only_keep_us)  {
-        res <- res %>%
-            is_within_eez_records(map_usa) %>%
-            dplyr::filter(is_in_eez == TRUE)
-    }
 
-    res %>%
+}
+
+filter_idigbio_records <- function(idig, map_usa) {
+    idig %>%
+        is_within_eez_records(map_usa) %>%
+        dplyr::filter(is_in_eez == TRUE) %>%
         add_worms()
-
 }
 
 

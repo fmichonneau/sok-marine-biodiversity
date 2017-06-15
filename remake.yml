@@ -311,8 +311,11 @@ targets:
   coords_idigbio_usa:
     command: get_coords_idigbio_query(map_usa)
 
+  idigbio_records_all:
+    command: fill_store_idigbio_by_geo(coords_idigbio_usa, db_table=I("us_idigbio"), use_cache=I(TRUE))
+
   idigbio_records:
-    command: fill_store_idigbio_by_geo(coords_idigbio_usa, map_usa, db_table=I("us_idigbio"), only_keep_us=I(TRUE), use_cache=I(TRUE))
+    command: filter_idigbio_records(idigbio_records_all, map_usa)
 
   idigbio_iucn:
     command: add_iucn_status(idigbio_records)
@@ -328,8 +331,11 @@ targets:
   coords_gom_query:
     command: get_coords_idigbio_query(map_gom, cellsize=I(.2))
 
+  idigbio_gom_records_all:
+    command: fill_store_idigbio_by_geo(coords_gom_query, db_table=I("gom_idigbio"), use_cache=I(TRUE))
+
   idigbio_gom_records:
-    command: fill_store_idigbio_by_geo(coords_gom_query, map_gom, db_table=I("gom_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
+    command: filter_idigbio_records(idigbio_gom_records_all, map_gom)
 
   obis_gom_records_raw:
     command: fill_store_obis_by_geo(map_gom, use_cache=I(TRUE))
@@ -352,8 +358,11 @@ targets:
   coords_pnw_query:
     command: get_coords_idigbio_query(map_pnw, cellsize=I(.5))
 
+  idigbio_pnw_records_all:
+    command: fill_store_idigbio_by_geo(coords_pnw_query, db_table=I("kozloff_idigbio"), use_cache=I(TRUE))
+
   idigbio_pnw_records:
-    command: fill_store_idigbio_by_geo(coords_pnw_query, map_pnw, db_table=I("kozloff_idigbio"), only_keep_us=I(FALSE), use_cache=I(TRUE))
+    command: filter_idigbio_records(idigbio_pnw_records_all, map_pnw)
 
   obis_kozloff_records_raw:
     command: fill_store_obis_by_geo(map_pnw, use_cache=I(TRUE))
@@ -389,7 +398,7 @@ targets:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
 
   idigbio_samples_through_time_data:
-    command: make_knowledge_through_time_idigbio(idigbio_records)
+    command: make_knowledge_through_time_idigbio(idigbio_records_all)
 
   idigbio_samples_through_time:
     command: plot_cum_samples_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
