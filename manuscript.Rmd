@@ -25,28 +25,10 @@ knitr::opts_chunk$set(echo = FALSE)
 <!-- 1st paragraph. -->
 
 
-<!-- We show that the effort is consistent across the better-studied taxa, with ` average_prop_species_seq`% of the fauna sequenced. Using a DNA barcode dataset of ` n_larvae` planktonic larvae, representing ` n_esus` species, collected in coastal waters of Florida, we find a similar proportion of species that can be assigned to a previously sequenced species ( ` format_output(100 * prop_plankton_with_match)`%).  Our results show that most marine species remain to be sequenced. Achieving this goal will required a concerted effort, and resources. -->
-
 
 <!--
-the content of insect traps, marine sediments, plankton
-samples, or communities settling on artificial substratum. When applied to
-metazoan communities, these sequencing approaches typically target the barcoding
-gene and therefore has been dubbed "meta-barcoding". These applications are also
-making the public databases for these DNA barcodes all the more valuable. To
-deliver on the meta-barcoding promises, it is crucial to have comprehensive
-taxonomic coverage represented in the DNA sequences public databases. Here, we
-investigate the proportion of species for each marine phylum that have been
-sequenced at various spatial scale.
--->
-
-<!-- studies that have summary statistics on what has been sequenced for various marine phyla:
-- for Antarctica: Grant+Linse2009-Polar Biology:
 
 
-We know that some perturbations have large effects because they are visible, but what about perturbations for which we don't see the effects directly because they affect small species? :: checkout nature paper on sea grasses.
-
-- Describing new species is crucial but not sufficient. Without knowing their ranges, and their habitats, we can't study or predict how perturbations of the environment are going to affect their distributions and their susceptibility to perturbations. The process of figuring out the ranges of species is more time consuming than possibly finding new species; and it requires shared knowledge in the community about these new species. Using barcoding and other moleuclar techniques to improve the documentation of species distributions is going to be critical.
 
 There can be public involvement in species description, but the exploration and collecting may remain an affair of specialists as it requires manipulating technical gear of have expertise. There are still many species that are easy to access to discover, but the bigger gap is in the species that are difficult to access, and small.
 
@@ -150,7 +132,7 @@ knitr::include_graphics("figures/idigbio_through_time.pdf")
 
 Predicting the geographic range of species, and how they can be impacted by global change has undergone important advances recently. However, it is generally recognized that to obtain reliable results such efforts require to have accurate geographic information for a minimum of 10 specimens but having at least 30 is preferred. Based on iDigBio data, `r prop_10_specimens_species`% of species have less than 10 specimens and `r prop_30_specimens_species`% have less than 30 specimens. This suggests that our understanding of the geographic range of species is limited as most species are known from only a few locations, while efforts to estimate their current and future ranges based on occurrence data are rendered moot by the low number of data points available.
 
-Furtheremore, there are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups represent the bulk of the records for marine invertebrates in museum collections, the small organisms, including representatives of the meiofauna are virtually absent. Of the `r n_idigbio_phyla` phyla occurring in iDigBio, `r records_rare_phyla$n_rare_phyla` are represented by less than 500 records, and make up `r records_rare_phyla$prop_rare_phyla`% of the total number of records.
+Furthermore, there are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups represent the bulk of the records for marine invertebrates in museum collections, the small organisms, including representatives of the meiofauna are virtually absent. Of the `r n_idigbio_phyla` phyla occurring in iDigBio, `r records_rare_phyla$n_rare_phyla` are represented by less than 500 records, and make up `r records_rare_phyla$prop_rare_phyla`% of the total number of records.
 
 <!-- From Mark: These previously undersampled taxa are likely to be much more important for the detection of subtle changes in environmental quality due to their size and physiological vulnerability. (?).  -->
 <!-- also, the impact of changes in the composition in their communties is largely unexplored, look into Bik's paper? -->
@@ -165,7 +147,7 @@ Since its introduction in the early 2000's, DNA barcoding, the sequencing of a c
 
 To estimate the proportion of the marine invertebrate diversity for which DNA barcodes are available, we queried BOLD (Barcode of Life Datasystem) for all the species that are listed in the regional lists for the Gulf of Mexico, the Pacific Northwest, as well as all the records for marine invertebrates that occur in the EEZ of the US found in iDigBio. Here, we focused on records based on museum specimens as some of them could potentially be used to complete current DNA barcoding efforts.
 
-The proportion of species that have DNA barcodes available is relatively constant across the better studied phyla at the scale of the EEZ. It varies between 12% for bryozoans to 28% for cnidarians. The proportions for species known to occur in the Gulf of Mexico are usually similar than for the US, while typically a higher fraction of species from the Pacific Northwest are available. In 2010, it was estimated that a global scale, less than 10% of the species for each marine phylum had been sequenced [@Radulovici2010], suggesting that the US fauna is generally better characterized than the rest of the world, combined with many other species have been sequenced since this report.
+The proportion of species that have DNA barcodes available is relatively constant across the better studied phyla at the scale of the EEZ. It varies between 12% for bryozoans to 28% for cnidarians. The proportions for species known to occur in the Gulf of Mexico are usually similar than for the US, while typically a higher fraction of species from the Pacific Northwest are available. In 2010, it was estimated that a global scale, less than 10% of the species for each marine phylum had been sequenced [@Radulovici2010], and that this number was even lower in some areas (e.g. 2.6% for the Antarctic [@Grant2009]). This suggests that even as many additional species have had their DNA barcodes made available since these studies, the US fauna is generally better characterized than other parts of the world.
 
 Using the fraction of known species that have a barcode as a yard stick of the progress made is not sufficient. Many marine invertebrate species are known to be cryptic complexes that are not as widely distributed as currently reported [@Knowlton2000,@Meyer2005-evolution]. Therefore specimens identified under the same species but sampled in distant locations, could represent cryptic species. Geographic information is missing for most records (`r format_output(100*stat_bold$p_no_coords)`% of the `r format(stat_bold$n_total_records, big.mark=",")` BOLD records analyzed here have no geographic coordinate information associated with them). It is thus crucial to ensure that accurate geographic information is provided when DNA barcodes are published, and that enough samples for each species are sequenced, to capture more accurately their geographic range and the extent of their genetic diversity. This cryptic diversity is also at least partially reflected in the fact that `r stat_bold$n_spp_multi_bin` species out of `r format(stat_bold$n_spp, big.mark=",")` include more than 1 BIN (BOLD Index Number, operational taxonomic units that closely resemble species [@Ratnasingham2013]).
 
@@ -194,11 +176,15 @@ Increasing the computing literacy of the staff of museum in order for them to ma
 
 ### Collect better data faster and more cost effectively
 
-This study highlights that we have too little data about too few species of marine invertebrates, we recommend that additional coordinated field expeditions are organized to sample more thoroughly the marine environment. Data from museum collections make clear that any additional samples will contain new species and new records. Samples collected during these expeditions need to be photographed to document live appearance that would otherwise be lost during preservation. We also need to capture metadata associated with the specimens to be able to understand better the physical characteristics of the habitats for these species. Specimens need to be sub-sampled and have tissues suitable for genomic analysis preserved for their DNA barcode, or any other genomic resources. Some of these parts of data and specimen collection can be automated and captured digitally directly in the field speeding up data collection.
+This study highlights that we have too little data about too few species of marine invertebrates, we recommend that additional coordinated field expeditions are organized to sample more thoroughly the marine environment. The relation between sampling effort and diversity from museum collections makes clear that any additional samples will improve greatly our knowledge of marine biodiversity.
+
+Samples collected during these expeditions need to be photographed to document live appearance that would otherwise be lost during preservation. We also need to capture metadata associated with the specimens to be able to understand better the physical characteristics of the habitats for these species. Specimens need to be sub-sampled to create material suitable for genomic analysis. Parts of data and specimen collection can be automated and captured digitally directly in the field speeding up data collection.
 
 Coupling these more traditional approaches of biodiversity documentation with metabarcoding is a promising approach to screen an habitat for its potential for species that do not yet occur in public databases. <!-- explain why better --> Metabarcoding can complement and take advantage of the DNA barcodes already available. Additionally, in the future, data generated by metabarcoding efforts can be re-interpreted as more DNA barcodes associated with correctly identified specimens become available. Building the library of DNA barcodes in parallel of metabarcoding efforts ensures that matches in the database will correspond to actual specimens deposited in natural history collections; ruling out possible artifacts of the method. Information about species identity and distribution will thus build on existing natural history data rather than being limited to matching DNA sequences across studies.
 
-<!-- Beyond their utility in documenting diversity, metabarcoding is also promising for understanding the functioning of ecosystems. -->
+In order to predict the impact of climate change and other anthropogenic perturbations on species distributions, we need to collect more occurences for species. One potential challenge for this is to be able to convey taxonomic concepts for mostly unamed species. Developing robust identifiers that can be used across biodiversity information systems, and potentially anchored in results from DNA barcoding or other molecular techniques, is needed to collaboratively build our knowledge of species distributions.
+
+Beyond their utility in documenting diversity, metabarcoding is also a promising technology to monitor changes in communities and for understanding the functioning of ecosystems. For instance, despite our limited knowledge of the diversity of communities in the meiofauna, metabarcoding could be used to detect and documents changes in species assemblages following the Deepwater Horizon Oil Spill [@Bik2012]. Metabarcoding has also been used to reveal important differences in the diet of 3 related species of fishes that co-occur [@Leray2015b], providing a much more detailed understanding of trophic relations.
 
 However, taxonomists and experts are needed to collect, sort, process, and identify these samples and the data that come along with them. Even if technological advances can greatly speed up the documentation of species and their distributions, trained personnel is needed. Taxonomic expertise is dwindling, and there are now only a handful of US natural history museums with active marine invertebrates collections.
 
