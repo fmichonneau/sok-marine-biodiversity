@@ -82,7 +82,9 @@ make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
 
 make_knowledge_through_time_idigbio <- function(idigbio) {
 
-    idigbio <- idigbio_add_year(idigbio) %>%
+    idigbio <- idigbio %>%
+        add_worms() %>%
+        idigbio_add_year() %>%
         dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
 
 
