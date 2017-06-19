@@ -170,11 +170,13 @@ With data aggregation of natural history collections through initiatives like iD
 
 Similarly, a significant fraction of museum records do not have or have inaccurate geographic information associated with them. While tools have been developed to convert names of locales into GPS coordinates on land [@rios2010geolocate], similar approaches may not work for locales at sea. However, geographic information is available in other forms, and can be digitized.
 
-For both the spelling of scientific names, and the geographic information, computing tools can be developed to detect issues and propose solutions. There are opportunities for services using publicly available data to be developed to make curators and collection managers aware of these issues so that they can fixed at the source. It however requires that resources are available to museum collections to address these issues.
+For both the spelling of scientific names, and the geographic information, computing tools can be developed to detect issues and propose solutions. There are opportunities for services using publicly available data to be developed to make curators and collection managers aware of these issues so that they can be fixed at the source. It however requires that resources are made available to museum collections to address these issues.
 
 Increasing the computing literacy of the staff of museums in order for them to manipulate and use the data from their collection database is equally critical. As data across institutions get pooled into the large biodiversity information systems, it is crucial that data standards such as Darwin Core are embraced by the community.
 
-Another potential venue to improve the quality of the data in biodiversity information systems, is better incitives from journal editors and funding agencies for scientists to publish their occurrence records in databases alongside their papers as it is done for genetic data with GenBank [@Huang2011e].
+Another venue to improve the quality of the data in biodiversity information systems, is better incitives from journal editors and funding agencies for scientists to publish their occurrence records in databases alongside their papers as it is done for genetic data with GenBank [@Huang2011e].
+
+Specimens with accurate identifications and specimens that have been preserved in conditions such that it is possible to get DNA out of them should be prioritized, as they yield the most data that are relevant to biodiversity knowledge.
 
 <!-- - develop infrastructure and tools to continuously check and validate data quality in databases. -->
 
