@@ -31,6 +31,7 @@ packages:
   - scales
   - hrbrthemes
   - UpSetR
+  - ggthemes
   ## APIs
   - bold
   - taxizesoap
@@ -613,6 +614,7 @@ targets:
       - figures/richness_per_db.pdf
       - figures/database_coverage.pdf
       - figures/database_overlap.pdf
+      - figures/idigbio_through_time.pdf
       ## attributions
       - idigbio_records_attributions
       - idigbio_gom_records_attributions
