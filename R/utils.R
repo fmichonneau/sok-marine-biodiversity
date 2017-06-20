@@ -1,4 +1,9 @@
 cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
+    if (length(nm) > 1) browser()
+    ## remove author/year
+    if (grepl("[0-9]{4}", nm)) {
+        nm <- gsub("([a-z]+)\\s([a-z]+)?\\s?.+", "\\1 \\2", nm)
+    }
     ## remove words that contain numbers
     nm <- gsub("\\S*\\d\\S*", "", nm)
     ## remove extra spaces
@@ -7,10 +12,12 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     nm <- gsub("\\sspp?\\.", "", nm)
     ## remove words fully capitalized
     nm <- gsub("\\s[A-Z]+", "", nm)
+    ## remove cf., aff. and ?
+    nm <- gsub("\\s?(cf\\.|f\\.|aff\\.|\\?|(ex\\.? gr\\.))\\s?", " ", nm)
+    ## remove varieties
+    nm <- gsub("var. [a-z]+$", "", nm)
     ## remove trailing spaces
     nm <- gsub("\\s+$", "", nm)
-    ## remove cf., aff. and ?
-    nm <- gsub("\\s(cf\\.|f\\.|aff\\.|\\?|(ex\\.? gr\\.))\\s", " ", nm)
     ## remove subgenus
     if (rm_subgenus)
         nm <- gsub("\\s?\\([^)]*\\)\\s?", " ", nm)
