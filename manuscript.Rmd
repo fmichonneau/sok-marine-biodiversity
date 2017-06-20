@@ -28,15 +28,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 <!--
 
-
-
 There can be public involvement in species description, but the exploration and collecting may remain an affair of specialists as it requires manipulating technical gear of have expertise. There are still many species that are easy to access to discover, but the bigger gap is in the species that are difficult to access, and small.
-
-We also need to better coordination in describing new species; so that efforts are not duplicated.
-
-Possibly also need to set guidelines on how to treat cases where the molecular data alone is too ambiguous.
-
-
 
 -->
 
@@ -65,7 +57,7 @@ Here, we focus on the continental US because the marine biodiversity is extensiv
 
 ### Comparison with Regional Lists by Geography
 
-Regional faunistic lists assembled and curated by taxonomic experts typically provide a comprehensive and detailed account of species that are known to occur in a given geographic area. We assessed how faunistic lists assembled over decades by specialists compare with records in public databases for the same geographic area. We parsed faunistic lists to extract marine invertebrates from the Gulf of Mexico [@Tunnell2009] and from the Pacific Northwest [@Kozloff1987]. Our goals were (1) to compare  the species lists for these geographic areas assembled by experts with the records found in databases; (2) to assess the proportion of species included in the expert lists that have records in public databases.
+Regional faunistic lists assembled and curated by taxonomic experts provide a comprehensive and detailed account of species that are known to occur in a given geographic area. We assessed how faunistic lists assembled over decades by specialists compare with records in public databases for the same geographic area. We parsed faunistic lists to extract marine invertebrates from the Gulf of Mexico [@Tunnell2009] and from the Pacific Northwest [@Kozloff1987]. Our goals were (1) to compare  the species lists for these geographic areas assembled by experts with the records found in databases; (2) to assess the proportion of species included in the expert lists that have records in public databases.
 
 To compare the faunistic lists from the Gulf of Mexico and the Pacific Northwest with records in public databases, we queried the iDigBio (https://portal.idigbio.org) and OBIS (http://www.iobis.org/) databases for all records they included in the same geographic boundaries as the lists. After filtering these lists to only include the same higher taxonomic level taxa as the species lists, and keeping only records for which the species could be matched to a species name in WoRMS, we had for the Gulf of Mexico `r format(nrow(idigbio_gom_records), big.mark=",")` and `r format(nrow(obis_gom_records), big.mark=",")` records for iDigBio and OBIS respectively, representing `r format(dplyr::n_distinct(idigbio_gom_records$worms_valid_name), big.mark=",")` and `r format(dplyr::n_distinct(obis_gom_records$worms_valid_name), big.mark=",")` species. For the Pacific Northwest, we retrieved `r format(nrow(idigbio_pnw_records), big.mark=",")` and `r format(nrow(obis_kozloff_records), big.mark=",")` records for iDigBio and OBIS respectively representing `r format(dplyr::n_distinct(idigbio_pnw_records$worms_valid_name), big.mark=",")` and `r format(dplyr::n_distinct(obis_kozloff_records$worms_valid_name), big.mark=",")` species. For the Gulf of Mexico, the majority of the species included in the expert lists are recorded in both iDigBio and OBIS (`r format_output(species_in_common$n_spp_gom_idigbio_obis/species_in_common$n_spp_gom*100)` %), or only OBIS (`r format_output(species_in_common$n_spp_gom_obis/species_in_common$n_spp_gom*100)` %) (Fig. \@ref(fig:database-overlap)). For the Pacific Northwest, these proportions were much lower with only `r format_output(species_in_common$n_spp_kozloff_idigbio_obis/species_in_common$n_spp_kozloff*100)`% of the species from the regional list with records in OBIS and iDigBio, and `r format_output(species_in_common$n_spp_kozloff_obis/species_in_common$n_spp_kozloff*100)`%  in OBIS only (Fig. \@ref(fig:database-coverage)). Previous esimates for species richness in the Gulf of Mexico for marine invertebrates were of `r format(11150-1541-434, big.mark=",")` species, and `r format(8374-909-134, big.mark=",")` for the Pacific coast (including California) [@Fautin2010].
 
