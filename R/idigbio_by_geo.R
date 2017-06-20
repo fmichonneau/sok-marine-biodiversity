@@ -127,8 +127,13 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 ## database that will store the results use_cache: if TRUE, this uses
 ## the results from the iDigBio storr; if false, the entire storr is
 ## destroyed before
-fill_store_idigbio_by_geo <- function(coords, db_table, use_cache) {
+connect_idigbio_db <- function() {
+    dplyr::src_postgres("idigbio", host = "localhost",
+                        user = "marinediversity",
+                        password = "password")
+}
 
+create_idigbio_db <- function(coords, db_table, use_cache) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "REAL", "REAL", "TEXT",
@@ -142,12 +147,12 @@ fill_store_idigbio_by_geo <- function(coords, db_table, use_cache) {
                                   "geopoint.lon", "geopoint.lat",
                                   "clean_phylum", "clean_class", "clean_family"))
 
-    idig_data_db <- dplyr::src_postgres("idigbio", host = "localhost",
-                                        user = "marinediversity",
-                                        password = "password")
+    idig_data_db <- connect_idigbio_db()
     con <- idig_data_db$con
+
     db_begin(con)
     on.exit(db_rollback(con))
+
     if (db_has_table(con, db_table))
         db_drop_table(con, db_table)
 
@@ -169,7 +174,7 @@ fill_store_idigbio_by_geo <- function(coords, db_table, use_cache) {
             ## that will take care of plants, fungi, and records with no
             ## specified phylum
             filter(clean_phylum %in% gom_phyla())
-        message(" DONE")
+        message(" DONE.")
         db_insert_into(con, db_table, r)
     })
     db_create_indexes(con, db_table, indexes = list(c("clean_phylum", "clean_class", "clean_family"),
@@ -177,12 +182,17 @@ fill_store_idigbio_by_geo <- function(coords, db_table, use_cache) {
     db_analyze(con, db_table)
     db_commit(con)
     on.exit(NULL)
+}
+
+
+fill_store_idigbio_by_geo <- function(db_table) {
 
     ## We only want:
     ## - unique records
     ## - invertebrates
     ## - marine
-    ## - within the EEZ boundaries (optional)
+
+    idig_data_db <- connect_idigbio_db()
 
     db <- idig_data_db %>%
         dplyr::tbl(db_table)
@@ -198,12 +208,13 @@ fill_store_idigbio_by_geo <- function(coords, db_table, use_cache) {
         dplyr::filter(!is.na(clean_family))
 
     chordata_family_to_rm <- db %>%
-        dplyr::filter(clean_phylum == "chordata" & (clean_class %in% chr_class_to_rm |
-                                             clean_family %in% chr_fam_to_rm)) %>%
+        dplyr::filter(clean_phylum == "chordata" &
+                      (clean_class %in% chr_class_to_rm |
+                       clean_family %in% chr_fam_to_rm)) %>%
         dplyr::select(clean_phylum, clean_class, clean_family) %>%
         dplyr::distinct(clean_phylum, clean_class, clean_family)
 
-    res <- db %>%
+    db %>%
         ## only the obviously non-marine arthropods and the vertebrates
         dplyr::anti_join(arth_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
