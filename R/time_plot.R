@@ -285,3 +285,27 @@ plot_institutions_through_time <- function(idig_records) {
         geom_col() + facet_wrap(~ institutioncode, scales = "free_y")
 
 }
+
+
+get_id_level <- function(nm) {
+    stopifnot(length(nm) == 1L)
+    nm <- cleanup_species_names(nm, rm_subgenus = TRUE)
+    if (is_binomial(nm)) {
+        "species"
+    } else if (grepl("\\s", nm)) {
+        "unknown"
+    } else {
+        wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))
+        if (is.na(wid)) return(NA_character_)
+        res <- store_worms_classification()$get(wid)
+        res <- res[[1]]
+        tolower(res$rank[length(res$rank)])
+    }
+}
+
+plot_identification_level_through_time <- function(idig_records) {
+    idig_records %>%
+        mutate(id_level = vapply(cleaned_scientificname, get_id_level, character(1))) %>%
+        write_csv("/tmp/res.csv")
+
+}
