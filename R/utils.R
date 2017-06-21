@@ -1,9 +1,10 @@
 cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
-    if (length(nm) > 1) browser()
     ## remove author/year
-    if (grepl("[0-9]{4}", nm)) {
-        nm <- gsub("([a-z]+)\\s([a-z]+)?\\s?.+", "\\1 \\2", nm)
-    }
+    nm <- vapply(nm, function(x) {
+        if (grepl("[0-9]{4}", x))
+            gsub("([a-z]+)\\s([a-z]+)?\\s?.+", "\\1 \\2", x)
+        else x
+    }, character(1), USE.NAMES = FALSE)
     ## remove words that contain numbers
     nm <- gsub("\\S*\\d\\S*", "", nm)
     ## remove extra spaces
