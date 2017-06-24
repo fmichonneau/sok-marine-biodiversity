@@ -10,7 +10,7 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     ## remove extra spaces
     nm <- gsub("\\s{2, }", " ", nm)
     ## remove sp(p).
-    nm <- gsub("\\sspp?\\.", "", nm)
+    nm <- gsub("\\sspp?\\.(\\s+nov\\.?)?", "", nm)
     ## remove words fully capitalized
     nm <- gsub("\\s[A-Z]+", "", nm)
     ## remove cf., aff. and ?
@@ -25,6 +25,24 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     nm
 }
 
+
+test_cleanup <- function(rm_subgenus) {
+    df <- tribble(
+        ~ input, ~rm_subgenus, ~no_rm_subgenus,
+        "enchytraeus sp. nov.",  "enchytraeus", "enchytraeus",
+        "echytraeus sp.", "echytraeus", "echytraeus",
+        "nereis pelagica linnaeus, 1758", "nereis pelagica", "nereis pelagica",
+        "nereis (nereis) zonata", "nereis zonata", "nereis (nereis) zonata"
+        )
+    if (rm_subgenus)
+        var <- "rm_subgenus"
+    else
+        var <- "no_rm_subgenus"
+    tc <- cleanup_species_names(df$input) == df[[var]]
+    if(!all(tc)) {
+        df[!tc, ]
+    }
+}
 
 is_binomial <- function(nm) {
     nm <- cleanup_species_names(nm)
