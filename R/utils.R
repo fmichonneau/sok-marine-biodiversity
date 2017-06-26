@@ -5,20 +5,23 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
             gsub("([a-z]+)\\s([a-z]+)?\\s?.+", "\\1 \\2", x)
         else x
     }, character(1), USE.NAMES = FALSE)
+    ## remove higher taxa
+    nm <- gsub("^.+:", "", nm)
     ## remove words that contain numbers
     nm <- gsub("\\S*\\d\\S*", "", nm)
     ## remove extra spaces
     nm <- gsub("\\s{2, }", " ", nm)
     ## remove sp(p).
-    nm <- gsub("\\sspp?\\.(\\s+nov\\.?)?", "", nm)
+    nm <- gsub("\\sspp?(\\.|\\,)?(\\s+nov\\.?)?", "", nm)
     ## remove words fully capitalized
     nm <- gsub("\\s[A-Z]+", "", nm)
     ## remove cf., aff. and ?
     nm <- gsub("\\s?(cf\\.|f\\.|aff\\.|\\?|(ex\\.? gr\\.))\\s?", " ", nm)
     ## remove varieties
-    nm <- gsub("var. [a-z]+$", "", nm)
-    ## remove trailing spaces
+    nm <- gsub("var. .+$", "", nm)
+    ## remove leading and trailing spaces
     nm <- gsub("\\s+$", "", nm)
+    nm <- gsub("^\\s+", "", nm)
     ## remove subgenus
     if (rm_subgenus)
         nm <- gsub("\\s?\\([^)]*\\)\\s?", " ", nm)
@@ -31,16 +34,20 @@ test_cleanup <- function(rm_subgenus) {
         ~ input, ~rm_subgenus, ~no_rm_subgenus,
         "enchytraeus sp. nov.",  "enchytraeus", "enchytraeus",
         "echytraeus sp.", "echytraeus", "echytraeus",
+        "echytraeus sp, ", "echytraeus", "echytraeus",
         "nereis pelagica linnaeus, 1758", "nereis pelagica", "nereis pelagica",
-        "nereis (nereis) zonata", "nereis zonata", "nereis (nereis) zonata"
+        "nereis (nereis) zonata", "nereis zonata", "nereis (nereis) zonata",
+        "Holothuriidea: holothuria impatiens", "holothuria impatiens", "holothuria impatiens",
+        "clepsine ornata var. d.", "clepsine ornata", "clepsine ornata"
         )
     if (rm_subgenus)
         var <- "rm_subgenus"
     else
         var <- "no_rm_subgenus"
-    tc <- cleanup_species_names(df$input) == df[[var]]
+    df$output <- cleanup_species_names(df$input, rm_subgenus)
+    tc <- df$output == df[[var]]
     if(!all(tc)) {
-        df[!tc, ]
+        df[!tc, c("input", var, "output")]
     }
 }
 

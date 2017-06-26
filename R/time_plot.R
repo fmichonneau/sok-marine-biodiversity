@@ -288,12 +288,20 @@ plot_institutions_through_time <- function(idig_records) {
 
 
 get_id_level <- function(nm) {
+    ##message(nm)
     stopifnot(length(nm) == 1L)
-    nm <- cleanup_species_names(nm, rm_subgenus = TRUE)
-    if (is_binomial(nm)) {
+    if (is_binomial(cleanup_species_names(nm, rm_subgenus=TRUE))) {
         "species"
-    } else if (grepl("\\s", nm)) {
-        "unknown"
+    } else if (nchar(nm) < 2) {
+        return("unknown")
+    } else if (grepl("\\s", nm)) {      # has space in name
+        if (grepl(".+\\(.+\\)$", nm)) { # ends with subgenus
+            "subgenus"
+        } else if (length(gregexpr("\\s", nm)[[1]]) > 1) { # at least 2 words
+            "subspecies"
+        } else {
+            "unknown"
+        }
     } else {
         wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))
         if (is.na(wid)) return(NA_character_)
@@ -301,6 +309,20 @@ get_id_level <- function(nm) {
         res <- res[[1]]
         tolower(res$rank[length(res$rank)])
     }
+}
+
+test_id_level <- function() {
+    test_dt <- tribble(
+        ~input,  ~expected_output,
+        "arca arca", "species",
+        "arca arca arca", "subspecies",
+        "arca (arca)", "subgenus"
+    )
+    test_dt$output <- vapply(test_dt$input, get_id_level, character(1))
+    tc <- test_dt$output == test_dt$expected_output
+    if (!all(tc))
+        test_dt[!tc, ]
+
 }
 
 plot_identification_level_through_time <- function(idig_records) {
