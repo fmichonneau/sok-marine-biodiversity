@@ -312,7 +312,7 @@ get_id_level <- function(nm) {
 }
 
 test_id_level <- function() {
-    test_dt <- tribble(
+    test_dt <- tibble::tribble(
         ~input,  ~expected_output,
         "arca arca", "species",
         "arca arca arca", "subspecies",

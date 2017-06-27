@@ -12,13 +12,15 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     ## remove extra spaces
     nm <- gsub("\\s{2, }", " ", nm)
     ## remove sp(p).
-    nm <- gsub("\\sspp?(\\.|\\,)?(\\s+nov\\.?)?", "", nm)
+    nm <- gsub("\\bspp?\\b(\\.|\\,)?\\s?(\\bnov\\b\\.?)?.*$", "", nm)
     ## remove words fully capitalized
     nm <- gsub("\\s[A-Z]+", "", nm)
     ## remove cf., aff. and ?
     nm <- gsub("\\s?(cf\\.|f\\.|aff\\.|\\?|(ex\\.? gr\\.))\\s?", " ", nm)
     ## remove varieties
     nm <- gsub("var. .+$", "", nm)
+    ## remove square brackets
+    nm <- gsub("\\[(.+)\\]", "\\1", nm)
     ## remove leading and trailing spaces
     nm <- gsub("\\s+$", "", nm)
     nm <- gsub("^\\s+", "", nm)
@@ -35,10 +37,15 @@ test_cleanup <- function(rm_subgenus) {
         "enchytraeus sp. nov.",  "enchytraeus", "enchytraeus",
         "echytraeus sp.", "echytraeus", "echytraeus",
         "echytraeus sp, ", "echytraeus", "echytraeus",
+        "echytraeus sp ", "echytraeus", "echytraeus",
+        "echytraeus sp", "echytraeus", "echytraeus",
+        "echytraeus sp. nov. a", "echytraeus", "echytraeus",
         "nereis pelagica linnaeus, 1758", "nereis pelagica", "nereis pelagica",
         "nereis (nereis) zonata", "nereis zonata", "nereis (nereis) zonata",
         "Holothuriidea: holothuria impatiens", "holothuria impatiens", "holothuria impatiens",
-        "clepsine ornata var. d.", "clepsine ornata", "clepsine ornata"
+        "clepsine ornata var. d.", "clepsine ornata", "clepsine ornata",
+        "mereditha spinifera", "mereditha spinifera", "mereditha spinifera",
+        "[test]", "test", "test"
         )
     if (rm_subgenus)
         var <- "rm_subgenus"
