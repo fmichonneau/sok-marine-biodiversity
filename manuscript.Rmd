@@ -209,6 +209,14 @@ WoRMS:
 ## References
 
 
+
+## Supplementary material
+
+```{r id_though_time, fig.cap='Proportion of specimens collected through time identified at the species level. Trend lines are  B-splines of the 3rd degree polynomial. For all groups, we observe a decline in the proportion of specimens collected identified at the species level suggesting a lack of expertise to identify precisely what is collected.'}
+knitr::include_graphics("figures/idigbio_identification_level_through_time.pdf")
+```
+
+
 <!--
 
 It has never been easier and cost effective to survey comprehensively the extant of marine biodiversity.

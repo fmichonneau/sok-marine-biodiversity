@@ -325,9 +325,36 @@ test_id_level <- function() {
 
 }
 
-plot_identification_level_through_time <- function(idig_records) {
-    idig_records %>%
+data_identification_level_through_time <- function(idig_records) {
+    res <- idig_records %>%
         mutate(id_level = vapply(cleaned_scientificname, get_id_level, character(1))) %>%
+        filter(id_level != "unknown", !is.na(id_level)) %>%
+        idigbio_add_year()
+
+    res %>%
+        distinct(cleaned_scientificname, .keep_all = TRUE) %>%
+        sample_n(500) %>%
         write_csv("/tmp/res.csv")
+
+    res
+}
+
+
+plot_identification_level_through_time <- function(id_level) {
+    id_level %>%
+        count(year, clean_phylum, id_level) %>%
+        group_by(year, clean_phylum) %>%
+        mutate(p = n/sum(n),
+               n_lots = sum(n)) %>%
+        filter(id_level == "species",
+               clean_phylum %in% c("annelida", "arthropoda", "chordata",
+                                   "cnidaria", "echinodermata", "mollusca")) %>%
+        ggplot(aes(x = year, y = p, colour = id_level)) +
+        geom_point(aes(size = n_lots)) +
+        geom_hline(yintercept = 1) +
+        geom_smooth(aes(fill = id_level), method = "lm", formula = y ~ splines::bs(x, degree = 3), show_guide = FALSE) +
+        facet_wrap(~ clean_phylum) +
+        guides(color = FALSE) +
+        scale_size_continuous(name = "Number of specimens")
 
 }

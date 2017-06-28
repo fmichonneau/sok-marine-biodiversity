@@ -41,12 +41,14 @@ packages:
   - rgbif
   - ritis
   ## other utils
+  - parallel
   - assertthat
   - extrafont
   - rmarkdown
   - bookdown
   - labmanager
   - progress
+  - splines
 
 
 targets:
@@ -425,6 +427,14 @@ targets:
       width: 12
       height: 6
 
+  idigbio_identification_level_through_time:
+    command: data_identification_level_through_time(idigbio_records)
+
+  figures/idigbio_identification_level_through_time.pdf:
+    command: plot_identification_level_through_time(idigbio_identification_level_through_time)
+    plot:
+      width: 10
+      height: 6
 
 ### summary tables
   # table_idigbio_species_sequenced:
@@ -627,6 +637,7 @@ targets:
       - figures/database_coverage.pdf
       - figures/database_overlap.pdf
       - figures/idigbio_through_time.pdf
+      - figures/idigbio_identification_level_through_time.pdf
       ## attributions
       - idigbio_records_attributions
       - idigbio_gom_records_attributions
