@@ -352,7 +352,7 @@ plot_identification_level_through_time <- function(id_level) {
         ggplot(aes(x = year, y = p, colour = id_level)) +
         geom_point(aes(size = n_lots)) +
         geom_hline(yintercept = 1) +
-        geom_smooth(aes(fill = id_level), method = "lm", formula = y ~ splines::bs(x, degree = 3), show_guide = FALSE) +
+        geom_smooth(aes(fill = id_level), method = "lm", formula = y ~ splines::bs(x, degree = 3), show.legend = FALSE) +
         facet_wrap(~ clean_phylum) +
         guides(color = FALSE) +
         scale_size_continuous(name = "Number of specimens")

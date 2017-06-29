@@ -32,7 +32,7 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
 
 
 test_cleanup <- function(rm_subgenus) {
-    df <- tribble(
+    df <- tibble::tribble(
         ~ input, ~rm_subgenus, ~no_rm_subgenus,
         "enchytraeus sp. nov.",  "enchytraeus", "enchytraeus",
         "echytraeus sp.", "echytraeus", "echytraeus",
