@@ -239,9 +239,10 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
                       ) %>%
         tidyr::gather(source_n_spp, n_spp, -taxon_name) %>%
         dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>%
+        dplyr::filter(source_db != "n_gbif") %>%
         ggplot(aes(x = factor(source_db,
-                              levels = rev(c("n_total", "n_obis", "n_gbif", "n_idigbio", "n_barcoded")),
-                              labels = c("BOLD", "iDigBio", "GBIF", "OBIS", "List")
+                              levels = rev(c("n_total", "n_obis", "n_idigbio", "n_barcoded")),
+                              labels = c("BOLD", "iDigBio", "OBIS", "List")
                               ),
                    y = n_spp,
                    fill = factor(source_n_spp,
@@ -249,14 +250,14 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
                                      gsub("XXX", region,
                                           c("n_total",
                                             "n_obis_in_XXX", "n_obis_XXX_diff",
-                                            "n_gbif_in_XXX", "n_gbif_XXX_diff",
+                                            #"n_gbif_in_XXX", "n_gbif_XXX_diff",
                                             "n_idigbio_in_XXX", "n_idigbio_XXX_diff",
                                             "n_barcoded"
                                             ))),
                                  labels = rev(
                                      c("Species in list",
                                        "OBIS in region","OBIS global",
-                                       "GBIF in region", "GBIF global",
+                                       #"GBIF in region", "GBIF global",
                                        "iDigBio in region", "iDigBio global",
                                        "BOLD"
                                        ))
@@ -270,7 +271,7 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
         labs(title = "") +
         scale_fill_viridis(name = "Data source", option = "viridis", discrete = TRUE,
                            guide = guide_legend(reverse=TRUE)) +
-        theme_gray(base_family = "Ubuntu Condensed") +
+        theme_bw(base_family = "Ubuntu Condensed") +
         coord_flip()
 }
 
