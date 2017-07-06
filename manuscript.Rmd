@@ -194,7 +194,18 @@ data accuracy (can we trust the data that is found in the databases) -->
 
 ## Material and methods
 
-### Data sources
+The list of species for the Gulf of Mexico was obtained by downloading CSV files for each animal phylum from http://e-gulf.org/ [@egulf]. This database includes the species listed in a comprehensive biotic inventory of the Gulf of Mexico [@Felder2009].
+
+The list of species for the Pacific Northwest was downloaded from:  https://www.eopugetsound.org/species/custom-lists/307 (accessed on July 5th, 2017) as a Microsoft Excel spreadsheet. This is a digital version of the species included in [@Kozloff1974].
+
+To search by geographic area, we obtained the boundaries of the Exclusive Economic Zone for the United States from marineregions.org (mrgid:8456) [@mregions]. For the Pacific Northwest, Kozloff did not specify the exact geographic extent covered by his book. We infered a polygon that encompass part of the Oregon coast to the northern parts of Vancouver island. For the Gulf of Mexico, we used the same geographic area as the one defined in [@Tunnell2009].  These geographic areas were split into squares of 0.2°x0.2° which were used to query the web API of iDigBio and OBIS using the R packages ridigbio and robis respectively. The resulting occurences were then clipped to only include records that fell within the EEZ boundaries.
+
+The species names used in queries or obtained as results were checked against the World Registry of Marine Species (WoRMS). Whenever possible, species names were matched and the current valid names for the species were used. This ensured that the same species listed under different synonyms was only counted once. Species that could not be matched in WoRMS, and species listed as non-marine in WoRMS were not included in subsequent analyses. The R package taxizesoap was used to query the WoRMS database.
+
+To assess the proportion of species for which DNA barcodes are available, we used the current valid names for all records to query the Barcode of Life Datasystem (BOLD) using the R package bold. When no records where found for a species, we looked up for alternative matches using its synonyms as listed in WoRMS.
+
+This study is fully reproducible and the code needed to perform the analyses included here is available from: https://github.com/fmichonneau/sok-marine-biodiversity, and archived on Zenodo (doi:xxx.xxx.xxxx). The data downloaded from the databases at the time of analysis are archived on Zenodo (doi:xxx.xxx.xxx)/
+
 
 
 
