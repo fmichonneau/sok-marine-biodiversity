@@ -359,7 +359,9 @@ targets:
 
   figures/gom_database_coverage.pdf:
     command: plot_upsetr("data/compare_database_coverage.csv")
-    plot: true
+    plot:
+      width:  4.5
+      height: 4.5
 
   ## Pacific Northwest ---------------------------------------------------------
 
@@ -390,7 +392,9 @@ targets:
 
   figures/kozloff_database_coverage.pdf:
     command: plot_upsetr("data/compare_database_coverage_kozloff.csv")
-    plot: true
+    plot:
+      width:  4.5
+      height: 4.5
 
   ## Synthesis -----------------------------------------------------------------
 
@@ -424,8 +428,8 @@ targets:
   figures/idigbio_through_time.pdf:
     command: combine_cowplots(idigbio_samples_through_time, idigbio_species_through_time)
     plot:
-      width: 12
-      height: 6
+      width:  8
+      height: 4
 
   idigbio_identification_level_through_time:
     command: data_identification_level_through_time(idigbio_records)
@@ -433,8 +437,8 @@ targets:
   figures/idigbio_identification_level_through_time.pdf:
     command: plot_identification_level_through_time(idigbio_identification_level_through_time)
     plot:
-      width: 10
-      height: 6
+      width: 8
+      height: 5
 
 ### summary tables
   # table_idigbio_species_sequenced:
