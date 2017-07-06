@@ -378,6 +378,7 @@ plot_identification_level_through_time <- function(id_level) {
         guides(color = FALSE, fill = FALSE) +
         scale_size_continuous(name = "Number of specimens") +
         labs(x = "Year", y = "Proportion of specimens identified at the species level") +
-        theme(legend.position = "top")
+        theme(legend.position = "top") +
+        scale_colour_hc() + scale_fill_hc()
 
 }
