@@ -25,14 +25,6 @@ knitr::opts_chunk$set(echo = FALSE)
 <!-- 1st paragraph. -->
 
 
-
-<!--
-
-There can be public involvement in species description, but the exploration and collecting may remain an affair of specialists as it requires manipulating technical gear of have expertise. There are still many species that are easy to access to discover, but the bigger gap is in the species that are difficult to access, and small.
-
--->
-
-
 <!-- * how do we conserve animal species that we can't see, we don't find pretty, don't have eyes -->
 <!-- * Most species are rare, especially in very diverse places,  and the degradation of habitats makes it even more difficult to find these rare species. -->
 
@@ -120,13 +112,13 @@ knitr::include_graphics("figures/idigbio_through_time.pdf")
 
 Predicting the geographic range of species, and how they can be impacted by global change has undergone important advances recently. However, it is generally recognized that to obtain reliable results such efforts require to have accurate geographic information for a minimum of 10 specimens but having at least 30 is preferred. Based on iDigBio data, `r prop_10_specimens_species`% of species have less than 10 specimens and `r prop_30_specimens_species`% have less than 30 specimens. This suggests that our understanding of the geographic range of species is limited as most species are known from only a few locations, while efforts to estimate their current and future ranges based on occurrence data are rendered moot by the low number of data points available.
 
-Furthermore, there are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups represent the bulk of the records for marine invertebrates in museum collections, the small organisms, including representatives of the meiofauna are virtually absent. Of the `r n_idigbio_phyla` phyla occurring in iDigBio, `r records_rare_phyla$n_rare_phyla` are represented by less than 500 records, and make up `r records_rare_phyla$prop_rare_phyla`% of the total number of records.
+Furthermore, there are important discrepancies in our level of knowledge across phyla. While larger, and accessible groups represent the bulk of the records for marine invertebrates in museum collections, the small organisms, including representatives of the meiofauna are virtually absent. Of the `r n_idigbio_phyla` phyla occurring in iDigBio, `r records_rare_phyla$n_rare_phyla` are represented by less than 500 records, and make up `r records_rare_phyla$prop_rare_phyla`% of the total number of records. Yet, these undersampled taxa are likely to play an important role in the detection of changes in environmental quality due to their size, and physiological vulnerability [@Bik2012]. Additionally, the impact of these changes on higher trophic levels and ecosystems is largely unexplored.
 
-<!-- From Mark: These previously undersampled taxa are likely to be much more important for the detection of subtle changes in environmental quality due to their size and physiological vulnerability. (?).  -->
-<!-- also, the impact of changes in the composition in their communties is largely unexplored, look into Bik's paper? -->
+To assess the status of taxonomic expertise in the US, we calculated the proportion of specimens identified at the species level through time. For all taxa, excepts for molluscs, there is a consistent decline, indicating that specimens remain for the most part unidentified in collections \@ref{fig:identification-through-time}. For diverse groups such as annelids or arthropods, the proportion of specimens identified at the species-level is now below 30%. The number of scientists describing new species might be increasing globally [@Costello2013], but local experts are needed to keep identifying the species that get collected.
 
-<!-- - get numbers of species described by year, look if there is a correlation between sample numbers and number of new species (possible lag with time for description) -->
-<!-- - see if proportion of species identified at genus (or higher) only has increased recently -->
+```{r id_though_time, fig.cap='Proportion of marine invertebrate specimens collected through time identified at the species level. Trend lines are  B-splines of the 3rd degree polynomial. For all groups, we observe a decline in the proportion of specimens collected identified at the species level suggesting a lack of expertise to identify precisely what is collected. (\\#fig:identification-through-time)'}
+knitr::include_graphics("figures/idigbio_identification_level_through_time.pdf")
+```
 
 
 ### Molecular data for the future of biodiversity discovery and monitoring
@@ -181,6 +173,8 @@ Considering additional linked data with species such as DNA has been a first ste
 
 Even if technological advances can greatly speed up the documentation of species and their distributions, taxonomists and experts are needed  to collect, sort, process, and identify samples. Taxonomic expertise within the US is dwindling, and there are now only a handful of US natural history museums with active marine invertebrates collections, and curatorial staff.
 
+Crowd-sourced data and citizen science initiatives have been proposed to augment data about species abundance and distributions [@Pimm2014]. For marine taxa, beyond the application to near-shore habitats on easily recognizable species [@Delanay2008], large-scale efforts are currently not possible given the specialized equipment needed to sample most marine habitats and the expertise required to identify species. There however opportunities to utilize citizen science to improve biodiversity data and engage the general public into marine conservation issues. For instance it has been successfully used to classify plankton images [@Robinson2017], transcribe hand-written museum labels [@Hill2012], or be involved in bioblitzes [@Ballard2017]. These initiatives however involve a lot less people compared to projects related to birds.
+
 Given the urgency of the biodiversity crisis, we need to develop data-driven initiatives to efficiently document biodiversity, and build on our existing knowledge to collect information to improve our understanding of marine systems.
 Digitization efforts are catching up on an already fragmented and vastly incomplete records. Here, we only reported results from the US where there is at least two centuries of biodiversity exploration data and high-level of digitization. Many other parts of the world also need additional attention, especially in some developing countries where environmental pressure on ecosystems is even higher than in the US.
 
@@ -202,19 +196,18 @@ data accuracy (can we trust the data that is found in the databases) -->
 
 ### Data sources
 
-iDigBio:
-OBIS:
-WoRMS:
+
 
 ## References
 
+<div id="refs"></div>
 
+
+\newpage
 
 ## Supplementary material
 
-```{r id_though_time, fig.cap='Proportion of specimens collected through time identified at the species level. Trend lines are  B-splines of the 3rd degree polynomial. For all groups, we observe a decline in the proportion of specimens collected identified at the species level suggesting a lack of expertise to identify precisely what is collected.'}
-knitr::include_graphics("figures/idigbio_identification_level_through_time.pdf")
-```
+
 
 
 <!--
