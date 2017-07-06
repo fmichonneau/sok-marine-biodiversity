@@ -425,11 +425,14 @@ targets:
   idigbio_species_through_time:
     command: plot_cum_spp_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
 
+  idigbio_effort_through_time:
+    command: plot_samples_vs_spp_through_time(idigbio_samples_through_time_data)
+
   figures/idigbio_through_time.pdf:
-    command: combine_cowplots(idigbio_samples_through_time, idigbio_species_through_time)
+    command: combine_cowplots_2(idigbio_samples_through_time, idigbio_species_through_time, idigbio_effort_through_time)
     plot:
       width:  8
-      height: 4
+      height: 8
 
   idigbio_identification_level_through_time:
     command: data_identification_level_through_time(idigbio_records)

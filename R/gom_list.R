@@ -294,3 +294,10 @@ combine_cowplots <- function(g1, g2, nrow = 1, common_legend = TRUE, ...) {
     } else prow
 
 }
+
+combine_cowplots_2 <- function(g1, g2, g3) {
+    bottom_row <- plot_grid(g3, labels = "C", align = "h", rel_widths = c(3, .4))
+    g1 <- g1 + theme(legend.position = "none")
+    g2 <- g2 + theme(legend.position = "none")
+    plot_grid(combine_cowplots(g1, g2, common_legend = FALSE), bottom_row, nrow = 2)
+}
