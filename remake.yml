@@ -547,8 +547,8 @@ targets:
   figures/richness_per_db.pdf:
     command: combine_cowplots(plot_richness_per_db_gom, plot_richness_per_db_koz)
     plot:
-      width: 12
-      height: 10
+      width: 9
+      height: 9.5
 
 ### plot sampling effort (correlation between number of samples vs number species
 
