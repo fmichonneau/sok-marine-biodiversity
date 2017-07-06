@@ -349,12 +349,16 @@ plot_identification_level_through_time <- function(id_level) {
         filter(id_level == "species",
                clean_phylum %in% c("annelida", "arthropoda", "chordata",
                                    "cnidaria", "echinodermata", "mollusca")) %>%
-        ggplot(aes(x = year, y = p, colour = id_level)) +
+        ungroup() %>%
+        mutate(clean_phylum = capitalize(clean_phylum)) %>%
+        ggplot(aes(x = year, y = p, colour = clean_phylum, fill = clean_phylum)) +
         geom_point(aes(size = n_lots)) +
         geom_hline(yintercept = 1) +
-        geom_smooth(aes(fill = id_level), method = "lm", formula = y ~ splines::bs(x, degree = 3), show.legend = FALSE) +
+        geom_smooth(method = "lm", formula = y ~ splines::bs(x, degree = 3), show.legend = FALSE) +
         facet_wrap(~ clean_phylum) +
-        guides(color = FALSE) +
-        scale_size_continuous(name = "Number of specimens")
+        guides(color = FALSE, fill = FALSE) +
+        scale_size_continuous(name = "Number of specimens") +
+        labs(x = "Year", y = "Proportion of specimens identified at the species level") +
+        theme(legend.position = "top")
 
 }
