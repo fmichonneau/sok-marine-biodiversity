@@ -354,11 +354,11 @@ targets:
   obis_gom_records:
     command: add_worms(obis_gom_records_raw)
 
-  data/compare_database_coverage.csv:
-    command: generate_upsetr_csv(list = gom_worms, idigbio = idigbio_gom_records, obis = obis_gom_records, file="data/compare_database_coverage.csv")
+  data/gom_compare_database_coverage.csv:
+    command: generate_upsetr_csv(list = gom_worms, idigbio = idigbio_gom_records, obis = obis_gom_records, file="data/gom_compare_database_coverage.csv")
 
   figures/gom_database_coverage.pdf:
-    command: plot_upsetr("data/compare_database_coverage.csv")
+    command: plot_upsetr("data/gom_compare_database_coverage.csv")
     plot:
       width:  4.5
       height: 4.5
@@ -387,11 +387,11 @@ targets:
   obis_kozloff_records:
     command: add_worms(obis_kozloff_records_raw)
 
-  data/compare_database_coverage_kozloff.csv:
-    command: generate_upsetr_csv(list = kozloff_worms, idigbio = idigbio_pnw_records, obis = obis_kozloff_records, file = "data/compare_database_coverage_kozloff.csv")
+  data/kozloff_compare_database_coverage.csv:
+    command: generate_upsetr_csv(list = kozloff_worms, idigbio = idigbio_pnw_records, obis = obis_kozloff_records, file = "data/kozloff_compare_database_coverage.csv")
 
   figures/kozloff_database_coverage.pdf:
-    command: plot_upsetr("data/compare_database_coverage_kozloff.csv")
+    command: plot_upsetr("data/kozloff_compare_database_coverage.csv")
     plot:
       width:  4.5
       height: 4.5
