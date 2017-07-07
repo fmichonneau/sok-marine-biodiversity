@@ -557,7 +557,9 @@ targets:
 
   figures/plot_sampling_effort.pdf:
     command: plot_sampling_effort(data_map_standardized_diversity)
-    plot: true
+    plot:
+      height: 4.5
+      width: 5
 
 ### in text statistics ---------------------------------------------------------
 
@@ -639,6 +641,7 @@ targets:
       - not_really_in_database
       ## figures
       - figures/map_diversity_sampling.pdf
+      - figures/plot_sampling_effort.pdf
       - figures/proportion_barcoded.pdf
       - figures/richness_per_db.pdf
       - figures/database_coverage.pdf
