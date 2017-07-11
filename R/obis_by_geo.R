@@ -28,7 +28,7 @@ store_obis_by_geo <- function(coords, store_path = "data/obis_by_geo") {
                           fetch_hook_obis_by_geo)
 }
 
-fill_store_obis_by_geo <- function(map_geojson, cellsize = .5, use_cache = TRUE) {
+fill_store_obis_by_geo <- function(map_geojson, gom_phyla, cellsize = .5, use_cache = TRUE) {
     map_grid <- make_gom_grid(map_geojson, cellsize)
 
     if (!use_cache)
@@ -37,7 +37,7 @@ fill_store_obis_by_geo <- function(map_geojson, cellsize = .5, use_cache = TRUE)
     res <- lapply(map_grid$key, function(k) {
         .r <- store_obis_by_geo()$get(k)
         if (nrow(.r) > 0) {
-            .r <- .r[tolower(.r$phylum) %in% gom_phyla() &
+            .r <- .r[tolower(.r$phylum) %in% gom_phyla &
                      (!tolower(.r$class) %in% chordata_classes_to_rm()), ]
         } else {
            NULL

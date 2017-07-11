@@ -19,9 +19,6 @@ arthropod_classes_to_rm <- function()
     c("arachnida", "myriapoda", "protura", "symphyla", "chilopoda",
       "diplopoda", "hexapoda", "insecta", "trilobita", "unknown")
 
-gom_phyla <- function() {
-    taxa <- names(gom_taxa_to_keep())
-    taxa <- strsplit(taxa, "-")
-    taxa <- vapply(taxa, function(x) x[2], character(1))
-    tolower(unique(taxa))
+list_gom_phyla <- function(gom_species) {
+    tolower(unique(gom_species$phylum))
 }

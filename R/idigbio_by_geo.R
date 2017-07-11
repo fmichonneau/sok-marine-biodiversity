@@ -133,7 +133,7 @@ connect_idigbio_db <- function() {
                         password = "password")
 }
 
-create_idigbio_db <- function(coords, db_table, use_cache) {
+create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "REAL", "REAL", "TEXT",
@@ -173,7 +173,7 @@ create_idigbio_db <- function(coords, db_table, use_cache) {
             ## First let's get the phylum names from the Gulf of Mexico list,
             ## that will take care of plants, fungi, and records with no
             ## specified phylum
-            filter(clean_phylum %in% gom_phyla())
+            filter(clean_phylum %in% gom_phyla)
         message(" DONE.")
         db_insert_into(con, db_table, r)
     })

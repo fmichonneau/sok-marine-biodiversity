@@ -150,6 +150,9 @@ targets:
   gom_species:
     command: get_gom_species()
 
+  gom_phyla:
+    command: list_gom_phyla(gom_species)
+
   gom_worms:
     command: add_worms(gom_species)
 
@@ -323,7 +326,7 @@ targets:
     command: get_coords_idigbio_query(map_usa)
 
   idigbio_database:
-    command: create_idigbio_db(coords_idigbio_usa, db_table=I("us_idigbio"), use_cache=I(TRUE))
+    command: create_idigbio_db(coords_idigbio_usa, db_table=I("us_idigbio"), use_cache=I(TRUE), gom_phyla=gom_phyla)
 
   idigbio_records_all:
     command: fill_store_idigbio_by_geo(db_table=I("us_idigbio"))
@@ -357,7 +360,7 @@ targets:
     command: filter_idigbio_records(idigbio_gom_records_all, map_gom)
 
   obis_gom_records_raw:
-    command: fill_store_obis_by_geo(map_gom, use_cache=I(TRUE))
+    command: fill_store_obis_by_geo(map_gom, gom_phyla=gom_phyla, use_cache=I(TRUE))
 
   obis_gom_records:
     command: add_worms(obis_gom_records_raw)
@@ -390,7 +393,7 @@ targets:
     command: filter_idigbio_records(idigbio_pnw_records_all, map_pnw)
 
   obis_kozloff_records_raw:
-    command: fill_store_obis_by_geo(map_pnw, use_cache=I(TRUE))
+    command: fill_store_obis_by_geo(map_pnw, gom_phyla=gom_phyla, use_cache=I(TRUE))
 
   obis_kozloff_records:
     command: add_worms(obis_kozloff_records_raw)
