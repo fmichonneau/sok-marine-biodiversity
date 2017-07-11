@@ -14,7 +14,7 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     ## remove sp(p).
     nm <- gsub("\\bspp?\\b(\\.|\\,)?\\s?(\\bnov\\b\\.?)?.*$", "", nm)
     ## remove words fully capitalized
-    nm <- gsub("\\s[A-Z]+", "", nm)
+    nm <- gsub("\\b[A-Z]+\\b", "", nm)
     ## remove cf., aff. and ?
     nm <- gsub("\\s?(cf\\.|f\\.|aff\\.|\\?|(ex\\.? gr\\.))\\s?", " ", nm)
     ## remove varieties
@@ -25,12 +25,17 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
     nm <- gsub("\\s+$", "", nm)
     nm <- gsub("^\\s+", "", nm)
     ## remove subgenus
-    if (rm_subgenus)
+    if (rm_subgenus) {
+        ## get the form: Genus (subgenus) species
         nm <- gsub("\\s?\\([^)]*\\)\\s?", " ", nm)
+        ## and: Genus Subgenus species
+        nm <- gsub("([a-zA-Z]*)\\s(\\b[A-Z][a-z]*\\b)", "\\1", nm)
+    }
     nm
 }
 
 
+## This gets run everytime by init()
 test_cleanup <- function(rm_subgenus) {
     df <- tibble::tribble(
         ~ input, ~rm_subgenus, ~no_rm_subgenus,
@@ -45,6 +50,7 @@ test_cleanup <- function(rm_subgenus) {
         "Holothuriidea: holothuria impatiens", "holothuria impatiens", "holothuria impatiens",
         "clepsine ornata var. d.", "clepsine ornata", "clepsine ornata",
         "mereditha spinifera", "mereditha spinifera", "mereditha spinifera",
+        "Genus Subgenus species", "Genus species", "Genus Subgenus species",
         "[test]", "test", "test"
         )
     if (rm_subgenus)
