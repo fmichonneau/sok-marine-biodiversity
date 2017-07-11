@@ -66,33 +66,79 @@ gom_taxa_to_keep <- function() {
     "Phylum-Chordata" = "Appendicularia")
 }
 
-get_gom_species <- function(file) {
-    res <- suppressMessages(readxl::read_excel(path = file))
-    ## Keep only the rows that match taxa listed in `taxa_to_keep`
-    res$Chapter <- gsub("\\s+$", "", res$Chapter)
-    res <- res[res$Chapter %in% gom_taxa_to_keep(), ]
-    ## Keep only the rows without a y in `Sort higher taxa` that indicates higher level taxa
-    res <- res[is.na(res$`Sort higher taxa`), ]
+get_gom_species <- function(pattern = "^biogomx-.+\\.csv$") {
+    res <- list.files(path = "data-raw/GOM", pattern = pattern, full.name = TRUE) %>%
+        purrr::map_df(read_csv,
+                      col_type = list(
+                          `Species number` = col_character(),
+                          `Scientific name` = col_character(),
+                          Kingdom = col_character(),
+                          Phylum = col_character(),
+                          Subphylum = col_character(),
+                          Class = col_character(),
+                          Subclass = col_character(),
+                          Infraclass = col_character(),
+                          Superorder = col_character(),
+                          Order = col_character(),
+                          Suborder = col_character(),
+                          Infraorder = col_character(),
+                          Section = col_character(),
+                          Subsection = col_character(),
+                          Superfamily = col_character(),
+                          `Above family` = col_character(),
+                          Family = col_character(),
+                          Subfamily = col_character(),
+                          Tribe = col_character(),
+                          Supergenus = col_character(),
+                          Genus = col_character(),
+                          Subgenus = col_character(),
+                          Species = col_character(),
+                          Subspecies = col_character(),
+                          Synonyms = col_character(),
+                          `Scientific name author` = col_character(),
+                          `Habitat-Biology` = col_character(),
+                          `Overall geographic range` = col_character(),
+                          `Min depth (m)` = col_double(),
+                          `Max depth (m)` = col_double(),
+                          Polygon = col_character(),
+                          Source = col_character(),
+                          References = col_character(),
+                          Endnotes = col_character(),
+                          Author = col_character(),
+                          ## year is character as they include a, b, c...
+                          Year = col_character(),
+                          `Changes from the book` = col_character(),
+                          URL = col_character()
+                          )
+                      ) %>%
+        dplyr::filter(! Subphylum %in% "Vertebrata") %>%
+        dplyr::rename(
+                   species_number = `Species number`,
+                   scientificname_verbatim = `Scientific name`,
+                   above_family = `Above family`,
+                   scientific_name_author = `Scientific name author`,
+                   habitat_biology = `Habitat-Biology`,
+                   overall_geographic_range = `Overall geographic range`,
+                   min_depth_m = `Min depth (m)`,
+                   max_depth_m = `Max depth (m)`,
+                   changes_from_book = `Changes from the book`
+               ) %>%
+        dplyr::distinct(phylum, scientificname_verbatim, .keep_all = TRUE)
+
     ## Extract taxon names...
     ## First remove extra spaces (a few names have additional spaces)
-    res$Taxon <- gsub("\\s{2, }", " ", res$Taxon)
+    res$scientificname_verbatim  <- gsub("\\s{2, }", " ", res$scientificname_verbatim )
     ## ... and quotation marks
-    res$Taxon <- gsub("\\\"|\\\'|“|”", "", res$Taxon)
-    ## Second extract the first part of the Taxon name
-    taxa <- gsub("([A-z]+\\s?(\\(([A-z]+|\\?)\\)\\s)?((cf\\.|f\\.|(spp?\\. ex\\. gr\\.)|\\?)\\s)?[a-z]+(\\sf\\.[a-z]+)?),?\\s(.+)", "\\1", res$Taxon)
-    taxa <- gsub(", species indet\\.", "", taxa)
-    taxa <- gsub(" = .+$", "", taxa)
-    taxa[grepl("Genus and", taxa)] <- NA_character_
-    names(res)[match("Taxon", names(res))] <- "verbatim_scientificname"
-    res$scientificname <- taxa
-    res$cleaned_scientificname <- cleanup_species_names(taxa, rm_subgenus = TRUE)
+    res$scientificname_verbatim  <- gsub("\\\"|\\\'|“|”", "", res$scientificname_verbatim )
+    res$cleaned_scientificname <- cleanup_species_names(res$scientificname_verbatim)
     res$is_binomial <- is_binomial(res$cleaned_scientificname)
-    res$higher <- names(gom_taxa_to_keep())[match(res$Chapter, gom_taxa_to_keep())]
-    if (any(is.na(res$higher)))
-        stop("Can't match some of the higher taxa")
-    res <- tidyr::extract_(res, col = "higher", into = c("rank", "taxon_name"), "([[:alnum:]]+)-([[:alnum:]]+)")
+    names(res) <- tolower(names(res))
+    res$rank <- "phylum"
+    res$taxon_name <- res$phylum
     res
 }
+
+
 
 extract_species_from_gom_idigbio <- function(gom_idig, gom_wrm) {
     res <- species_list_from_idigbio(gom_idig) %>%
@@ -103,14 +149,6 @@ extract_species_from_gom_idigbio <- function(gom_idig, gom_wrm) {
     dplyr::left_join(res, gom, by = c("cleaned_scientificname" = "worms_valid_name"))
 }
 
-
-standardize_gom <- function(gom_spp) {
-    dplyr::select_(gom_spp,
-                   "cleaned_scientificname",
-                   "is_binomial",
-                   "rank",
-                   "taxon_name")
-}
 
 summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region = c("gom", "pnw")) {
 

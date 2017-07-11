@@ -147,11 +147,8 @@ targets:
 
 ### Gulf of Mexico species list ------------------------------------------------
 
-  gom_species_raw:
-    command: get_gom_species(file="data-raw/GOM/BioGoMx.xls")
-
   gom_species:
-    command: standardize_gom(gom_species_raw)
+    command: get_gom_species()
 
   gom_worms:
     command: add_worms(gom_species)
