@@ -80,7 +80,7 @@ keep_marine_taxa <- function(worms) {
                       is_marine == TRUE,
                       worms_valid_name != "not in worms") %>%
         dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
-        dplyr::select(rank, taxon_name, cleaned_scientificname, worms_valid_name, worms_id)
+        dplyr::select(cleaned_scientificname, worms_valid_name, worms_id)
     res
 }
 

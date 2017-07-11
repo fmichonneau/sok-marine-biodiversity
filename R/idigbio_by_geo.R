@@ -137,12 +137,12 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "REAL", "REAL", "TEXT",
-                              "TEXT", "TEXT"),
+                              "TEXT"),
                             .Names = c("uuid", "catalognumber",
                                   "datecollected", "institutioncode",
-                                  "phylum", "data.dwc:phylum",
-                                  "data.dwc:class", "data.dwc:order",
-                                  "data.dwc:family", "data.dwc:genus",
+                                  "phylum",
+                                  "class", "order",
+                                  "family", "genus",
                                   "scientificname", "country",
                                   "geopoint.lon", "geopoint.lat",
                                   "clean_phylum", "clean_class", "clean_family"))
@@ -222,9 +222,8 @@ fill_store_idigbio_by_geo <- function(db_table) {
         dplyr::collect(n = Inf) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
-                      is_binomial = is_binomial(cleaned_scientificname),
-                      rank = rep("phylum", n()),
-                      taxon_name = clean_phylum) %>%
+                      is_binomial = is_binomial(cleaned_scientificname)
+                      ) %>%
         dplyr::rename(decimallatitude = geopoint.lat,
                       decimallongitude = geopoint.lon)
 
@@ -255,7 +254,6 @@ plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
     n_spp <- n_spp_from_idigbio(idigbio_records)
 
     n_bold <- idigbio_bold %>%
-        mutate(phylum = tolower(taxon_name)) %>%
         group_by(phylum) %>%
         summarize(
             n_spp_bold = sum(n_bold_records > 0)

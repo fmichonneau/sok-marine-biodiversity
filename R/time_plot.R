@@ -44,9 +44,9 @@ make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
     ## Combine the species lists from GOM and Kozloff
     spp_total <- dplyr::bind_rows(gom = gom_spp, koz = koz_spp, .id = "fauna") %>%
         dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
-        dplyr::group_by(fauna, taxon_name) %>%
+        dplyr::group_by(fauna, clean_phylum) %>%
         dplyr::tally() %>%
-        dplyr::mutate(phylum = tolower(taxon_name)) %>%
+        dplyr::mutate(phylum = tolower(clean_phylum)) %>%
         dplyr::rename(n_spp_total = n) %>%
         dplyr::select(-taxon_name)
 

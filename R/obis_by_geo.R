@@ -45,6 +45,5 @@ fill_store_obis_by_geo <- function(map_geojson, gom_phyla, cellsize = .5, use_ca
     })
     dplyr::bind_rows(res) %>%
         dplyr::mutate(cleaned_scientificname = tolower(cleanup_species_names(scientificName)),
-                      is_binomial = is_binomial(cleaned_scientificname),
-                      taxon_name = tolower(phylum))
+                      is_binomial = is_binomial(cleaned_scientificname))
 }

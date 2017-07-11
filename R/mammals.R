@@ -16,8 +16,7 @@ read_idigbio_mammals <- function(file) {
                    uuids = first_5(coreid)
                ) %>%
         dplyr::mutate(
-                   taxon_name = "mammalia",
-                   rank = "",
+                   class = "mammalia",
                    is_binomial = is_binomial(cleaned_scientificname),
                    itis_accepted_name = get_accepted_itis_names(cleaned_scientificname)
                )

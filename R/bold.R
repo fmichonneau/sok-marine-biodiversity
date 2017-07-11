@@ -143,8 +143,7 @@ get_bold_bins <- function(gom, koz) {
 
 bold_status <- function(idig) {
     idig %>%
-        dplyr::mutate(taxon_name = tolower(taxon_name)) %>%
-        dplyr::group_by(taxon_name) %>%
+        dplyr::group_by(phylum) %>%
         dplyr::summarize(
                    p_has_bold = mean(n_bold_records > 0),
                    n_has_bold = sum(n_bold_records > 0)
@@ -160,15 +159,15 @@ summary_bold_status <- function(gom_bold, koz_bold, idig_bold) {
                .id = "data_source"
            ) %>%
         dplyr::filter(
-                   taxon_name %in% c("annelida", "arthropoda",
+                   phylum %in% c("annelida", "arthropoda",
                                      "bryozoa",
                                      "chordata", "cnidaria",
                                      "echinodermata", "mollusca",
                                      "porifera"
                                      )
                ) %>%
-            dplyr::mutate(taxon_name = capitalize(taxon_name)) %>%
-            ggplot(aes(x = reorder(taxon_name, p_has_bold), y = p_has_bold,
+            dplyr::mutate(phylum = capitalize(phylum)) %>%
+            ggplot(aes(x = reorder(phylum, p_has_bold), y = p_has_bold,
                        fill = data_source)) +
             geom_col(position = "dodge") +
             geom_text(aes(y = p_has_bold +.01, label = n_has_bold), position = position_dodge(.9),

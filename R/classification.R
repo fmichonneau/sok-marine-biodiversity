@@ -28,6 +28,5 @@ add_classification <- function(data) {
         dplyr::mutate(classification = get_classification_from_wid(worms_id, verbose = FALSE),
                       classification_df = purrr::map(classification, unfold_classification)) %>%
         tidyr::unnest(classification_df) %>%
-        dplyr::select(-classification) %>%
-        dplyr::mutate(taxon_name = Phylum, rank = "Phylum")
+        dplyr::select(-classification)
 }

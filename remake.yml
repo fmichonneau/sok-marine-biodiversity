@@ -350,7 +350,7 @@ targets:
     command: get_coords_idigbio_query(map_gom, cellsize=I(.2))
 
   idigbio_gom_database:
-    command: create_idigbio_db(coords_gom_query, db_table=I("gom_idigbio"), use_cache=I(TRUE))
+    command: create_idigbio_db(coords_gom_query, db_table=I("gom_idigbio"), use_cache=I(TRUE), gom_phyla=gom_phyla)
 
   idigbio_gom_records_all:
     command: fill_store_idigbio_by_geo(db_table=I("gom_idigbio"))

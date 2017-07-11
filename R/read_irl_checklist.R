@@ -31,17 +31,16 @@ read_irl_checklist <- function(file) {
              " the `phylum_list()`.")
     res %>%
         dplyr::select(cleaned_scientificname = `SCIENTIFIC NAME`,
-                      taxon_name = `PHYLUM`) %>%
-        dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname),
-                      rank = rep("phylum", nrow(res)))
+                      phylum = `PHYLUM`) %>%
+        dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname))
 }
 
 
 phylum_plot <- function(irl_checklist) {
     irl_checklist %>%
-        group_by(PHYLUM) %>%
+        group_by(phylum) %>%
         tally() %>%
         ggplot() +
-        geom_bar(aes(x = reorder(PHYLUM, n), y = n), stat = "identity") +
+        geom_bar(aes(x = reorder(phylum, n), y = n), stat = "identity") +
         coord_flip()
 }

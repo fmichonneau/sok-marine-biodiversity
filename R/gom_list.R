@@ -65,29 +65,15 @@ get_gom_species <- function(pattern = "^biogomx-.+\\.csv$") {
     res$cleaned_scientificname <- cleanup_species_names(res$scientificname_verbatim)
     res$is_binomial <- is_binomial(res$cleaned_scientificname)
     names(res) <- tolower(names(res))
-    res$rank <- "phylum"
-    res$taxon_name <- res$phylum
     res
 }
-
-
-
-extract_species_from_gom_idigbio <- function(gom_idig, gom_wrm) {
-    res <- species_list_from_idigbio(gom_idig) %>%
-        dplyr::filter(!duplicated(cleaned_scientificname))
-    gom <- gom_wrm %>%
-        dplyr::mutate(worms_valid_name = tolower(worms_valid_name)) %>%
-        dplyr::select(rank, taxon_name, worms_valid_name)
-    dplyr::left_join(res, gom, by = c("cleaned_scientificname" = "worms_valid_name"))
-}
-
 
 summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region = c("gom", "pnw")) {
 
     region <- match.arg(region)
 
     idig_ <- idig_db %>%
-        dplyr::group_by(taxon_name) %>%
+        dplyr::group_by(phylum) %>%
         dplyr::summarize_(
                    .dots = setNames(
                        list(
@@ -105,7 +91,7 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
     stopifnot(all(idig_[["n_idigbio"]] >= idig_[[paste0("n_idigbio_in_", region)]]))
 
     obis_ <- obis_db %>%
-        dplyr::group_by(taxon_name) %>%
+        dplyr::group_by(phylum) %>%
        dplyr::summarize_(
                    .dots = setNames(
                        list(
@@ -123,7 +109,7 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
     stopifnot(all(idig_[["n_obis"]] >= idig_[[paste0("n_obis_in_", region)]]))
 
     gbif_ <- gbif_db %>%
-        group_by(taxon_name) %>%
+        group_by(phylum) %>%
         dplyr::summarize_(
                    .dots = setNames(
                        list(
@@ -142,18 +128,18 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
 
 
     bold_db %>%
-        dplyr::group_by(taxon_name) %>%
+        dplyr::group_by(phylum) %>%
         dplyr::summarize(
             n_barcoded = sum(n_bold_records > 0),
             n_total = n()
         ) %>%
-        dplyr::left_join(idig_, by = "taxon_name") %>%
-        dplyr::left_join(obis_, by = "taxon_name") %>%
-        dplyr::left_join(gbif_, by = "taxon_name") %>%
-        dplyr::filter(taxon_name %in% c("Arthropoda", "Mollusca", "Annelida",
-                                        "Cnidaria", "Echinodermata", "Platyhelminthes",
-                                        "Porifera", "Bryozoa", "Nematoda", "Chordata"
-                                        )) %>%
+        dplyr::left_join(idig_, by = "phylum") %>%
+        dplyr::left_join(obis_, by = "phylum") %>%
+        dplyr::left_join(gbif_, by = "phylum") %>%
+        dplyr::filter(phylum %in% c("Arthropoda", "Mollusca", "Annelida",
+                                    "Cnidaria", "Echinodermata", "Platyhelminthes",
+                                    "Porifera", "Bryozoa", "Nematoda", "Chordata"
+                                    )) %>%
         dplyr::mutate_(.dots = setNames(list(
                            lazyeval::interp("n_idigbio_in_region/n_total",
                                             n_idigbio_in_region = as.name(paste0("n_idigbio_in_", region))),
@@ -190,7 +176,7 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
                         "Platyhelminthes", "Porifera", "Bryozoa", "Chordata")
 
     smry_db %>%
-        dplyr::filter(taxon_name %in% phyla_to_plot) %>%
+        dplyr::filter(phylum %in% phyla_to_plot) %>%
         dplyr::mutate_(.dots = setNames(list(
                            lazyeval::interp("n_idigbio - n_idigbio_in_region",
                                             n_idigbio_in_region = as.name(paste0("n_idigbio_in_", region))),
@@ -207,7 +193,7 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
                       -n_idigbio_in_us, -n_obis_in_us, -n_gbif_in_us,
                       -starts_with("prop")
                       ) %>%
-        tidyr::gather(source_n_spp, n_spp, -taxon_name) %>%
+        tidyr::gather(source_n_spp, n_spp, -phylum) %>%
         dplyr::mutate(source_db = gsub("(n_[a-z]+)(_.+)?", "\\1", source_n_spp)) %>%
         dplyr::filter(source_db != "n_gbif") %>%
         ggplot(aes(x = factor(source_db,
@@ -235,7 +221,7 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
                    )
                ) +
             geom_bar(stat = "identity", position = "stack") +
-        facet_grid(factor(taxon_name,
+        facet_grid(factor(phylum,
                           levels = phyla_to_plot) ~ .) +
         xlab("") + ylab("Number of species") +
         labs(title = "") +

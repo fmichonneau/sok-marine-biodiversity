@@ -7,7 +7,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
-                          phylum = taxon_name) %>%
+                          clean_phylum) %>%
             dplyr::mutate(classification = get_classification_from_wid(worms_id, verbose),
                           classification_df = map(classification, unfold_classification)) %>%
             tidyr::unnest(classification_df)
@@ -19,7 +19,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
-                          phylum = taxon_name) %>%
+                          clean_phylum) %>%
             dplyr::mutate(classification = get_classification_from_wid(worms_id, verbose),
                           classification_df = purrr::map(classification, unfold_classification)) %>%
             tidyr::unnest(classification_df)
