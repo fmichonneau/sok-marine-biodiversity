@@ -10,7 +10,7 @@ get_kozloff_species <- function(koz_raw) {
 
 
 map_kozloff <- function(koz_idig) {
-    state <- map("world", fill = TRUE, plot = FALSE)
+    state <- maps::map("world", fill = TRUE, plot = FALSE)
     ## convert the 'map' to something we can work with via geom_map
     IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
     state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
@@ -19,10 +19,10 @@ map_kozloff <- function(koz_idig) {
     state_map <- fortify(state)
 
     koz_idig %>%
-        filter(!is.na(geopoint.lon), !is.na(geopoint.lat)) %>%
+        filter(!is.na(decimallatitude), !is.na(decimallongitude)) %>%
         mutate(`data.dwc:phylum` = gsub("[^a-z]", "", tolower(`data.dwc:phylum`))) %>%
     ggplot(.) +
-        geom_point(aes(x = geopoint.lon, y = geopoint.lat, colour = `data.dwc:phylum`),
+        geom_point(aes(x = decimallongitude, y = decimallatitude, colour = `data.dwc:phylum`),
                    size = .6, alpha = .3) +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),

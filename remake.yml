@@ -58,6 +58,10 @@ targets:
       - manuscript.pdf
       - manuscript.docx
 
+  data_validation:
+    depends:
+      - data-validation/map_kozloff_idigbio.pdf
+
 
 ### Kozloff species list--------------------------------------------------------
 
@@ -91,6 +95,10 @@ targets:
 
   kozloff_spp_records_idigbio:
     command: get_n_records_in_db(kozloff_species, kozloff_idigbio_in_pnw, field_name=I("n_idigbio"), region=I("pnw"))
+
+  data-validation/map_kozloff_idigbio.pdf:
+    command: map_kozloff(kozloff_idigbio_in_us)
+    plot: true
 
   ## OBIS ----------------------------------------------------------------------
   data/kozloff_obis.feather:
