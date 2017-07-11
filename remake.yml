@@ -61,21 +61,24 @@ targets:
 
 ### Kozloff species list--------------------------------------------------------
 
-  kozloff_species:
-    command: get_kozloff_species("data-raw/Kozloff/Koz_checklist.xlsx")
+  kozloff_species_raw:
+    command: get_kozloff_species("data-raw/Kozloff/GP_kozloff_edits.csv")
 
   kozloff_worms:
-    command: add_worms(kozloff_species)
+    command: add_worms(kozloff_species_raw)
+
+  kozloff_species:
+    command: add_classification(kozloff_worms)
 
   kozloff_iucn:
-    command: add_iucn_status(kozloff_worms)
+    command: add_iucn_status(kozloff_species)
 
   kozloff_bold:
-    command: find_bold_records(kozloff_worms)
+    command: find_bold_records(kozloff_species)
 
   ## iDigbio -------------------------------------------------------------------
   kozloff_idigbio_raw:
-    command: fetch_spp_from_idigbio(kozloff_worms)
+    command: fetch_spp_from_idigbio(kozloff_species)
 
   kozloff_idigbio:
     command: filter_raw_records(kozloff_idigbio_raw)
@@ -87,11 +90,11 @@ targets:
     command: is_within_pnw_records(kozloff_idigbio_in_us, map_pnw)
 
   kozloff_spp_records_idigbio:
-    command: get_n_records_in_db(kozloff_worms, kozloff_idigbio_in_pnw, field_name=I("n_idigbio"), region=I("pnw"))
+    command: get_n_records_in_db(kozloff_species, kozloff_idigbio_in_pnw, field_name=I("n_idigbio"), region=I("pnw"))
 
   ## OBIS ----------------------------------------------------------------------
   data/kozloff_obis.feather:
-    command: fetch_spp_from_obis(kozloff_worms, "data/kozloff_obis.feather")
+    command: fetch_spp_from_obis(kozloff_species, "data/kozloff_obis.feather")
 
   kozloff_obis:
     command: filter_raw_records("data/kozloff_obis.feather")
@@ -103,11 +106,11 @@ targets:
     command: is_within_pnw_records(kozloff_obis_in_us, map_pnw)
 
   kozloff_spp_records_obis:
-    command: get_n_records_in_db(kozloff_worms, kozloff_obis_in_pnw, field_name=I("n_obis"), region=I("pnw"))
+    command: get_n_records_in_db(kozloff_species, kozloff_obis_in_pnw, field_name=I("n_obis"), region=I("pnw"))
 
   ## GBIF ----------------------------------------------------------------------
   data/kozloff_gbif.feather:
-    command: fetch_spp_from_gbif(kozloff_worms, feather_path="data/kozloff_gbif.feather")
+    command: fetch_spp_from_gbif(kozloff_species, feather_path="data/kozloff_gbif.feather")
 
   kozloff_gbif:
     command: filter_raw_records("data/kozloff_gbif.feather")
@@ -119,7 +122,7 @@ targets:
     command: is_within_pnw_records(kozloff_gbif_in_us, map_pnw)
 
   kozloff_spp_records_gbif:
-    command: get_n_records_in_db(kozloff_worms, kozloff_gbif_in_pnw, field_name=I("n_gbif"), region=I("pnw"))
+    command: get_n_records_in_db(kozloff_species, kozloff_gbif_in_pnw, field_name=I("n_gbif"), region=I("pnw"))
 
   ## overlap with iDigBio query made by geography
   figures/map_kozloff_idigbio.pdf:
@@ -388,7 +391,7 @@ targets:
     command: add_worms(obis_kozloff_records_raw)
 
   data/kozloff_compare_database_coverage.csv:
-    command: generate_upsetr_csv(list = kozloff_worms, idigbio = idigbio_pnw_records, obis = obis_kozloff_records, file = "data/kozloff_compare_database_coverage.csv")
+    command: generate_upsetr_csv(list = kozloff_species, idigbio = idigbio_pnw_records, obis = obis_kozloff_records, file = "data/kozloff_compare_database_coverage.csv")
 
   figures/kozloff_database_coverage.pdf:
     command: plot_upsetr("data/kozloff_compare_database_coverage.csv")
@@ -402,10 +405,10 @@ targets:
     command: combine_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
 
   species_in_common:
-    command: get_species_in_common(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_worms, idigbio_pnw_records, obis_kozloff_records)
+    command: get_species_in_common(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_species, idigbio_pnw_records, obis_kozloff_records)
 
   database_overlap:
-    command: compare_database_overlap(gom_worms, kozloff_worms, idigbio_gom_records, obis_gom_records, idigbio_pnw_records, obis_kozloff_records)
+    command: compare_database_overlap(gom_worms, kozloff_species, idigbio_gom_records, obis_gom_records, idigbio_pnw_records, obis_kozloff_records)
 
   figures/database_overlap.pdf:
     command: plot_database_overlap(database_overlap)
@@ -507,7 +510,7 @@ targets:
       height: 7
 
   knowledge_through_time:
-    command: make_knowledge_through_time(gom_idigbio_in_us, kozloff_idigbio_in_us, gom_gbif_in_us, kozloff_gbif_in_us, gom_worms, kozloff_worms)
+    command: make_knowledge_through_time(gom_idigbio_in_us, kozloff_idigbio_in_us, gom_gbif_in_us, kozloff_gbif_in_us, gom_worms, kozloff_species)
 
   figures/cum_spp_through_time.pdf:
     command: plot_cum_spp_through_time(knowledge_through_time)
@@ -567,7 +570,7 @@ targets:
     command: calc_prop_plankton_with_species_match(plankton_ids)
 
   stat_bold:
-    command: make_stat_bold(gom_bold, kozloff_bold, gom_worms, kozloff_worms)
+    command: make_stat_bold(gom_bold, kozloff_bold, gom_worms, kozloff_species)
 
   prop_singleton_species:
     command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(1))
@@ -623,7 +626,7 @@ targets:
       - idigbio_pnw_records
       - obis_kozloff_records
       - gom_worms
-      - kozloff_worms
+      - kozloff_species
       - mammals_species_asm
       - amphibian_summary
       - stat_bold

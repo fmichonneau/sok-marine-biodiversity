@@ -1,19 +1,10 @@
 get_kozloff_species <- function(koz_raw) {
-    readxl::read_excel(koz_raw) %>%
-        dplyr::select(
-            counter = Counter,
-            phylum = Phylum,
-            class = Class,
-            order = Order,
-            scientific_name_verbatim = ScientificName) %>%
-        dplyr::mutate(rank = rep("phylum", nrow(.)),
-                      taxon_name = phylum,
-                      cleaned_scientificname = cleanup_species_names(scientific_name_verbatim,
-                                                                     rm_subgenus = TRUE),
+    readr::read_csv(koz_raw) %>%
+        dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname_verbatim, rm_subgenus = TRUE),
                       is_binomial = is_binomial(cleaned_scientificname)) %>%
-        dplyr::filter(is_binomial == TRUE)
+            dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
+            dplyr::filter(is_binomial == TRUE)
 }
-
 
 
 
