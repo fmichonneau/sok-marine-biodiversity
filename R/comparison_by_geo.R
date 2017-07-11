@@ -1,26 +1,4 @@
 compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
-    get_classification <- function(x) {
-        lapply(x, function(i) {
-            if (verbose) message("getting classification for aphiaid ", i)
-            res <- store_worms_classification()$get(as.character(i))
-            res <- res[[as.character(i)]]
-            res %>% mutate_if(is.factor, as.character)
-        })
-    }
-
-    unfold_classification <- function(classif, rank) {
-        empty_classif <- data_frame(Phylum = character(0),
-                                    Class = character(0),
-                                    Order = character(0),
-                                    Family = character(0))
-        cols_keep <- c("Phylum", "Class", "Order", "Family")
-        to_keep <- intersect(classif$rank, cols_keep)
-        dplyr::distinct(classif, rank, .keep_all = TRUE) %>%
-            tidyr::spread(rank, name) %>%
-            dplyr::select_(.dots = to_keep) %>%
-            dplyr::bind_rows(empty_classif)
-    }
-
     list(
         ## in spp_list but not in geo_list
         not_in_list =
@@ -30,7 +8,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
                           phylum = taxon_name) %>%
-            dplyr::mutate(classification = get_classification(worms_id),
+            dplyr::mutate(classification = get_classification_from_wid(worms_id, verbose),
                           classification_df = map(classification, unfold_classification)) %>%
             tidyr::unnest(classification_df)
        ,
@@ -42,8 +20,8 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
                           phylum = taxon_name) %>%
-            dplyr::mutate(classification = get_classification(worms_id),
-                          classification_df = map(classification, unfold_classification)) %>%
+            dplyr::mutate(classification = get_classification_from_wid(worms_id, verbose),
+                          classification_df = purrr::map(classification, unfold_classification)) %>%
             tidyr::unnest(classification_df)
 
     ) %>% dplyr::bind_rows(.id = "data_source")
