@@ -136,13 +136,13 @@ connect_idigbio_db <- function() {
 create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
-                              "TEXT", "TEXT", "REAL", "REAL", "TEXT",
+                              "TEXT", "REAL", "REAL", "TEXT", "TEXT",
                               "TEXT"),
                             .Names = c("uuid", "catalognumber",
                                   "datecollected", "institutioncode",
-                                  "phylum",
-                                  "class", "order",
-                                  "family", "genus",
+                                  "data.dwc:phylum",
+                                  "data.dwc:class", "data.dwc:order",
+                                  "data.dwc:family", "data.dwc:genus",
                                   "scientificname", "country",
                                   "geopoint.lon", "geopoint.lat",
                                   "clean_phylum", "clean_class", "clean_family"))
@@ -169,11 +169,7 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
             mutate_(.dots = setNames(list("tolower(`data.dwc:phylum`)",
                                           "tolower(`data.dwc:class`)",
                                           "tolower(`data.dwc:family`)"),
-                                     c("clean_phylum", "clean_class", "clean_family"))) %>%
-            ## First let's get the phylum names from the Gulf of Mexico list,
-            ## that will take care of plants, fungi, and records with no
-            ## specified phylum
-            filter(clean_phylum %in% gom_phyla)
+                                     c("clean_phylum", "clean_class", "clean_family")))
         message(" DONE.")
         db_insert_into(con, db_table, r)
     })
@@ -185,7 +181,7 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
 }
 
 
-fill_store_idigbio_by_geo <- function(db_table) {
+fill_store_idigbio_by_geo <- function(db_table, gom_phyla) {
 
     ## We only want:
     ## - unique records
@@ -215,6 +211,15 @@ fill_store_idigbio_by_geo <- function(db_table) {
         dplyr::distinct(clean_phylum, clean_class, clean_family)
 
     db %>%
+        dplyr::distinct(clean_phylum) %>%
+        dplyr::anti_join(data_frame(in_gom = gom_phyla)) %>%
+        readr::write_csv("data-validation/check_idigbio_phyla.csv")
+
+    db %>%
+        ## First let's get the phylum names from the Gulf of Mexico list,
+        ## that will take care of plants, fungi, and records with no
+        ## specified phylum
+        dplyr::filter(clean_phylum %in% gom_phyla) %>%
         ## only the obviously non-marine arthropods and the vertebrates
         dplyr::anti_join(arth_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_family")) %>%

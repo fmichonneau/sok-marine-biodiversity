@@ -329,7 +329,7 @@ targets:
     command: create_idigbio_db(coords_idigbio_usa, db_table=I("us_idigbio"), use_cache=I(TRUE), gom_phyla=gom_phyla)
 
   idigbio_records_all:
-    command: fill_store_idigbio_by_geo(db_table=I("us_idigbio"))
+    command: fill_store_idigbio_by_geo(db_table=I("us_idigbio"), gom_phyla)
     depends: idigbio_database
 
   idigbio_records:
@@ -353,7 +353,7 @@ targets:
     command: create_idigbio_db(coords_gom_query, db_table=I("gom_idigbio"), use_cache=I(TRUE), gom_phyla=gom_phyla)
 
   idigbio_gom_records_all:
-    command: fill_store_idigbio_by_geo(db_table=I("gom_idigbio"))
+    command: fill_store_idigbio_by_geo(db_table=I("gom_idigbio"), gom_phyla)
     depends: idigbio_gom_database
 
   idigbio_gom_records:
@@ -386,7 +386,7 @@ targets:
     command: create_idigbio_db(coords_pnw_query, db_table=I("kozloff_idigbio"), use_cache=I(TRUE))
 
   idigbio_pnw_records_all:
-    command: fill_store_idigbio_by_geo(db_table=I("kozloff_idigbio"))
+    command: fill_store_idigbio_by_geo(db_table=I("kozloff_idigbio"), gom_phyla)
     depends: idigbio_pnw_database
 
   idigbio_pnw_records:
