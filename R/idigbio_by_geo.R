@@ -68,11 +68,31 @@ coords_to_query <- function(coords) {
 ## fetch hook for the idigbio by geography storr. We use a closure to
 ## enforce the remake dependency on the data frame that contains the
 ## coordinates for each element of the grid.
+internal_idigbio_by_geo_fetch <- function(coords_qry, key) {
+    ridigbio::idig_search_records(rq = coords_qry[[key]], fields = idigbio_fields())
+}
+
 make_hook_idigbio_by_geo <- function(coords_qry) {
     force(coords_qry)
     function(key, namespace) {
         message("... ", appendLF = FALSE)
-        ridigbio::idig_search_records(rq = coords_qry[[key]], fields = idigbio_fields())
+        res <- try(internal_idigbio_by_geo_fetch(coords_qry, key),
+                   silent = TRUE)
+        attempts <- 0
+        pred <- (inherits(res, "try-error") && !grepl("return more than", res))
+        while (pred && attempts <= 3) {
+            message("sleeping ... ")
+            Sys.sleep(exp(runif(1) * attempts))
+            res <-  try(internal_idigbio_by_geo_fetch(coords_qry, key),
+                        silent = TRUE)
+            attempts <- attempts + 1
+            message("attempt ... ", attempts)
+        }
+        if (pred) {
+            stop(res)
+        } else {
+            return(res)
+        }
     }
 }
 
@@ -102,10 +122,10 @@ get_idigbio_by_geo <- function(coords, q) {
                 bottom_left  = c(crds[1], mid_lat, mid_lon, crds[4]),
                 bottom_right = c(mid_lon, mid_lat, crds[3], crds[4])
             ) %>%
-                map(function(x) set_names(x, c("xmin", "ymax", "xmax", "ymin"))) %>%
-                map(as.list) %>%
-                map_df(as_tibble) %>%
-                bind_cols(data_frame(key = rep(q, 4))) %>%
+                purrr::map(function(x) set_names(x, c("xmin", "ymax", "xmax", "ymin"))) %>%
+                purrr::map(as.list) %>%
+                purrr::map_df(as_tibble) %>%
+                dplyr::bind_cols(data_frame(key = rep(q, 4))) %>%
                 coords_to_query()
             return(lapply(names(.r), function(x)
                 get_idigbio_by_geo(.r, x)))
