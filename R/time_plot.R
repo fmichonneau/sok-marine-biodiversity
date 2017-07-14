@@ -307,7 +307,6 @@ plot_institutions_through_time <- function(idig_records) {
 
 
 get_id_level <- function(nm) {
-    ##message(nm)
     stopifnot(length(nm) == 1L)
     if (is_binomial(cleanup_species_names(nm, rm_subgenus=TRUE))) {
         "species"
@@ -322,11 +321,10 @@ get_id_level <- function(nm) {
             "unknown"
         }
     } else {
-        wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))
+        wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))$valid_AphiaID
         if (is.na(wid)) return(NA_character_)
         res <- store_worms_classification()$get(wid)
-        res <- res[[1]]
-        tolower(res$rank[length(res$rank)])
+        tolower(res$rank[nrow(res)])
     }
 }
 

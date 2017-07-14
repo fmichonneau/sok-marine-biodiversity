@@ -1,26 +1,53 @@
 ## Storr for the WoRMS ids: given a taxon name, what is its WoRMS id? ----------
+worm_fail <- function(key, reason) {
+    assertthat::is.string(key)
+    assertthat::is.string(reason)
+    message("failed to find a good candidate for: ", key)
+    cat(format(Sys.time()), key, reason, "\n",
+        file = "no_match_worms.tsv", sep = "\t", append = TRUE)
+    setNames(NA_character_, reason)
+
+}
+
 fetch_hook_worms_ids <- function(key, namespace) {
     is_lower_case(key)
-    wid <- get_wormsid(searchterm = key, ask = FALSE)
-    if (identical(attr(wid, "match"), "found")) {
-        return(wid)
-    } else if (identical(attr(wid, "match"), "not found") ||
-               identical(attr(wid, "match"), "multi match")) {
-        wid <- get_wormsid(searchterm = key, ask = FALSE, accepted = FALSE)
-        if (identical(attr(wid, "match"), "not found")) {
-            message(key, " not found.")
-            return(NA)
-        }
-        res <- worms_records(ids = wid)$valid_AphiaID
-        if (is.null(res)) {
-            message("Can't find synonyms for: ", key)
-            return(NA)
-        }
-        if (identical(res, "0"))
-            return(NA)
-        if (length(res) > 1) stop("More than one record for ", key)
-        return(res)
-    } else stop("I don't know what to do ", attr(wid, "match"))
+    internal_worms <- function(key, fuzzy = FALSE) {
+        wid <- try(worrms::wm_records_name(key, fuzzy = FALSE),
+                   silent = TRUE)
+        ## if no content, we repeat using fuzzy matching
+        if (inherits(wid, "try-error") &&
+            grepl("no content", wid, ignore.case = TRUE) && !fuzzy) {
+            wid <- internal_worms(key, fuzzy = TRUE)
+        } else if (inherits(wid, "data.frame")) {
+            ## When we get a data frame:
+            ## - we check if there is accepted among the names and we choose that
+            ## - otherwise
+            if (nrow(wid) > 1L) {
+                if (any(wid$status %in% c("accepted", "alternate representation"))) {
+                    wid <- wid %>%
+                        ## only keep accepted if it's there
+                        dplyr::filter(status %in%  c("accepted", "alternate representation"))
+                    if (nrow(wid) > 1L) {
+                        wid <- wid %>%
+                            ## do not include records not reviewed
+                            ## (the citation info starts with WoRMS instead of the name of an editor)
+                            dplyr::filter(!grepl("^WoRMS", citation))
+                    }
+                } else {
+                    wid <- wid %>%
+                        dplyr::filter(! status %in% c("deleted", "taxon inquirendum")) %>%
+                        dplyr::distinct(valid_AphiaID, .keep_all = TRUE)
+                }
+            }
+            if (nrow(wid) == 1L) {
+                wid$fuzzy <- fuzzy
+                return(wid)
+            } else {
+                worm_fail(key, "multi-match")
+            }
+        } else worm_fail(key, "no-match")
+    }
+    internal_worms(key)
 }
 
 store_worms_ids <- function(store_path = "data/worms_ids_storr") {
@@ -28,15 +55,11 @@ store_worms_ids <- function(store_path = "data/worms_ids_storr") {
                              fetch_hook_worms_ids))
 }
 
-## storr for the WoRMS info: given a WoRMS id, what does WoRM know about it ----
-fetch_hook_worms_info <- function(key, namespace) {
-    if (is.na(key)) return(NA)
-    worms_records(ids = key)
-}
-
-store_worms_info <- function(store_path = "data/worms_info") {
-    invisible(storr_external(driver_rds(store_path),
-                             fetch_hook_worms_info))
+find_nas <- function() {
+    all_keys <- store_worms_ids()$list()
+    all_keys %>%
+        map_if(function(x) is.na(store_worms_ids()$get(x)),
+               function(x) x)
 }
 
 ## Storr for the WoRMS synonyms: given a WoRMS id, what are the synonyms? ------
@@ -61,20 +84,12 @@ get_synonym_store <- function(irl_checklist) {
 ## Storr for the higher classification: given a WoRMS id, what is the
 ## higher classification
 fetch_hook_worms_classification <- function(key, namespace) {
-    taxizesoap:::classification_s.wormsid(key)
+    worrms::wm_classification(as.integer(key))
 }
 
 store_worms_classification <- function(store_path = "data/worms_classification_storr") {
     invisible(storr_external(driver_rds(store_path),
                              fetch_hook_worms_classification))
-}
-
-get_classification_store <- function(irl_checklist) {
-    species <- irl_checklist$`SCIENTIFIC NAME`
-    lapply(species, function(x) {
-        wid <- store_worms_ids()$get(x)
-        store_worms_classification()$get(wid)
-    })
 }
 
 worms_phylum_by_wid <- function(wid) {
@@ -116,19 +131,18 @@ add_worms <- function(sp_list) {
         dplyr::select(cleaned_scientificname) %>%
         unique
 
-    wid <- valid_name <- vector("character", nrow(spp))
+    wid <- valid_name <- is_fuzzy <- vector("character", nrow(spp))
     marine <- vector("logical", nrow(spp))
 
     for (i in seq_len(nrow(spp))) {
-        wid[i] <- store_worms_ids()$get(tolower(spp[i, 1]))
-        if (!is.na(wid[i]) && !identical(wid[i], "0")) {
-            w_info <- store_worms_info()$get(wid[i])
-            if (nrow(w_info) > 1) browser()
+        w_info <- store_worms_ids()$get(tolower(spp[i, 1]))
+        if (inherits(w_info, "data.frame")) {
+            wid[i] <- w_info$valid_AphiaID
             marine[i] <- (identical(w_info$isMarine, "1") | identical(w_info$isBrackish, "1"))
             valid_name[i] <- w_info$valid_name
+            is_fuzzy[i] <- w_info$fuzzy
         } else {
-            marine[i] <- NA
-            valid_name[i] <- NA
+            wid[i] <- marine[i] <- valid_name[i] <- is_fuzzy[i] <- NA
         }
     }
     to_add <- data.frame(
@@ -136,6 +150,7 @@ add_worms <- function(sp_list) {
         worms_id = wid,
         is_marine = marine,
         worms_valid_name = valid_name,
+        is_fuzzy = is_fuzzy,
         stringsAsFactors = FALSE
     )
     dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname")

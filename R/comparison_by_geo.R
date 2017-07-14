@@ -8,9 +8,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
                           clean_phylum) %>%
-            dplyr::mutate(classification = get_classification_from_wid(worms_id, verbose),
-                          classification_df = map(classification, unfold_classification)) %>%
-            tidyr::unnest(classification_df)
+            add_classification()
        ,
         ## in geo_list but not in spp_list
         not_in_geo =
@@ -20,9 +18,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
                           clean_phylum) %>%
-            dplyr::mutate(classification = get_classification_from_wid(worms_id, verbose),
-                          classification_df = purrr::map(classification, unfold_classification)) %>%
-            tidyr::unnest(classification_df)
+            add_classification()
 
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
