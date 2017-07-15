@@ -66,7 +66,7 @@ find_nas <- function() {
 
 ## Storr for the WoRMS synonyms: given a WoRMS id, what are the synonyms? ------
 fetch_hook_worms_synonyms <- function(key, namespace) {
-    worms_synonyms(key)$scientificname
+    worrms::wm_synonyms(as.integer(key))$scientificname
 }
 
 store_synonyms <- function(store_path = "data/synonym_storr") {
