@@ -3,21 +3,26 @@ fetch_hook_bold_specimens_per_species <- function(key, namespace) {
     is_lower_case(key)
     res <- try(bold_specimens(taxon = paste0("'", key, "'")), silent = TRUE)
     if (inherits(res, "try-error")) {
-        message("No record for ", key, ". Trying to look for synonyms ...", appendLF = FALSE)
+        message("No record for ", key, ". Trying to look for synonyms ...")
         wid <- store_worms_ids()$get(key)
         if (!inherits(wid, "data.frame")) {
-            message("Can't find a valid WoRMS ID")
+            message("  no valid WoRMS ID.")
             return("not in worms/multi match")
         } else {
             syn <- store_synonyms()$get(as.character(wid$valid_AphiaID))
-            res <- try(bold_specimens(taxon = paste0("'", syn, "'", collapse = "|")),
-                       silent = TRUE)
-            if (inherits(res, "try-error")) {
-                message("  No record for any of the synonyms ",
-                        paste("   - ", syn, collapse = " \n"))
+            if (inherits(syn, "data.frame")) {
+                res <- try(bold_specimens(taxon = paste0("'", syn, "'", collapse = "|")),
+                           silent = TRUE)
+                if (inherits(res, "try-error")) {
+                    message("  No record for any of the synonyms ",
+                            paste("   - ", syn, collapse = " \n"))
+                    return(NULL)
+                }
+                message(" found ", nrow(res), " records for synonyms")
+            } else {
+                message(" No synonyms")
                 return(NULL)
             }
-            message(" found ", nrow(res), " records for synonyms")
         }
     }
     message(nrow(res), " record(s) for ", key)

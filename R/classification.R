@@ -30,7 +30,6 @@ get_classification_from_wid <- function(wid, verbose = FALSE) {
 
 add_classification <- function(data) {
     stopifnot(exists("worms_id", data))
-    browser()
     data %>%
         dplyr::mutate(classif = purrr::map(worms_id,
                                            get_classification_from_wid,

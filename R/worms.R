@@ -40,10 +40,11 @@ fetch_hook_worms_ids <- function(key, namespace) {
                 }
             }
             if (nrow(wid) == 1L) {
-                if (wid$valid_AphiaID != 0) {
-                    wid$fuzzy <- fuzzy
-                    return(wid)
-                } else worm_fail(key, "AphiaID == 0")
+                wid$fuzzy <- fuzzy
+                if (wid$valid_AphiaID == 0 ||
+                    is.na(wid$valid_AphiaID)) {
+                    worm_fail(key, "AphiaID == 0")
+                } else return(wid)
             } else {
                 worm_fail(key, "multi-match")
             }
@@ -66,7 +67,11 @@ find_nas <- function() {
 
 ## Storr for the WoRMS synonyms: given a WoRMS id, what are the synonyms? ------
 fetch_hook_worms_synonyms <- function(key, namespace) {
-    worrms::wm_synonyms(as.integer(key))$scientificname
+    res <- try(worrms::wm_synonyms(as.integer(key))$scientificname,
+               silent = TRUE)
+    if (!inherits(res, "try-error") && length(res) > 0L) {
+        res
+    } else NA
 }
 
 store_synonyms <- function(store_path = "data/synonym_storr") {
@@ -140,7 +145,7 @@ add_worms <- function(sp_list) {
         w_info <- store_worms_ids()$get(tolower(spp[i, 1]))
         if (inherits(w_info, "data.frame")) {
             wid[i] <- w_info$valid_AphiaID
-            marine[i] <- (identical(w_info$isMarine, "1") | identical(w_info$isBrackish, "1"))
+            marine[i] <- (identical(w_info$isMarine, 1L) | identical(w_info$isBrackish, 1L))
             valid_name[i] <- w_info$valid_name
             is_fuzzy[i] <- w_info$fuzzy
         } else {

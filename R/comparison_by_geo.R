@@ -1,25 +1,23 @@
 compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
+    prepare <- . %>%
+            dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
+            dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
+            dplyr::select(worms_id, worms_valid_name,
+                          clean_phylum) %>%
+            dplyr::filter(!is.na(worms_id)) %>%
+            add_classification()
     list(
         ## in spp_list but not in geo_list
         not_in_list =
             as_data_frame(geo_list) %>%
             dplyr::anti_join(spp_list, by = "worms_valid_name") %>%
-            dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
-            dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
-            dplyr::select(worms_id, worms_valid_name,
-                          clean_phylum) %>%
-            add_classification()
+            prepare
        ,
         ## in geo_list but not in spp_list
         not_in_geo =
             as_data_frame(spp_list) %>%
             dplyr::anti_join(geo_list, by = "worms_valid_name") %>%
-            dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
-            dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
-            dplyr::select(worms_id, worms_valid_name,
-                          clean_phylum) %>%
-            add_classification()
-
+            prepare
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
 
