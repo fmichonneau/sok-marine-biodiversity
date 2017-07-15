@@ -40,8 +40,10 @@ fetch_hook_worms_ids <- function(key, namespace) {
                 }
             }
             if (nrow(wid) == 1L) {
-                wid$fuzzy <- fuzzy
-                return(wid)
+                if (wid$valid_AphiaID != 0) {
+                    wid$fuzzy <- fuzzy
+                    return(wid)
+                } else worm_fail(key, "AphiaID == 0")
             } else {
                 worm_fail(key, "multi-match")
             }
