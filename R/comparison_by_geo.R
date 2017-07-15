@@ -35,14 +35,9 @@ generate_upsetr_csv <- function(..., file) {
     }
 
     d <- list(...)
-    d <- lapply(d, function(x) {
-        if (exists("taxon_name", x))
-            rename_(x, "phylum" = "taxon_name")
-    })
 
     dplyr::bind_rows(d, .id = "database") %>%
-        dplyr::mutate(phylum = tolower(phylum)) %>%
-        dplyr::count(phylum, worms_valid_name, database) %>%
+        dplyr::count(clean_phylum, worms_valid_name, database) %>%
         tidyr::spread(database, n) %>%
         dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::mutate(bold = has_bold_record(worms_valid_name)) %>%

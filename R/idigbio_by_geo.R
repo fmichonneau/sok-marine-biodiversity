@@ -232,7 +232,8 @@ fill_store_idigbio_by_geo <- function(db_table, gom_phyla) {
 
     db %>%
         dplyr::distinct(clean_phylum) %>%
-        dplyr::anti_join(data_frame(in_gom = gom_phyla)) %>%
+        dplyr::collect(n = Inf) %>%
+        dplyr::anti_join(data_frame(clean_phylum = gom_phyla)) %>%
         readr::write_csv("data-validation/check_idigbio_phyla.csv")
 
     db %>%
