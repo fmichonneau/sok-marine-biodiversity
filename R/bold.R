@@ -5,16 +5,16 @@ fetch_hook_bold_specimens_per_species <- function(key, namespace) {
     if (inherits(res, "try-error")) {
         message("No record for ", key, ". Trying to look for synonyms ...", appendLF = FALSE)
         wid <- store_worms_ids()$get(key)
-        if (is.na(wid)) {
+        if (!inherits(wid, "data.frame")) {
             message("Can't find a valid WoRMS ID")
             return("not in worms/multi match")
         } else {
-            syn <- store_synonyms()$get(wid)
+            syn <- store_synonyms()$get(as.character(wid$valid_AphiaID))
             res <- try(bold_specimens(taxon = paste0("'", syn, "'", collapse = "|")),
                        silent = TRUE)
             if (inherits(res, "try-error")) {
-                message("No record for any of the synonyms ",
-                        paste(syn, collapse = ", "))
+                message("  No record for any of the synonyms ",
+                        paste("   - ", syn, collapse = " \n"))
                 return(NULL)
             }
             message(" found ", nrow(res), " records for synonyms")
