@@ -2,8 +2,8 @@ get_kozloff_species <- function(koz_raw) {
     readr::read_csv(koz_raw) %>%
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname_verbatim, rm_subgenus = TRUE),
                       is_binomial = is_binomial(cleaned_scientificname)) %>%
-            dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
-            dplyr::filter(is_binomial == TRUE)
+        dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
+        dplyr::filter(is_binomial == TRUE)
 }
 
 

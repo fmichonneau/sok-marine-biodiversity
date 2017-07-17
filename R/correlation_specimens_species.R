@@ -29,11 +29,11 @@ model_sampling_effort <- function(id) {
 calc_prop_nspecimens_species <- function(idig, n_specimens) {
     res <- idig %>%
         filter(!is.na(worms_valid_name)) %>%
-        count(clean_phylum, worms_valid_name, sort = TRUE)
+        count(phylum, worms_valid_name, sort = TRUE)
 
     pdf(file = paste0("figures/distribution_specimens.pdf"))
     print(
-        ggplot(res, aes(n, fill = clean_phylum)) +
+        ggplot(res, aes(n, fill = phylum)) +
         geom_bar() + xlim(c(1, 100)) + scale_y_log10()
     )
     dev.off()
@@ -54,7 +54,7 @@ calc_prop_species_not_collected_since <- function(idig, max_year) {
 
 calc_records_rare_phyla <- function(idig) {
     res <- idig %>%
-        dplyr::count(clean_phylum, sort = TRUE) %>%
+        dplyr::count(phylum, sort = TRUE) %>%
         dplyr::mutate(is_rare = dplyr::if_else(n < 500, n, 0L))
 
     list(
@@ -64,5 +64,5 @@ calc_records_rare_phyla <- function(idig) {
 }
 
 calc_n_idigbio_phyla <- function(idig) {
-    n_distinct(idig$clean_phylum)
+    n_distinct(idig$phylum)
 }

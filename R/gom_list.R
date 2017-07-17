@@ -55,7 +55,8 @@ get_gom_species <- function(pattern = "^biogomx-.+\\.csv$") {
                    max_depth_m = `Max depth (m)`,
                    changes_from_book = `Changes from the book`
                ) %>%
-        dplyr::distinct(phylum, scientificname_verbatim, .keep_all = TRUE)
+        dplyr::distinct(phylum, scientificname_verbatim, .keep_all = TRUE) %>%
+        dplyr::mutate_if(is.character, tolower)
 
     ## Extract taxon names...
     ## First remove extra spaces (a few names have additional spaces)
@@ -136,9 +137,9 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
         dplyr::left_join(idig_, by = "phylum") %>%
         dplyr::left_join(obis_, by = "phylum") %>%
         dplyr::left_join(gbif_, by = "phylum") %>%
-        dplyr::filter(phylum %in% c("Arthropoda", "Mollusca", "Annelida",
-                                    "Cnidaria", "Echinodermata", "Platyhelminthes",
-                                    "Porifera", "Bryozoa", "Nematoda", "Chordata"
+        dplyr::filter(phylum %in% c("arthropoda", "mollusca", "annelida",
+                                    "cnidaria", "echinodermata", "platyhelminthes",
+                                    "porifera", "bryozoa", "nematoda", "chordata"
                                     )) %>%
         dplyr::mutate_(.dots = setNames(list(
                            lazyeval::interp("n_idigbio_in_region/n_total",
@@ -172,8 +173,8 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
 
     full_region <- c(gom = "GoM", pnw = "PNW")
 
-    phyla_to_plot <-  c("Arthropoda", "Mollusca", "Annelida", "Cnidaria", "Echinodermata",
-                        "Platyhelminthes", "Porifera", "Bryozoa", "Chordata")
+    phyla_to_plot <- tolower(c("Arthropoda", "Mollusca", "Annelida", "Cnidaria", "Echinodermata",
+                        "Platyhelminthes", "Porifera", "Bryozoa", "Chordata"))
 
     smry_db %>%
         dplyr::filter(phylum %in% phyla_to_plot) %>%

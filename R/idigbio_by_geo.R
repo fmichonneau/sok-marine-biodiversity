@@ -156,16 +156,14 @@ connect_idigbio_db <- function() {
 create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
-                              "TEXT", "REAL", "REAL", "TEXT", "TEXT",
-                              "TEXT"),
+                              "TEXT", "REAL", "REAL"),
                             .Names = c("uuid", "catalognumber",
                                   "datecollected", "institutioncode",
-                                  "data.dwc:phylum",
-                                  "data.dwc:class", "data.dwc:order",
-                                  "data.dwc:family", "data.dwc:genus",
+                                  "phylum",
+                                  "class", "order",
+                                  "family", "genus",
                                   "scientificname", "country",
-                                  "geopoint.lon", "geopoint.lat",
-                                  "clean_phylum", "clean_class", "clean_family"))
+                                  "geopoint.lon", "geopoint.lat"))
 
     idig_data_db <- connect_idigbio_db()
     con <- idig_data_db$con
@@ -186,14 +184,16 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
     lapply(names(coords), function(q) {
         message("Getting iDigBio records for ", q, appendLF = FALSE)
         r <- get_idigbio_by_geo(coords, q) %>%
-            mutate_(.dots = setNames(list("tolower(`data.dwc:phylum`)",
-                                          "tolower(`data.dwc:class`)",
-                                          "tolower(`data.dwc:family`)"),
-                                     c("clean_phylum", "clean_class", "clean_family")))
+            dplyr::rename(phylum = `data.dwc:phylum`,
+                          class = `data.dwc:class`,
+                          order = `data.dwc:order`,
+                          family = `data.dwc:family`,
+                          genus = `data.dwc:genus`) %>%
+            dplyr::mutate_if(is.character, tolower)
         message(" DONE.")
         db_insert_into(con, db_table, r)
     })
-    db_create_indexes(con, db_table, indexes = list(c("clean_phylum", "clean_class", "clean_family"),
+    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "family", "scientificname"),
                                                     c("country")))
     db_analyze(con, db_table)
     db_commit(con)
@@ -218,33 +218,33 @@ fill_store_idigbio_by_geo <- function(db_table, gom_phyla) {
     chr_fam_to_rm <- chordata_families_to_rm()
 
     arth_family_to_rm <- db %>%
-        dplyr::filter(clean_phylum == "arthropoda" & clean_class %in% arth_class_to_rm) %>%
-        dplyr::select(clean_phylum, clean_family) %>%
-        dplyr::distinct(clean_phylum, clean_family) %>%
-        dplyr::filter(!is.na(clean_family))
+        dplyr::filter(phylum == "arthropoda" & class %in% arth_class_to_rm) %>%
+        dplyr::select(phylum, family) %>%
+        dplyr::distinct(phylum, family) %>%
+        dplyr::filter(!is.na(family))
 
     chordata_family_to_rm <- db %>%
-        dplyr::filter(clean_phylum == "chordata" &
-                      (clean_class %in% chr_class_to_rm |
-                       clean_family %in% chr_fam_to_rm)) %>%
-        dplyr::select(clean_phylum, clean_class, clean_family) %>%
-        dplyr::distinct(clean_phylum, clean_class, clean_family)
+        dplyr::filter(phylum == "chordata" &
+                      (class %in% chr_class_to_rm |
+                       family %in% chr_fam_to_rm)) %>%
+        dplyr::select(phylum, class, family) %>%
+        dplyr::distinct(phylum, class, family)
 
     db %>%
-        dplyr::distinct(clean_phylum) %>%
+        dplyr::distinct(phylum) %>%
         dplyr::collect(n = Inf) %>%
-        dplyr::anti_join(data_frame(clean_phylum = gom_phyla)) %>%
+        dplyr::anti_join(data_frame(phylum = gom_phyla)) %>%
         readr::write_csv("data-validation/check_idigbio_phyla.csv")
 
     db %>%
         ## First let's get the phylum names from the Gulf of Mexico list,
         ## that will take care of plants, fungi, and records with no
         ## specified phylum
-        dplyr::filter(clean_phylum %in% gom_phyla) %>%
+        dplyr::filter(phylum %in% gom_phyla) %>%
         ## only the obviously non-marine arthropods and the vertebrates
-        dplyr::anti_join(arth_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
-        dplyr::anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_family")) %>%
-        dplyr::anti_join(chordata_family_to_rm, by = c("clean_phylum", "clean_class")) %>%
+        dplyr::anti_join(arth_family_to_rm, by = c("phylum", "family")) %>%
+        dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "family")) %>%
+        dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "class")) %>%
         dplyr::collect(n = Inf) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
@@ -382,10 +382,10 @@ make_heatmap_sampling <- function(gg_r, title, limits = NULL) {
 }
 
 make_heatmap_by_phylum <- function(idig, file = "figures/map_diversity_per_phylum.pdf") {
-    uniq_phyla <- unique(idig$clean_phylum)
+    uniq_phyla <- unique(idig$phylum)
 
     res <- parallel::mclapply(uniq_phyla, function(p) {
-                         idig_sub <- idig[idig$clean_phylum == p, ]
+                         idig_sub <- idig[idig$phylumrg == p, ]
                          if (nrow(idig_sub) < 10) return(NULL)
                          ggr <- make_data_map_diversity(idig_sub)
                          ggr

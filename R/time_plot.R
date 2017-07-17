@@ -44,9 +44,9 @@ make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
     ## Combine the species lists from GOM and Kozloff
     spp_total <- dplyr::bind_rows(gom = gom_spp, koz = koz_spp, .id = "fauna") %>%
         dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
-        dplyr::group_by(fauna, clean_phylum) %>%
+        dplyr::group_by(fauna, phylum) %>%
         dplyr::tally() %>%
-        dplyr::mutate(phylum = tolower(clean_phylum)) %>%
+        dplyr::mutate(phylum = tolower(phylum)) %>%
         dplyr::rename(n_spp_total = n) %>%
         dplyr::select(-taxon_name)
 
@@ -89,13 +89,13 @@ make_knowledge_through_time_idigbio <- function(idigbio) {
 
 
     spp_total <-  idigbio %>%
-        dplyr::group_by(clean_phylum) %>%
+        dplyr::group_by(phylum) %>%
         dplyr::summarize(
             n_spp_total = n_distinct(worms_valid_name)
         )
 
     n_samples <- idigbio %>%
-        dplyr::group_by(clean_phylum, year) %>%
+        dplyr::group_by(phylum, year) %>%
         dplyr::arrange(year) %>%
         dplyr::summarize(
             n_samples = n()
@@ -103,24 +103,24 @@ make_knowledge_through_time_idigbio <- function(idigbio) {
         dplyr::mutate(cum_n_samples = cumsum(n_samples))
 
     n_species <- idigbio %>%
-        dplyr::group_by(clean_phylum, worms_valid_name, year) %>%
+        dplyr::group_by(phylum, worms_valid_name, year) %>%
         dplyr::arrange(year) %>%
         dplyr::tally() %>%
         dplyr::mutate(min_year = min(year)) %>%
         dplyr::select(-n) %>%
-        dplyr::distinct(clean_phylum, worms_valid_name, min_year, .keep_all = TRUE) %>%
-        dplyr::group_by(clean_phylum, min_year) %>%
+        dplyr::distinct(phylum, worms_valid_name, min_year, .keep_all = TRUE) %>%
+        dplyr::group_by(phylum, min_year) %>%
         dplyr::arrange(min_year) %>%
         dplyr::summarize(
             n_new_spp = n()
         ) %>%
         dplyr::rename(year = min_year) %>%
-        dplyr::right_join(n_samples, by = c("clean_phylum", "year")) %>%
+        dplyr::right_join(n_samples, by = c("phylum", "year")) %>%
         dplyr::mutate(n_new_spp = replace(n_new_spp, is.na(n_new_spp), 0)) %>%
         dplyr::mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
-        dplyr::left_join(spp_total, by = "clean_phylum") %>%
+        dplyr::left_join(spp_total, by = "phylum") %>%
         dplyr::mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total) %>%
-        dplyr::rename(phylum = clean_phylum)
+        dplyr::rename(phylum = phylum)
 
     n_species
 
@@ -307,25 +307,28 @@ plot_institutions_through_time <- function(idig_records) {
 
 
 get_id_level <- function(nm) {
+    message("id level for: ", nm, appendLF = FALSE)
     stopifnot(length(nm) == 1L)
     if (is_binomial(cleanup_species_names(nm, rm_subgenus=TRUE))) {
-        "species"
+        r <- "species"
     } else if (nchar(nm) < 2) {
-        return("unknown")
+        r <- "unknown"
     } else if (grepl("\\s", nm)) {      # has space in name
         if (grepl(".+\\(.+\\)$", nm)) { # ends with subgenus
-            "subgenus"
+            r <- "subgenus"
         } else if (length(gregexpr("\\s", nm)[[1]]) > 1) { # at least 2 words
-            "subspecies"
+            r <- "subspecies"
         } else {
-            "unknown"
+            r <- "unknown"
         }
     } else {
-        wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))$valid_AphiaID
+        wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))
         if (is.na(wid)) return(NA_character_)
-        res <- store_worms_classification()$get(wid)
-        tolower(res$rank[nrow(res)])
+        res <- store_worms_classification()$get(as.character(wid$valid_AphiaID))
+        r <- tolower(res$rank[nrow(res)])
     }
+    message(" is: ", r)
+    r
 }
 
 test_id_level <- function() {
@@ -359,20 +362,20 @@ data_identification_level_through_time <- function(idig_records) {
 
 plot_identification_level_through_time <- function(id_level) {
     id_level %>%
-        count(year, clean_phylum, id_level) %>%
-        group_by(year, clean_phylum) %>%
+        count(year, phylum, id_level) %>%
+        group_by(year, phylum) %>%
         mutate(p = n/sum(n),
                n_lots = sum(n)) %>%
         filter(id_level == "species",
-               clean_phylum %in% c("annelida", "arthropoda", "chordata",
+               phylum %in% c("annelida", "arthropoda", "chordata",
                                    "cnidaria", "echinodermata", "mollusca")) %>%
         ungroup() %>%
-        mutate(clean_phylum = capitalize(clean_phylum)) %>%
-        ggplot(aes(x = year, y = p, colour = clean_phylum, fill = clean_phylum)) +
+        mutate(phylum = capitalize(phylum)) %>%
+        ggplot(aes(x = year, y = p, colour = phylum, fill = phylum)) +
         geom_point(aes(size = n_lots)) +
         geom_hline(yintercept = 1) +
         geom_smooth(method = "lm", formula = y ~ splines::bs(x, degree = 3), show.legend = FALSE) +
-        facet_wrap(~ clean_phylum) +
+        facet_wrap(~ phylum) +
         guides(color = FALSE, fill = FALSE) +
         scale_size_continuous(name = "Number of specimens") +
         labs(x = "Year", y = "Proportion of specimens identified at the species level") +

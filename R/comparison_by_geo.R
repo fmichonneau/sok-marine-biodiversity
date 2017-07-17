@@ -3,7 +3,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
-                          clean_phylum) %>%
+                          phylum) %>%
             dplyr::filter(!is.na(worms_id)) %>%
             add_classification()
     list(
@@ -11,13 +11,13 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
         not_in_list =
             as_data_frame(geo_list) %>%
             dplyr::anti_join(spp_list, by = "worms_valid_name") %>%
-            prepare
+            prepare()
        ,
         ## in geo_list but not in spp_list
         not_in_geo =
             as_data_frame(spp_list) %>%
             dplyr::anti_join(geo_list, by = "worms_valid_name") %>%
-            prepare
+            prepare()
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
 
@@ -35,7 +35,7 @@ generate_upsetr_csv <- function(..., file) {
     d <- list(...)
 
     dplyr::bind_rows(d, .id = "database") %>%
-        dplyr::count(clean_phylum, worms_valid_name, database) %>%
+        dplyr::count(phylum, worms_valid_name, database) %>%
         tidyr::spread(database, n) %>%
         dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::mutate(bold = has_bold_record(worms_valid_name)) %>%
