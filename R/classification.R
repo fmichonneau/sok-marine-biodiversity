@@ -30,6 +30,8 @@ get_classification_from_wid <- function(wid, verbose = FALSE) {
 
 add_classification <- function(data) {
     stopifnot(exists("worms_id", data))
+    ## if there is already a 'phylum' column in "data",
+    ## then the WoRMS phylum gets added as 'phylum1'
     data %>%
         dplyr::mutate(classif = purrr::map(worms_id,
                                            get_classification_from_wid,
