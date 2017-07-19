@@ -71,7 +71,7 @@ compare_database_overlap <- function(gom_worms, kozloff_worms,
                                  .id = "database")
 
     comp_db <- dplyr::bind_rows(list(gom = comp_gom,
-                                     kozloff = comp_koz), .id = "region")
+                                     pnw = comp_koz), .id = "region")
 }
 
 compare_taxonomy_database_overlap <- function(database_overlap) {
@@ -129,7 +129,7 @@ plot_database_overlap <- function(comp_db) {
                                       seq(0, 1500, by = 250) + offset),
                            labels = c(abs(seq(-1500, 0, by = 250)), seq(0, 1500, by = 250))
                            ) +
-        facet_wrap(~ region, labeller = as_labeller(c(gom = "Gulf of Mexico", kozloff = "Pacific NW"))) +
+        facet_wrap(~ region, labeller = as_labeller(c(gom = "Gulf of Mexico", pnw = "Pacific NW"))) +
         theme_ipsum(base_family = "Ubuntu Condensed") +
         scale_color_manual(values = c("#C0DA4C", "#3F1A52")) +
         ylab("Number of species") +
