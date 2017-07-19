@@ -21,6 +21,30 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
 
+full_list <- function(...) {
+
+    select_worms <- . %>%
+        dplyr::select(phylum, worms_valid_name)
+
+    list(...) %>%
+        purrr::map_df(select_worms) %>%
+        dplyr::filter(!is.na(worms_valid_name)) %>%
+        dplyr::distinct(phylum, worms_valid_name)
+}
+
+full_list_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
+                             pnw_worms, pnw_idigbio, pnw_obis) {
+
+    gom_list <- full_list(gom_worms, gom_idigbio, gom_obis)
+    pnw_list <- full_list(pnw_worms, pnw_idigbio, pnw_obis)
+
+    list(
+        gom = gom_list,
+        pnw = pnw_list
+    ) %>%
+        dplyr::bind_rows(.id = "region")
+}
+
 generate_upsetr_csv <- function(..., file) {
 
     has_bold_record <- function(worms_sp) {
