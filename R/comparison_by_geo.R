@@ -194,6 +194,103 @@ plot_database_overlap <- function(comp_db) {
 }
 
 
+plot_database_overlap_percent <- function(comp_db, full_list) {
+
+    phyla_to_keep <- c("mollusca", "arthropoda", "annelida",
+                       "cnidaria", "bryozoa", "porifera",
+                       "echinodermata", "chordata")
+
+    comp_db <- comp_db %>%
+        dplyr::mutate(phylum = tolower(phylum)) %>%
+        dplyr::filter(phylum %in% phyla_to_keep)
+
+    spp_per_phylum <- full_list %>%
+        dplyr::count(region, phylum) %>%
+        dplyr::rename(n_spp = n)
+
+    ## to have 2 sided plot, we take the negative value of the count
+    ## for the records that are NOT in the geographical range in the
+    ## database.
+    data_for_plot <- comp_db %>%
+        dplyr::count(region, database, data_source, phylum) %>%
+        dplyr::left_join(spp_per_phylum, by = c("region", "phylum")) %>%
+        dplyr::mutate(p = n/n_spp) %>%
+        dplyr::mutate(number = ifelse(data_source == "not_in_geo", -p, p)) %>%
+        dplyr::select(-p, -n, -n_spp) %>%
+        tidyr::spread(data_source, number) %>%
+        dplyr::mutate(phylum = capitalize(phylum))
+
+
+    ## Clean up phylum names to use as labels in plot
+    phylum_label <- data_for_plot %>%
+        ungroup() %>%
+        arrange(not_in_geo) %>%
+        distinct(phylum) %>%
+        .[[1]]
+
+    data_for_plot$phylum <- factor(data_for_plot$phylum, levels = rev(phylum_label))
+
+    offset <- .5
+    dodge_width <- .6
+    gg <- ggplot(data_for_plot, aes(x = phylum, color = database)) +
+        geom_linerange(aes(x = phylum, ymin = -offset, ymax = -offset + not_in_geo),
+                       position = position_dodge(width = dodge_width)) +
+        geom_point(aes(y = -offset + not_in_geo), size = .7,
+                       position = position_dodge(width = dodge_width)) +
+        geom_linerange(aes(x = phylum, ymin = offset, ymax = offset + not_in_list),
+                       position = position_dodge(width = dodge_width)) +
+        geom_point(aes(y = offset + not_in_list), size = .7,
+                        position = position_dodge(width = dodge_width)) +
+        geom_text(aes(x = phylum, label = phylum, y = 0),
+                  family = "Ubuntu Condensed",
+                  inherit.aes = FALSE,
+                  size = 4) +
+        coord_flip() +
+        facet_wrap(~ region, labeller = as_labeller(c(gom = "Gulf of Mexico", pnw = "Pacific NW"))) +
+        scale_y_continuous(breaks = c(seq(-1, 0, by = .2) + -offset,
+                                      seq(0, 1, by = .2) + offset),
+                           labels = c(abs(seq(-1, 0, by = .2)), seq(0, 1, by = .2))
+                           ) +
+
+        theme_ipsum(base_family = "Ubuntu Condensed") +
+        scale_color_manual(values = c("#C0DA4C", "#3F1A52")) +
+        ylab("Number of species") +
+        theme(text = element_text(),
+               panel.grid.major.y = element_blank(),
+               panel.grid.minor = element_blank(),
+               panel.grid.major.x = element_line(linetype = "dotted", size = 0.1),
+               axis.title = element_blank(),
+               plot.title = element_blank(),
+               plot.subtitle = element_blank(),
+               plot.caption = element_text(size = 8, margin = margin(b = 10, t = 50)),
+               axis.text.x = element_text(size = 10),
+               axis.text.y = element_blank(),
+               strip.text = element_text(size = 18, face = "bold", hjust = 0.030),
+               plot.background = element_blank(),
+               legend.text  = element_text(family = "Ubuntu Condensed", size = 10),
+               panel.spacing.x = unit(5, "lines")
+               ) +
+            annotation_custom(
+                grob = grid::textGrob(label = "Not in list", hjust = -1,
+                                      gp = gpar(fontfamily = "Ubuntu Condensed")),
+                ymin = .1,
+                ymax = .1,
+                xmin = -.6,
+                xmax = -.6) +
+            annotation_custom(
+                grob = grid::textGrob(label = "Not in databases", hjust = 1,
+                                      gp = gpar(fontfamily = "Ubuntu Condensed")
+                                      ),
+                ymin = -.1 - offset,
+                ymax = -.1 - offset,
+                xmin = -.6,
+                xmax = -.6)
+    gt <- ggplot_gtable(ggplot_build(gg))
+    gt$layout$clip[grepl("panel", gt$layout$name)] <- "off"
+    grid.draw(gt)
+
+}
+
 get_species_in_common <- function(gom_worms, idigbio_gom_records, obis_gom_records,
                                   kozloff_worms, idigbio_kozloff_records, obis_kozloff_records) {
 
