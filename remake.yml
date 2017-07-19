@@ -392,14 +392,14 @@ targets:
   idigbio_pnw_records:
     command: filter_idigbio_records(idigbio_pnw_records_all, map_pnw)
 
-  obis_kozloff_records_raw:
+  obis_pnw_records_raw:
     command: fill_store_obis_by_geo(map_pnw, gom_phyla=gom_phyla, use_cache=I(TRUE))
 
-  obis_kozloff_records:
-    command: add_worms(obis_kozloff_records_raw)
+  obis_pnw_records:
+    command: add_worms(obis_pnw_records_raw)
 
   data/kozloff_compare_database_coverage.csv:
-    command: generate_upsetr_csv(list = kozloff_species, idigbio = idigbio_pnw_records, obis = obis_kozloff_records, file = "data/kozloff_compare_database_coverage.csv")
+    command: generate_upsetr_csv(list = kozloff_species, idigbio = idigbio_pnw_records, obis = obis_pnw_records, file = "data/kozloff_compare_database_coverage.csv")
 
   figures/kozloff_database_coverage.pdf:
     command: plot_upsetr("data/kozloff_compare_database_coverage.csv")
@@ -413,10 +413,10 @@ targets:
     command: combine_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
 
   species_in_common:
-    command: get_species_in_common(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_species, idigbio_pnw_records, obis_kozloff_records)
+    command: get_species_in_common(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_species, idigbio_pnw_records, obis_pnw_records)
 
   database_overlap:
-    command: compare_database_overlap(gom_worms, kozloff_species, idigbio_gom_records, obis_gom_records, idigbio_pnw_records, obis_kozloff_records)
+    command: compare_database_overlap(gom_worms, kozloff_species, idigbio_gom_records, obis_gom_records, idigbio_pnw_records, obis_pnw_records)
 
   figures/database_overlap.pdf:
     command: plot_database_overlap(database_overlap)
@@ -632,7 +632,7 @@ targets:
       - idigbio_gom_records
       - obis_gom_records
       - idigbio_pnw_records
-      - obis_kozloff_records
+      - obis_pnw_records
       - gom_worms
       - kozloff_species
       - mammals_species_asm
