@@ -18,6 +18,7 @@ idigbio_fields <- function() {
 internal_fetch_idigbio <- function(spp, split_size) {
     assertthat::assert_that(assertthat::is.number(split_size))
     assertthat::assert_that(is.character(spp))
+    assertthat::assert_that(length(spp) > 0)
 
     fields <- idigbio_fields()
     split_species <- split_by_n(na.omit(spp), split_size)

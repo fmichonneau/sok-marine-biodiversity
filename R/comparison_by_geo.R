@@ -211,13 +211,27 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
     ## to have 2 sided plot, we take the negative value of the count
     ## for the records that are NOT in the geographical range in the
     ## database.
-    data_for_plot <- comp_db %>%
+    data_for_plot_raw <- comp_db %>%
         dplyr::count(region, database, data_source, phylum) %>%
         dplyr::left_join(spp_per_phylum, by = c("region", "phylum")) %>%
         dplyr::mutate(p = n/n_spp) %>%
-        dplyr::mutate(number = ifelse(data_source == "not_in_geo", -p, p)) %>%
+        dplyr::mutate(number = ifelse(data_source == "not_in_geo", -p, p))
+
+    prop_for_plot <- data_for_plot_raw %>%
         dplyr::select(-p, -n, -n_spp) %>%
-        tidyr::spread(data_source, number) %>%
+        tidyr::spread(data_source, number)
+
+    nspp_for_plot <- data_for_plot_raw %>%
+        dplyr::select(-p, -number, -n_spp) %>%
+        tidyr::spread(data_source, n) %>%
+        dplyr::rename(
+                   "nspp_not_in_geo"  = "not_in_geo",
+                   "nspp_not_in_list" = "not_in_list"
+               )
+
+    data_for_plot <- dplyr::left_join(prop_for_plot,
+                                      nspp_for_plot,
+                                      by = c("region", "database", "phylum")) %>%
         dplyr::mutate(phylum = capitalize(phylum))
 
 
@@ -228,10 +242,14 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
         distinct(phylum) %>%
         .[[1]]
 
-    data_for_plot$phylum <- factor(data_for_plot$phylum, levels = rev(phylum_label))
+    data_for_plot$phylum <- factor(data_for_plot$phylum,
+                                   ## levels = rev(phylum_label))
+                                   levels = rev(c("Arthropoda", "Mollusca", "Annelida",
+                                              "Cnidaria", "Echinodermata", "Chordata",
+                                              "Porifera", "Bryozoa")))
 
     offset <- .5
-    dodge_width <- .6
+    dodge_width <- .7
     gg <- ggplot(data_for_plot, aes(x = phylum, color = database)) +
         geom_linerange(aes(x = phylum, ymin = -offset, ymax = -offset + not_in_geo),
                        position = position_dodge(width = dodge_width)) +
@@ -245,8 +263,15 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
                   family = "Ubuntu Condensed",
                   inherit.aes = FALSE,
                   size = 4) +
+        geom_text(aes(x = phylum, y = -offset + not_in_geo - .05, label = nspp_not_in_geo),
+                  position = position_dodge(width = dodge_width),
+                  family = "Ubuntu Condensed", hjust = "outward", size = 2.75) +
+        geom_text(aes(x = phylum, y = offset + not_in_list + .05, label = nspp_not_in_list),
+                  position = position_dodge(width = dodge_width),
+                  family = "Ubuntu Condensed", hjust = "outward", size = 2.75) +
         coord_flip() +
-        facet_wrap(~ region, labeller = as_labeller(c(gom = "Gulf of Mexico", pnw = "Pacific NW"))) +
+        facet_wrap(~ region, labeller = as_labeller(c(gom = "Gulf of Mexico",
+                                                      pnw = "Pacific Northwest"))) +
         scale_y_continuous(breaks = c(seq(-1, 0, by = .2) + -offset,
                                       seq(0, 1, by = .2) + offset),
                            labels = c(abs(seq(-1, 0, by = .2)), seq(0, 1, by = .2))
@@ -349,7 +374,7 @@ not_in_list_collected_recently <- function(database_overlap) {
     ## for idigbio pnw
     do_idig_pnw <- database_overlap %>%
         dplyr::filter(
-                   region == "kozloff",
+                   region == "pnw",
                    data_source == "not_in_list",
                    database == "idigbio"
                )

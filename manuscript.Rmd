@@ -62,8 +62,8 @@ We investigated the number of species for each phylum that contributed to the di
 
 
 
-```{r compare_database_overlap, fig.cap='Comparison of species by phylum across the public databases and the faunistic list. (\\#fig:database-overlap)'}
-knitr::include_graphics("figures/database_overlap.pdf")
+```{r compare_database_overlap, fig.cap='Proportions of the total number of species by phylum that are absent from faunistic lists but are in iDigBio or OBIS ("Not in list"), and absent from iDigBio or OBIS but are in the faunistic lists ("Not in databases"). The numbers represent the number of species. (\\#fig:database-overlap)'}
+knitr::include_graphics("figures/database_overlap_percent.pdf")
 ```
 
 
