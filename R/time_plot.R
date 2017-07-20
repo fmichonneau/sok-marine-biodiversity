@@ -102,6 +102,11 @@ make_knowledge_through_time_idigbio <- function(idigbio) {
         ) %>%
         dplyr::mutate(cum_n_samples = cumsum(n_samples))
 
+    n_spp <- idigbio %>%
+        dplyr::distinct(phylum, worms_valid_name, year) %>%
+        dplyr::count(phylum, year) %>%
+        dplyr::rename(n_spp = n)
+
     n_species <- idigbio %>%
         dplyr::group_by(phylum, worms_valid_name, year) %>%
         dplyr::arrange(year) %>%
@@ -119,8 +124,8 @@ make_knowledge_through_time_idigbio <- function(idigbio) {
         dplyr::mutate(n_new_spp = replace(n_new_spp, is.na(n_new_spp), 0)) %>%
         dplyr::mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
         dplyr::left_join(spp_total, by = "phylum") %>%
-        dplyr::mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total) %>%
-        dplyr::rename(phylum = phylum)
+        dplyr::left_join(n_spp, by = c("phylum", "year")) %>%
+        dplyr::mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total)
 
     n_species
 
