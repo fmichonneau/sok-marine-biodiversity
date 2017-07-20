@@ -145,7 +145,7 @@ calc_n_spp_comparison <- function(idig_time) {
 
 }
 
-filter_phyla <- function(ktt, n_min = 100) {
+filter_phyla <- function(ktt, n_min = 200) {
     ktt %>%
         group_by(phylum) %>%
         filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
@@ -218,6 +218,25 @@ plot_samples_vs_spp_through_time <- function(knowledge_through_time) {
     res
 }
 
+
+plot_samples_vs_spp_std <- function(knowledge_through_time) {
+
+    phy_to_keep <- filter_phyla(knowledge_through_time)
+
+    knowledge_through_time %>%
+        dplyr::ungroup() %>%
+        dplyr::filter(phylum %in% phy_to_keep) %>%
+        dplyr::mutate(prop_new_spp = n_new_spp/n_samples,
+                      mean_new_prop = roll_meanr(prop_new_spp, n = 5),
+                      prop_spp = roll_meanr(n_spp/n_samples, n = 5)
+                      ) %>%
+        ggplot(aes(x = year, y = prop_spp, colour = phylum)) +
+        geom_point() +
+        facet_wrap(~phylum) +
+        scale_colour_hc(name = "")  +
+        geom_smooth(se = FALSE)
+
+}
 
 plot_cum_frac_through_time <- function(knowledge_through_time) {
 
