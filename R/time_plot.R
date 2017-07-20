@@ -200,7 +200,11 @@ plot_samples_vs_spp_through_time <- function(knowledge_through_time) {
         dplyr::mutate(phylum = capitalize(phylum)) %>%
         ggplot(aes(x = n_samples, y = n_new_spp, colour = phylum)) +
         geom_point() +
-        scale_x_log10() + scale_y_log10() +
+        geom_abline(slope = 1, linetype = 2) +
+        geom_line(data = data_frame(samples = 1:10000, species = samples/100),
+                  aes(x = samples, y = species), color = "black", linetype = 2,
+                  inherits.aes = FALSE) +
+        scale_x_log10() + scale_y_log10(limits = c(1, 100)) +
         xlab("Number of Samples") +
         ylab("Number of Species Recorded for the First Time") +
         theme_ipsum(base_family = "Ubuntu Condensed") +
