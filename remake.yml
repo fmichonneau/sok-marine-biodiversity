@@ -34,7 +34,7 @@ packages:
   - ggthemes
   ## APIs
   - bold
-  - taxizesoap
+  - worrms
   - ridigbio
   - marmap
   - robis
