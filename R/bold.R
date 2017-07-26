@@ -98,6 +98,7 @@ make_stat_bold <- function(gom_bld, koz_bld, gom_wrm, koz_wrm) {
 
     bin_data <- get_bold_bins(gom_wrm, koz_wrm)
 
+    ## BINs that are found in more than 1 species
     n_shared_bins <- bin_data %>%
         dplyr::group_by(bins) %>%
         dplyr::summarize(
@@ -106,20 +107,30 @@ make_stat_bold <- function(gom_bld, koz_bld, gom_wrm, koz_wrm) {
         dplyr::filter(n_shared_bins > 1) %>%
         nrow()
 
-    n_spp_multi_bin <- bin_data %>%
+    ## Species that have more than 1 BIN associated with their name
+    ## -- we need to remove species that have only 1 record
+    multi_bin <- bin_data %>%
         dplyr::group_by(worms_valid_name) %>%
         dplyr::summarize(
             n_spp_multi_bin = n_distinct(bins)
-        ) %>%
+            ) %>%
+        dplyr::left_join(dplyr::select(res, worms_valid_name, n_bold_records),
+                         by = "worms_valid_name") %>%
+        dplyr::filter(n_bold_records > 1)
+
+    n_multi_bin <- multi_bin %>%
         dplyr::filter(n_spp_multi_bin > 1) %>%
         nrow()
+    p_multi_bin <- n_multi_bin/nrow(multi_bin)
 
     list(
         p_no_country = 1 - (sum(res$n_country)/sum(res$n_bold_records)),
         p_no_coords = 1 - (sum(res$n_coords)/sum(res$n_bold_records)),
         n_total_records = sum(res$n_bold_records),
         n_shared_bins = n_shared_bins,
-        n_spp_multi_bin = n_spp_multi_bin,
+        n_spp_multi_bin = n_multi_bin,
+        p_spp_multi_bin = p_multi_bin,
+        n_spp_not_singleton = nrow(multi_bin),
         n_bins = length(unique(bin_data$bins)),
         n_spp = length(unique(bin_data$worms_valid_name))
     )
