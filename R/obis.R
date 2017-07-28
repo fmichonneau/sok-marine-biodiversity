@@ -33,6 +33,9 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
                        "decimallongitude",
                        "phylum", "family",
                        "genus", "species",
-                       "scientificname")
-    feather::write_feather(res, feather_out)
+                       "scientificname", "yearcollected")
+    if (!is.null(feather_out)) {
+        feather::write_feather(res, feather_out)
+    } else
+        res
 }

@@ -348,41 +348,89 @@ get_species_in_common <- function(gom_worms, idigbio_gom_records, obis_gom_recor
         )
 }
 
-not_in_list_collected_recently <- function(database_overlap) {
+not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
 
-    .f <- . %>% fetch_spp_from_idigbio() %>%
+    .idig <- . %>% fetch_spp_from_idigbio() %>%
         idigbio_parse_year() %>%
         dplyr::mutate(
                    cleaned_scientificname = cleanup_species_names(scientificname),
-                   is_binomial = is_binomial(scientificname)
+                   is_binomial = is_binomial(cleaned_scientificname)
                ) %>%
         add_worms() %>%
-        group_by(phylum, worms_valid_name) %>%
-        summarize(min_year = min(year))
+        filter(!is.na(worms_valid_name))
 
+    .obis <- . %>%
+        fetch_spp_from_obis(feather_out = NULL) %>%
+        dplyr::rename(year = yearcollected) %>%
+        dplyr::filter(!is.na(year)) %>%
+        dplyr::mutate(
+                   cleaned_scientificname = cleanup_species_names(scientificname),
+                   is_binomial = is_binomial(cleaned_scientificname)
+               ) %>%
+        add_worms() %>%
+        filter(!is.na(worms_valid_name))
 
-    ## for idigbio gom
-    do_idig_gom <- database_overlap %>%
+    .gom <- . %>%
+        is_within_gom_records(map_gom) %>%
+        dplyr::filter(is_in_gom == TRUE) %>%
+        dplyr::group_by(phylum, worms_valid_name) %>%
+        dplyr::summarize(min_year = min(year))
+
+    .pnw <- . %>%
+        is_within_pnw_records(map_pnw) %>%
+        dplyr::filter(is_in_pnw == TRUE) %>%
+        dplyr::group_by(phylum, worms_valid_name) %>%
+        dplyr::summarize(min_year = min(year))
+
+    .keep_min <- . %>%
+        dplyr::group_by(worms_valid_name) %>%
+        dplyr::filter(min_year ==  min(min_year)) %>%
+        dplyr::slice(1) %>%
+        dplyr::ungroup()
+
+    ## for Gulf of Mexico
+    do_gom <- database_overlap %>%
         dplyr::filter(
                    region == "gom",
-                   data_source == "not_in_list",
-                   database == "idigbio"
+                   data_source == "not_in_list"
                )
 
-    spp_gom_in_idig <- do_idig_gom %>% .f
+    spp_gom_in_idig <- do_gom %>%
+        .idig %>%
+        .gom
 
-    ## for idigbio pnw
-    do_idig_pnw <- database_overlap %>%
+    spp_gom_in_obis <- do_gom %>%
+        .obis %>%
+        .gom
+
+    spp_gom <- bind_rows(idigbio = spp_gom_in_idig,
+                         obis =  spp_gom_in_obis,
+                         .id = "database") %>%
+        .keep_min
+
+    ## for Pacific Northwest
+    do_pnw <- database_overlap %>%
         dplyr::filter(
                    region == "pnw",
-                   data_source == "not_in_list",
-                   database == "idigbio"
+                   data_source == "not_in_list"
                )
-    spp_pnw_in_idig <- do_idig_pnw %>% .f
+
+    spp_pnw_in_idig <- do_idig_pnw %>%
+        .idig %>%
+        .pnw
+
+    spp_pnw_in_obis <- do_pnw %>%
+        .obis %>%
+        .pnw
+
+    spp_gom <- bind_rows(idigbio = spp_pnw_in_idig,
+                         obis = spp_pnw_in_obis,
+                         .id = "database") %>%
+        .keep_min
 
     list(
-        gom_in_idig = spp_gom_in_idig,
-        pnw_in_idig = spp_pnw_in_idig
+        gom_in_dbs = spp_gom,
+        pnw_in_dbs = spp_pnw
     )
 
 }
