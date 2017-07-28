@@ -15,32 +15,42 @@ idigbio_fields <- function() {
       'geopoint')
 }
 
-internal_fetch_idigbio <- function(spp, split_size) {
-    assertthat::assert_that(assertthat::is.number(split_size))
-    assertthat::assert_that(is.character(spp))
-    assertthat::assert_that(length(spp) > 0)
+store_idigbio_species_occurrences <- function(store_path = "data/idigbio_occurrences_storr") {
+    invisible(storr_external(driver_rds(store_path),
+                             fetch_hook_idigbio_by_sp))
+}
 
-    fields <- idigbio_fields()
-    split_species <- split_by_n(na.omit(spp), split_size)
-    res <- lapply(split_species, function(x) {
-        qry <- list(scientificname = as.list(x),
-                    basisofrecord = "PreservedSpecimen"
-                    )
-        ridigbio::idig_search_records(rq = qry, fields = fields)
-    })
-    res <- dplyr::bind_rows(res) %>%
-        dplyr::distinct(uuid, .keep_all = TRUE) %>%
+fetch_hook_idigbio_by_sp <- function(key, namespace) {
+    stopifnot(identical(key, tolower(key)))
+    spp <- union(key, cleanup_species_names(key, rm_subgenus = TRUE))
+
+    message("Getting iDigBio records for ", paste(spp, collapse = ", "))
+
+    qry <- list(scientificname = as.list(spp),
+                basisofrecord = "PreservedSpecimen"
+                )
+    r <- try(ridigbio::idig_search_records(rq = qry, fields = idigbio_fields()),
+             silent = TRUE)
+
+    if (inherits(r, "try-error")) stop("something is wrong")
+
+    r <- r %>%
         dplyr::rename(decimallatitude = geopoint.lat,
                       decimallongitude = geopoint.lon)
-    names(res) <- gsub("^.+:", "", names(res))
-    res
+    names(r) <- gsub("^.+:", "", names(r))
+    r
 }
 
 
 fetch_spp_from_idigbio <- function(wrm) {
     stopifnot(inherits(wrm, "data.frame"))
     stopifnot("worms_valid_name" %in% names(wrm))
-    internal_fetch_idigbio(wrm$worms_valid_name, split_size = 150)
+    wrm %>%
+        dplyr::filter(!is.na(worms_valid_name)) %>%
+        dplyr::pull(worms_valid_name) %>%
+        purrr::map_df(function(worms_valid_name)
+                   store_idigbio_species_occurrences()$get(tolower(worms_valid_name))
+                   )
 }
 
 
