@@ -33,11 +33,6 @@ fetch_hook_idigbio_by_sp <- function(key, namespace) {
              silent = TRUE)
 
     if (inherits(r, "try-error")) stop("something is wrong")
-
-    r <- r %>%
-        dplyr::rename(decimallatitude = geopoint.lat,
-                      decimallongitude = geopoint.lon)
-    names(r) <- gsub("^.+:", "", names(r))
     r
 }
 
@@ -48,9 +43,13 @@ fetch_spp_from_idigbio <- function(wrm) {
     wrm %>%
         dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::pull(worms_valid_name) %>%
-        purrr::map_df(function(worms_valid_name)
-                   store_idigbio_species_occurrences()$get(tolower(worms_valid_name))
-                   )
+        purrr::map_df(function(worms_valid_name) {
+                   r <- store_idigbio_species_occurrences()$get(tolower(worms_valid_name)) %>%
+                            dplyr::rename(decimallatitude = geopoint.lat,
+                                          decimallongitude = geopoint.lon)
+                   names(r) <- gsub("^.+:", "", names(r))
+                   r
+               })
 }
 
 
