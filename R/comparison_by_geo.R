@@ -415,7 +415,7 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
                    data_source == "not_in_list"
                )
 
-    spp_pnw_in_idig <- do_idig_pnw %>%
+    spp_pnw_in_idig <- do_pnw %>%
         .idig %>%
         .pnw
 
