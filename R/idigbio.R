@@ -49,7 +49,8 @@ fetch_spp_from_idigbio <- function(wrm) {
                                           decimallongitude = geopoint.lon)
                    names(r) <- gsub("^.+:", "", names(r))
                    r
-               })
+               }) %>%
+        dplyr::distinct(uuid, .keep_all = TRUE)
 }
 
 
