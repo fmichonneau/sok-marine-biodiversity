@@ -200,24 +200,33 @@ plot_samples_vs_spp_through_time <- function(knowledge_through_time) {
 
     res <- knowledge_through_time %>%
         dplyr::ungroup() %>%
-        dplyr::filter(phylum %in% phy_to_keep,
-                      !is.na(cum_n_new_spp)) %>%
-        dplyr::mutate(phylum = capitalize(phylum)) %>%
-        ggplot(aes(x = n_samples, y = n_new_spp, colour = phylum)) +
+        #dplyr::filter(phylum %in% phy_to_keep,
+        #              !is.na(cum_n_new_spp)) %>%
+        dplyr::group_by(year) %>%
+        dplyr::summarize(n_spp = sum(n_new_spp, na.rm = TRUE),
+                         n_samples = sum(n_samples, na.rm = TRUE)) %>%
+        dplyr::mutate(period = cut(year, breaks = seq(1850, 2030, by = 20),
+                                   labels = paste(seq(1850, 2010, by = 20),
+                                                  c(seq(1870, max(year, na.rm = TRUE), by = 20),
+                                                    max(year, na.rm = TRUE)),
+                                                  sep = "-"), right = FALSE))
+    res %>%
+        ggplot(aes(x = n_samples, y = n_spp, colour = period)) +
         geom_point() +
-        geom_abline(slope = 1, linetype = 2) +
-        geom_line(data = data_frame(samples = 1:10000, species = samples/100),
+        geom_line(data = data_frame(samples = 1:100000, species = samples),
                   aes(x = samples, y = species), color = "black", linetype = 2,
-                  inherits.aes = FALSE) +
-        scale_x_log10() + scale_y_log10(limits = c(1, 100)) +
+                  inherit.aes = FALSE) +
+        geom_line(data = data_frame(samples = 1:100000, species = samples/100),
+                  aes(x = samples, y = species), color = "black", linetype = 3,
+                  inherit.aes = FALSE) +
+        scale_x_log10() + scale_y_log10(limits = c(1, 600)) +
         xlab("Number of Samples") +
         ylab("Number of Species Recorded for the First Time") +
         theme_ipsum(base_family = "Ubuntu Condensed") +
-        scale_colour_hc(name = "")
+        scale_color_viridis(name = "", discrete = TRUE)
 
-    res
+
 }
-
 
 plot_samples_vs_spp_std <- function(knowledge_through_time) {
 
