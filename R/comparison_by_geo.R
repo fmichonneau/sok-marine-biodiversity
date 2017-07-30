@@ -423,7 +423,7 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
         .obis %>%
         .pnw
 
-    spp_gom <- bind_rows(idigbio = spp_pnw_in_idig,
+    spp_pnw <- bind_rows(idigbio = spp_pnw_in_idig,
                          obis = spp_pnw_in_obis,
                          .id = "database") %>%
         .keep_min
