@@ -1,7 +1,25 @@
-make_gom_grid <- function(map_geojson, cellsize = .5) {
+make_grid <- function(map_geojson, cellsize = .5) {
     gom_sp <- geojsonio::geojson_sp(map_geojson)
     gom_bb <- get_bounding_box(gom_sp, cellsize = cellsize)
     bb_to_df(gom_bb)
+}
+
+
+internal_obis_hook <- function(wkt_coords, attempt = 0) {
+    res <- try(robis::occurrence(geometry = wkt_coords),
+               silent = TRUE)
+    while (inherits(res, "try-error") && attempt <= 3) {
+        message("attempt ", attempt, " sleeping ...")
+        Sys.sleep(exp(runif(1) * attempt))
+        res <- internal_obis_hook(wkt_coords, attempt + 1)
+    }
+    if (!inherits(res, "try-error")) {
+        if (nrow(res) > 0) {
+            res
+        } else {
+            NULL
+        }
+    } else stop(res)
 }
 
 
@@ -19,7 +37,7 @@ fetch_hook_obis_by_geo <- function(key, namespace) {
         c(coords_qry$xmin, coords_qry$ymin)
     )
     wkt_coords <- wellknown::polygon(coords_poly, fmt = 3)
-    robis::occurrence(geometry = wkt_coords)
+    internal_obis_hook(wkt_coords, 0)
 }
 
 
@@ -28,23 +46,128 @@ store_obis_by_geo <- function(coords, store_path = "data/obis_by_geo") {
                           fetch_hook_obis_by_geo)
 }
 
+internal_fill_store_obis_by_geo <- function(k) {
+    res <- store_obis_by_geo()$get(k)
+    if (nrow(res) > 0) {
+        res[tolower(res$phylum) %in% gom_phyla &
+            (!tolower(resr$class) %in% chordata_classes_to_rm()), ]
+    } else {
+        NULL
+    }
+}
+
 fill_store_obis_by_geo <- function(map_geojson, gom_phyla, cellsize = .5, use_cache = TRUE) {
-    map_grid <- make_gom_grid(map_geojson, cellsize)
+    map_grid <- make_grid(map_geojson, cellsize)
 
     if (!use_cache)
         store_obis_by_geo()$destroy()
 
-    res <- lapply(map_grid$key, function(k) {
-        .r <- store_obis_by_geo()$get(k)
-        if (nrow(.r) > 0) {
-            .r <- .r[tolower(.r$phylum) %in% gom_phyla &
-                     (!tolower(.r$class) %in% chordata_classes_to_rm()), ]
-        } else {
-           NULL
-        }
-    })
+    res <- lapply(map_grid$key, internal_fill_store_obis_by_geo)
+
     dplyr::bind_rows(res) %>%
         dplyr::mutate_if(is.character, tolower) %>%
         dplyr::mutate(cleaned_scientificname = tolower(cleanup_species_names(scientificName)),
                       is_binomial = is_binomial(cleaned_scientificname))
+}
+
+obis_data_types <- function() {
+    tibble::tribble(
+                ~name, ~type,
+                "id",  "INT",
+                "decimalLongitude", "REAL",
+                "decimalLatitude", "REAL",
+                ##"lifestage", "TEXT",
+                "basisOfRecord", "TEXT",
+                "eventDate", "TIMESTAMP",
+                "institutionCode", "TEXT",
+                ##"collectionCode", "TEXT",
+                "catalogNumber", "TEXT",
+                ##"locality", "TEXT",
+                ##"sex", "TEXT",
+                ##"identifiedBy", "TEXT",
+                ##"individualCount", "INT",
+                ##"datasetName", "TEXT",
+                "phylum", "TEXT",
+                "order", "TEXT",
+                "family", "TEXT",
+                "genus", "TEXT",
+                "scientificName", "TEXT",
+                "originalScientificName", "TEXT",
+                "scientificNameAuthorship", "TEXT",
+                ##"obisID", "INT",
+                ##"resourceID", "INT",
+                "yearcollected", "INT",
+                ##"species", "TEXT",
+                "qc", "INT",
+                "aphiaID", "INT",
+                "speciesID", "INT",
+                ##"dynamicProperties", "TEXT",
+                ##"accessRights", "TEXT",
+                ##"collectionID", "TEXT",
+                ##"continent", "TEXT",
+                ##"countryCode", "TEXT",
+                ##"county", "TEXT",
+                ##"fieldNumber", "TEXT",
+                ##"geodeticDatum", "TEXT",
+                ##"habitat", "TEXT",
+                ## "higherClassification", "TEXT",
+                ## "higherGeography", "TEXT",
+                ## "identificationQualifier", "TEXT",
+                ## "institutionID", "TEXT",
+                ## "island", "TEXT",
+                ## "islandGroup", "TEXT",
+                ## "language", "TEXT",
+                ## "modified", "TEXT",
+                ## "occurrenceID", "TEXT",
+                ## "occurrenceRemarks", "TEXT",
+                ## "occurrenceStatus", "TEXT",
+                ## "recordedBy", "TEXT",
+                ## "references", "TEXT",
+                ## "scientificNameID", "TEXT",
+                ## "specificEpithet","TEXT",
+                ## "stateProvince", "TEXT",
+                ## "taxonRank","TEXT",
+                ## "type","TEXT",
+                ## "typeStatus", "TEXT",
+                ## "vernacularName", "TEXT",
+                ## "waterBody", "TEXT",
+                "class", "TEXT"
+                ## "depth", "REAL",
+                ## "minimumDepthInMeters", "REAL",
+                ## "maximumDepthInMeters", "REAL"
+            )
+}
+
+
+create_obis_db <- function(coords, db_table, use_cache, gom_phyla) {
+    obis_types <- setNames(obis_data_types()$type,
+                           obis_data_types()$name)
+
+    ## Before putting all the records in the database we need to make
+    ## sure they are cached. I am not sure why it's needed here and
+    ## not for iDigBio; but it seems that the data retrieval is slower
+    ## for the OBIS API.
+
+    for (q in names(coords)) {
+        invisible(store_obis_by_geo()$get(q))
+    }
+
+    ## Then we can do what we were doing with iDigBio records
+    con <- sok_db_init(db_table, obis_types)
+    on.exit(db_rollback(con, db_table))
+
+    lapply(names(coords), function(q) {
+        message("Getting OBIS records for ", q,  appendLF = FALSE)
+        r <- store_obis_by_geo()$get(q)
+        if (!is.null(r)) {
+            r <- r %>%
+                dplyr::select(UQ(names(obis_types))) %>%
+                dplyr::mutate_if(is.character, tolower)
+            db_insert_into(con, db_table, r)
+        }
+        message(" DONE.")
+    })
+
+    sok_db_exit(con, db_table, idx = list(c("phylum", "class", "family", "scientificName")))
+    on.exit(NULL)
 }
