@@ -221,26 +221,6 @@ targets:
       height: 8
       width: 12
 
-### ITIS common names of mollusks ----------------------------------------------
-
-  itis_common_names:
-    command: get_common_names()
-
-  itis_binomial:
-    command: binomial_common_names(itis_common_names)
-
-  itis_worms:
-    command: add_worms(itis_binomial)
-
-  itis_bold:
-    command: find_bold_records(itis_worms)
-
-  itis_idigbio:
-    command: fetch_spp_from_idigbio(itis_worms)
-
-  itis_spp_not_in_idigbio:
-    command: spp_not_in_idigbio(itis_worms, itis_idigbio)
-
 ### IRL checklist --------------------------------------------------------------
 
   irl_species:
