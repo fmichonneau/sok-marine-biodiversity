@@ -219,24 +219,7 @@ targets:
     command: plot_spp_not_in_idigbio_combined(kozloff_spp_records_idigbio, gom_spp_records_idigbio)
     plot:
       height: 8
-      width: 12
-
-### IRL checklist --------------------------------------------------------------
-
-  irl_species:
-    command: read_irl_checklist(file="data-raw/IRL/irl_checklist.xlsx")
-
-  irl_worms:
-    command: add_worms(irl_species)
-
-  irl_bold:
-    command: find_bold_records(irl_worms)
-
-  irl_idigbio:
-    command: fetch_spp_from_idigbio(irl_worms)
-
-  irl_obis:
-    command: fetch_spp_from_obis(irl_worms)
+    width: 12
 
 ### American mammals  ----------------------------------------------------------
 

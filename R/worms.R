@@ -79,15 +79,6 @@ store_synonyms <- function(store_path = "data/synonym_storr") {
                              fetch_hook_worms_synonyms))
 }
 
-## Fill the two storrs to get all the synonyms from the IRL species list
-get_synonym_store <- function(irl_checklist) {
-    species <- irl_checklist$`SCIENTIFIC NAME`
-    lapply(species, function(x) {
-        wid <- store_worms_ids()$get(x)
-        store_synonyms()$get(wid)
-    })
-}
-
 ## Storr for the higher classification: given a WoRMS id, what is the
 ## higher classification
 fetch_hook_worms_classification <- function(key, namespace) {
