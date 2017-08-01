@@ -21,26 +21,27 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
 
-full_list <- function(...) {
+combine_species_list <- function(..., use_names = FALSE) {
 
     select_worms <- . %>%
         dplyr::select(phylum, worms_valid_name)
 
+    if (use_names && !is.null(names(list(...)))) {
+        col_name <- "source"
+    } else col_name <- NULL
+
     list(...) %>%
-        purrr::map_df(select_worms) %>%
+        purrr::map_df(select_worms, .id = col_name) %>%
         dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::distinct(phylum, worms_valid_name)
 }
 
-full_list_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
+combined_regional_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
                              pnw_worms, pnw_idigbio, pnw_obis) {
 
-    gom_list <- full_list(gom_worms, gom_idigbio, gom_obis)
-    pnw_list <- full_list(pnw_worms, pnw_idigbio, pnw_obis)
-
     list(
-        gom = gom_list,
-        pnw = pnw_list
+        gom = combine_species_list(gom_worms, gom_idigbio, gom_obis),
+        pnw = combine_species_list(pnw_worms, pnw_idigbio, pnw_obis)
     ) %>%
         dplyr::bind_rows(.id = "region")
 }

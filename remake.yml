@@ -219,7 +219,7 @@ targets:
     command: plot_spp_not_in_idigbio_combined(kozloff_spp_records_idigbio, gom_spp_records_idigbio)
     plot:
       height: 8
-    width: 12
+      width: 12
 
 ### American mammals  ----------------------------------------------------------
 
@@ -372,8 +372,8 @@ targets:
 
   ## Synthesis -----------------------------------------------------------------
 
-  full_species_list:
-    command: full_list_by_geo(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_species, idigbio_pnw_records, obis_pnw_records)
+  combined_regional_species_list:
+    command: combined_regional_by_geo(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_species, idigbio_pnw_records, obis_pnw_records)
 
   figures/database_coverage.pdf:
     command: combine_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
@@ -391,7 +391,7 @@ targets:
       height: 4
 
   figures/database_overlap_percent.pdf:
-    command: plot_database_overlap_percent(database_overlap, full_species_list)
+    command: plot_database_overlap_percent(database_overlap, combined_regional_species_list)
     plot:
       width: 9
       height: 3.7
