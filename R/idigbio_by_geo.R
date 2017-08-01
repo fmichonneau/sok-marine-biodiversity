@@ -35,6 +35,7 @@ make_hook_idigbio_by_geo <- function(coords_qry) {
             Sys.sleep(exp(runif(1) * attempts))
             res <-  try(internal_idigbio_by_geo_fetch(coords_qry, key),
                         silent = TRUE)
+            pred <- (inherits(res, "try-error") && !grepl("return more than", res))
             attempts <- attempts + 1
             message("attempt ... ", attempts)
         }
