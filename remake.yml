@@ -489,20 +489,6 @@ targets:
   #   command: make_table_records_per_species()
   #   depends: bold_records_for_idigbio_species
 
-
-### plankton data
-  plankton_ids:
-    command: get_plankton_identifications()
-
-  prop_plankton_with_species_match_by_phylum:
-    command: calc_prop_plankton_with_species_match_by_phylum(plankton_ids)
-
-  prop_plankton_with_multi_species_match:
-    command: calc_prop_plankton_with_multi_species_match(plankton_ids)
-
-  plankton_geo_distances:
-    command: calc_plankton_geo_distances(plankton_ids)
-
 ### map sampling effort --------------------------------------------------------
 
   data_map_sampling_effort:
@@ -582,9 +568,6 @@ targets:
       width: 5
 
 ### in text statistics ---------------------------------------------------------
-
-  prop_plankton_with_match:
-    command: calc_prop_plankton_with_species_match(plankton_ids)
 
   stat_bold:
     command: make_stat_bold(gom_bold, kozloff_bold, gom_worms, kozloff_species)
