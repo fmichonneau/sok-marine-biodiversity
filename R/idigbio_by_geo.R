@@ -97,12 +97,6 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 ## database that will store the results use_cache: if TRUE, this uses
 ## the results from the iDigBio storr; if false, the entire storr is
 ## destroyed before
-connect_idigbio_db <- function() {
-    dplyr::src_postgres("idigbio", host = "localhost",
-                        user = "marinediversity",
-                        password = "password")
-}
-
 create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
@@ -115,16 +109,8 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
                                   "scientificname", "country",
                                   "geopoint.lon", "geopoint.lat"))
 
-    idig_data_db <- connect_idigbio_db()
-    con <- idig_data_db$con
-
-    db_begin(con)
-    on.exit(db_rollback(con))
-
-    if (db_has_table(con, db_table))
-        db_drop_table(con, db_table)
-
-    db_create_table(con, db_table, types = idig_types, temporary = FALSE)
+    con <- sok_db_init(db_table, idig_types)
+    on.exit(db_rollback(con, db_table))
 
     ## if use_cache=FALSE, destroy the storr before fetching the
     ## results from iDigBio, otherwise, we'll use the cached results
@@ -143,10 +129,8 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
         message(" DONE.")
         db_insert_into(con, db_table, r)
     })
-    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "family", "scientificname"),
-                                                    c("country")))
-    db_analyze(con, db_table)
-    db_commit(con)
+    sok_db_exit(con, db_table, idx = list(c("phylum", "class", "family", "scientificname"),
+                                          c("country")))
     on.exit(NULL)
 }
 
