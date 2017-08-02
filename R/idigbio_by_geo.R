@@ -110,8 +110,15 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
                                   "scientificname", "country",
                                   "geopoint.lon", "geopoint.lat"))
 
-    con <- sok_db_init(db_table, idig_types)
+    db <- connect_sok_db()
+    con <- db$con
+    db_begin(con)
     on.exit(db_rollback(con, db_table))
+
+    if (db_has_table(con, db_table))
+        db_drop_table(con, db_table)
+
+    db_create_table(con, db_table, types = idig_types, temporary = FALSE)
 
     ## if use_cache=FALSE, destroy the storr before fetching the
     ## results from iDigBio, otherwise, we'll use the cached results
@@ -130,8 +137,12 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
         message(" DONE.")
         db_insert_into(con, db_table, r)
     })
-    sok_db_exit(con, db_table, idx = list(c("phylum", "class", "family", "scientificname"),
-                                          c("country")))
+
+    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "family", "scientificname"),
+                                                    c("country")),
+                      unique = FALSE)
+    db_analyze(con, db_table)
+    db_commit(con)
     on.exit(NULL)
 }
 

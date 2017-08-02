@@ -139,7 +139,7 @@ obis_data_types <- function() {
 }
 
 
-create_obis_db <- function(coords, db_table, use_cache, gom_phyla) {
+create_obis_db <- function(coords, db_table, gom_phyla) {
     obis_types <- setNames(obis_data_types()$type,
                            obis_data_types()$name)
 
@@ -153,8 +153,15 @@ create_obis_db <- function(coords, db_table, use_cache, gom_phyla) {
     }
 
     ## Then we can do what we were doing with iDigBio records
-    con <- sok_db_init(db_table, obis_types)
+    db <- connect_sok_db()
+    con <- db$con
+    db_begin(con)
     on.exit(db_rollback(con, db_table))
+
+    if (db_has_table(con, db_table))
+        db_drop_table(con, db_table)
+
+    db_create_table(con, db_table, types = obis_types, temporary = FALSE)
 
     lapply(names(coords), function(q) {
         message("Getting OBIS records for ", q,  appendLF = FALSE)
@@ -168,6 +175,9 @@ create_obis_db <- function(coords, db_table, use_cache, gom_phyla) {
         message(" DONE.")
     })
 
-    sok_db_exit(con, db_table, idx = list(c("phylum", "class", "family", "scientificName")))
+    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "family", "scientificName")),
+                      unique = FALSE)
+    db_analyze(con, db_table)
+    db_commit(con)
     on.exit(NULL)
 }
