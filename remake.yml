@@ -288,11 +288,12 @@ targets:
   coords_idigbio_usa:
     command: get_coords_idigbio_query(map_usa)
 
+  ## iDigBio -------------------------------------------------------------------
   idigbio_database:
-    command: create_idigbio_db(coords_idigbio_usa, db_table=I("us_idigbio"), use_cache=I(TRUE), gom_phyla=gom_phyla)
+    command: create_idigbio_db(coords_idigbio_usa, db_table=I("us_idigbio"), gom_phyla=gom_phyla)
 
   idigbio_records_all:
-    command: fill_store_idigbio_by_geo(db_table=I("us_idigbio"), gom_phyla)
+    command: extract_inverts_from_db(db_table=I("us_idigbio"), gom_phyla)
     depends: idigbio_database
 
   idigbio_records:
@@ -303,6 +304,15 @@ targets:
 
   idigbio_bold:
     command: find_bold_records(idigbio_records)
+
+  ## OBIS ---------------------------------------------------------------
+  obis_database:
+    command: create_obis_db(coords_idigbio_usa, db_table=I("us_obis"), gom_phyla=gom_phyla)
+
+  obis_records_all:
+    command: extract_inverts_from_db(db_table=I("us_obis"), gom_phyla)
+    depends: obis_database
+
 
   ## Gulf of Mexico ------------------------------------------------------------
 

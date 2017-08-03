@@ -98,17 +98,16 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 ## database that will store the results use_cache: if TRUE, this uses
 ## the results from the iDigBio storr; if false, the entire storr is
 ## destroyed before
-create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
+create_idigbio_db <- function(coords, db_table, gom_phyla) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "REAL", "REAL"),
                             .Names = c("uuid", "catalognumber",
                                   "datecollected", "institutioncode",
-                                  "phylum",
-                                  "class", "order",
-                                  "family", "genus",
+                                  "phylum", "class", "order", "family", "genus",
                                   "scientificname", "country",
-                                  "geopoint.lon", "geopoint.lat"))
+                                  "decimallatitude", "decimallongitude"
+                                  ))
 
     db <- connect_sok_db()
     con <- db$con
@@ -120,11 +119,6 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
 
     db_create_table(con, db_table, types = idig_types, temporary = FALSE)
 
-    ## if use_cache=FALSE, destroy the storr before fetching the
-    ## results from iDigBio, otherwise, we'll use the cached results
-    if (! use_cache)
-        store_idigbio_by_geo(coords)$destroy()
-
     lapply(names(coords), function(q) {
         message("Getting iDigBio records for ", q, appendLF = FALSE)
         r <- get_idigbio_by_geo(coords, q) %>%
@@ -132,7 +126,9 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
                           class = `data.dwc:class`,
                           order = `data.dwc:order`,
                           family = `data.dwc:family`,
-                          genus = `data.dwc:genus`) %>%
+                          genus = `data.dwc:genus`,
+                          decimallatitude  = geopoint.lon,
+                          decimallongitude = geopoint.lat) %>%
             dplyr::mutate_if(is.character, tolower)
         message(" DONE.")
         db_insert_into(con, db_table, r)
@@ -147,16 +143,16 @@ create_idigbio_db <- function(coords, db_table, use_cache, gom_phyla) {
 }
 
 
-fill_store_idigbio_by_geo <- function(db_table, gom_phyla) {
+extract_inverts_from_db <- function(db_table, gom_phyla) {
 
     ## We only want:
     ## - unique records
     ## - invertebrates
     ## - marine
 
-    idig_data_db <- connect_idigbio_db()
+    data_db <- connect_sok_db()
 
-    db <- idig_data_db %>%
+    db <- data_db %>%
         dplyr::tbl(db_table)
 
     arth_class_to_rm <- arthropod_classes_to_rm()
@@ -176,11 +172,12 @@ fill_store_idigbio_by_geo <- function(db_table, gom_phyla) {
         dplyr::select(phylum, class, family) %>%
         dplyr::distinct(phylum, class, family)
 
+    ## check phyla that get filtered out
     db %>%
         dplyr::distinct(phylum) %>%
         dplyr::collect(n = Inf) %>%
-        dplyr::anti_join(data_frame(phylum = gom_phyla)) %>%
-        readr::write_csv("data-validation/check_idigbio_phyla.csv")
+        dplyr::anti_join(data_frame(phylum = gom_phyla), by = "phylum") %>%
+        readr::write_csv(paste0("data-validation/check_", db_table, "_phyla.csv"))
 
     db %>%
         ## First let's get the phylum names from the Gulf of Mexico list,
@@ -194,12 +191,7 @@ fill_store_idigbio_by_geo <- function(db_table, gom_phyla) {
         dplyr::collect(n = Inf) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
-                      is_binomial = is_binomial(cleaned_scientificname)
-                      ) %>%
-        dplyr::rename(decimallatitude = geopoint.lat,
-                      decimallongitude = geopoint.lon)
-
-
+                      is_binomial = is_binomial(cleaned_scientificname))
 }
 
 filter_idigbio_records <- function(idig, map_usa) {

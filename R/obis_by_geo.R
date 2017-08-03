@@ -73,7 +73,7 @@ fill_store_obis_by_geo <- function(map_geojson, gom_phyla, cellsize = .5, use_ca
 obis_data_types <- function() {
     tibble::tribble(
                 ~name, ~type,
-                "id",  "INT",
+                "uuid",  "INT",   ## is `id` in OBIS
                 "decimalLongitude", "REAL",
                 "decimalLatitude", "REAL",
                 ##"lifestage", "TEXT",
@@ -135,7 +135,8 @@ obis_data_types <- function() {
                 ## "depth", "REAL",
                 ## "minimumDepthInMeters", "REAL",
                 ## "maximumDepthInMeters", "REAL"
-            )
+            ) %>%
+        dplyr::mutate(name = tolower(name))
 }
 
 
@@ -146,11 +147,14 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     ## Before putting all the records in the database we need to make
     ## sure they are cached. I am not sure why it's needed here and
     ## not for iDigBio; but it seems that the data retrieval is slower
-    ## for the OBIS API.
-
-    for (q in names(coords)) {
-        invisible(store_obis_by_geo()$get(q))
-    }
+    ## for the OBIS API.  EDIT: I seems it was a quirk from trying to
+    ## functionalize the handling of the DB connection. Commenting it
+    ## out now, but if needs to be recreated from scratch, keeping it
+    ## here in case it's useful.
+    ##
+    ## for (q in names(coords)) {
+    ##    invisible(store_obis_by_geo()$get(q))
+    ## }
 
     ## Then we can do what we were doing with iDigBio records
     db <- connect_sok_db()
@@ -168,14 +172,26 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
         r <- store_obis_by_geo()$get(q)
         if (!is.null(r)) {
             r <- r %>%
-                dplyr::select(UQ(names(obis_types))) %>%
+                dplyr::rename_all(tolower) %>%
+                ## harmonize fields across databases
+                dplyr::rename(uuid = id) %>%
+                dplyr::rename_if(grepl("eventdate", names(.)),
+                                 function(x)
+                           gsub(".+", "datecollected", x)) %>%
+                ## apparently some records are missing some fields, so
+                ## we standardize them to their intersect
+                dplyr::select(UQ(intersect(names(.),
+                                           names(obis_types)))) %>%
+                ## to make it comparable to iDigBio, content gets lowercased
                 dplyr::mutate_if(is.character, tolower)
             db_insert_into(con, db_table, r)
         }
         message(" DONE.")
     })
 
-    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "family", "scientificName")),
+    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "order", "family", "scientificName"),
+                                                    c("phylum"), c("class"), c("family"), c("order"),
+                                                    c("scientificName")),
                       unique = FALSE)
     db_analyze(con, db_table)
     db_commit(con)
