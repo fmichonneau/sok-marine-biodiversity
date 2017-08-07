@@ -78,7 +78,7 @@ obis_data_types <- function() {
                 "decimalLatitude", "REAL",
                 ##"lifestage", "TEXT",
                 "basisOfRecord", "TEXT",
-                "eventDate", "TIMESTAMP",
+                "datecollected", "TIMESTAMP", ## is `eventDate` in OBIS
                 "institutionCode", "TEXT",
                 ##"collectionCode", "TEXT",
                 "catalogNumber", "TEXT",
@@ -174,9 +174,9 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
             r <- r %>%
                 dplyr::rename_all(tolower) %>%
                 ## harmonize fields across databases
-                dplyr::rename(uuid = id) %>%
+                dplyr::rename(uuid = id) %>% ## rename id --> uuid
                 dplyr::rename_if(grepl("eventdate", names(.)),
-                                 function(x)
+                                 function(x) ## rename "eventdate" -> "datecollected"
                            gsub(".+", "datecollected", x)) %>%
                 ## apparently some records are missing some fields, so
                 ## we standardize them to their intersect
@@ -189,9 +189,9 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
         message(" DONE.")
     })
 
-    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "order", "family", "scientificName"),
+    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "order", "family", "scientificname"),
                                                     c("phylum"), c("class"), c("family"), c("order"),
-                                                    c("scientificName")),
+                                                    c("scientificname")),
                       unique = FALSE)
     db_analyze(con, db_table)
     db_commit(con)

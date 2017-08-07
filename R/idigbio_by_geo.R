@@ -188,6 +188,8 @@ extract_inverts_from_db <- function(db_table, gom_phyla) {
         dplyr::anti_join(arth_family_to_rm, by = c("phylum", "family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "class")) %>%
+        dplyr::select(uuid, phylum, class, order, family, genus, scientificname,
+                      decimallatitude, decimallongitude, datecollected, institutioncode) %>%
         dplyr::collect(n = Inf) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
