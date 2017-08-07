@@ -1,8 +1,6 @@
 get_map_usa <- function(file) {
-    res <- geojsonio::geojson_read(x = file, what = "sp")
-    res <- geojsonio::geojson_json(res)
-    saveRDS(res, file = "data/map_eez_usa.rds")
-    res
+    res <- geojsonio::geojson_read(x = file, method = "local", what = "sp")
+    geojsonio::geojson_json(res)
 }
 
 get_felder_map_gom <- function(file) {
@@ -21,7 +19,8 @@ get_map_pnw <- function() {
 }
 
 is_within_map <- function(points, map) {
-    pts <- geojsonio::geojson_json(points, lat = "lat", lon = "long")
+    pts <- geojsonio::geojson_json(points, geometry = "point",
+                                   lat = "lat", lon = "long")
     res <- lawn::lawn_within(pts, map)
     res
 }
