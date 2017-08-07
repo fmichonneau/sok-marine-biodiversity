@@ -313,6 +313,8 @@ targets:
     command: extract_inverts_from_db(db_table=I("us_obis"), gom_phyla)
     depends: obis_database
 
+  obis_records:
+    command: filter_idigbio_records(obis_records_all, map_usa)
 
   ## Gulf of Mexico ------------------------------------------------------------
 
@@ -435,6 +437,9 @@ targets:
     plot:
       width: 8
       height: 5
+
+  #us_list_species:
+  #  command: combine_species_list
 
 ### summary tables
   # table_idigbio_species_sequenced:
