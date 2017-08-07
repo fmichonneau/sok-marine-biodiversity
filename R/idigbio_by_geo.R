@@ -127,8 +127,8 @@ create_idigbio_db <- function(coords, db_table, gom_phyla) {
                           order = `data.dwc:order`,
                           family = `data.dwc:family`,
                           genus = `data.dwc:genus`,
-                          decimallatitude  = geopoint.lon,
-                          decimallongitude = geopoint.lat) %>%
+                          decimallatitude  = geopoint.lat,
+                          decimallongitude = geopoint.lon) %>%
             dplyr::mutate_if(is.character, tolower)
         message(" DONE.")
         db_insert_into(con, db_table, r)
