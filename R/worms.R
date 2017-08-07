@@ -143,13 +143,12 @@ add_worms <- function(sp_list) {
             wid[i] <- marine[i] <- valid_name[i] <- is_fuzzy[i] <- NA
         }
     }
-    to_add <- data.frame(
-        cleaned_scientificname = spp,
+    to_add <- data_frame(
+        cleaned_scientificname = dplyr::pull(spp, "cleaned_scientificname"),
         worms_id = wid,
         is_marine = marine,
         worms_valid_name = valid_name,
-        is_fuzzy = is_fuzzy,
-        stringsAsFactors = FALSE
+        is_fuzzy = is_fuzzy
     )
     dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname")
 }

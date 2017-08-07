@@ -56,11 +56,8 @@ internal_fill_store_obis_by_geo <- function(k) {
     }
 }
 
-fill_store_obis_by_geo <- function(map_geojson, gom_phyla, cellsize = .5, use_cache = TRUE) {
+fill_store_obis_by_geo <- function(map_geojson, gom_phyla, cellsize = .5) {
     map_grid <- make_grid(map_geojson, cellsize)
-
-    if (!use_cache)
-        store_obis_by_geo()$destroy()
 
     res <- lapply(map_grid$key, internal_fill_store_obis_by_geo)
 

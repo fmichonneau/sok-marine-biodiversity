@@ -98,7 +98,7 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 ## database that will store the results use_cache: if TRUE, this uses
 ## the results from the iDigBio storr; if false, the entire storr is
 ## destroyed before
-create_idigbio_db <- function(coords, db_table, gom_phyla) {
+create_records_db <- function(coords, db_table, gom_phyla) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "REAL", "REAL"),
@@ -196,8 +196,8 @@ extract_inverts_from_db <- function(db_table, gom_phyla) {
                       is_binomial = is_binomial(cleaned_scientificname))
 }
 
-filter_idigbio_records <- function(idig, map_usa) {
-    idig %>%
+filter_records_by_geo <- function(rec, map_usa) {
+    rec %>%
         is_within_eez_records(map_usa) %>%
         dplyr::filter(is_in_eez == TRUE) %>%
         add_worms()
