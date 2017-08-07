@@ -46,11 +46,11 @@ store_obis_by_geo <- function(coords, store_path = "data/obis_by_geo") {
                           fetch_hook_obis_by_geo)
 }
 
-internal_fill_store_obis_by_geo <- function(k) {
+internal_fill_store_obis_by_geo <- function(k, gom_phyla) {
     res <- store_obis_by_geo()$get(k)
     if (nrow(res) > 0) {
         res[tolower(res$phylum) %in% gom_phyla &
-            (!tolower(resr$class) %in% chordata_classes_to_rm()), ]
+            (!tolower(res$class) %in% chordata_classes_to_rm()), ]
     } else {
         NULL
     }
@@ -59,7 +59,7 @@ internal_fill_store_obis_by_geo <- function(k) {
 fill_store_obis_by_geo <- function(map_geojson, gom_phyla, cellsize = .5) {
     map_grid <- make_grid(map_geojson, cellsize)
 
-    res <- lapply(map_grid$key, internal_fill_store_obis_by_geo)
+    res <- lapply(map_grid$key, internal_fill_store_obis_by_geo, gom_phyla)
 
     dplyr::bind_rows(res) %>%
         dplyr::mutate_if(is.character, tolower) %>%
