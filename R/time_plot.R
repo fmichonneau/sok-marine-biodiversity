@@ -214,11 +214,17 @@ plot_samples_vs_spp_through_time <- function(knowledge_through_time) {
         ggplot(aes(x = n_samples, y = n_spp, colour = period)) +
         geom_point() +
         geom_line(data = data_frame(samples = 1:100000, species = samples),
-                  aes(x = samples, y = species), color = "black", linetype = 2,
+                  aes(x = samples, y = species), color = "#2b2b2b", linetype = 2,
                   inherit.aes = FALSE) +
         geom_line(data = data_frame(samples = 1:100000, species = samples/100),
-                  aes(x = samples, y = species), color = "black", linetype = 3,
+                  aes(x = samples, y = species), color = "#2b2b2b", linetype = 3,
                   inherit.aes = FALSE) +
+        geom_text(x = 0.1, y = 0.125, angle = 45, label = "1:1",
+                  hjust = 0,  vjust = 0, size = 3,
+                  color = "#2b2b2b", family = "Ubuntu Condensed") +
+        geom_text(x = 2.1, y = 0.125, angle = 45, label = "1:100",
+                  hjust = 0,  vjust = 0, size = 3,
+                  color = "#2b2b2b", family = "Ubuntu Condensed") +
         scale_x_log10() + scale_y_log10(limits = c(1, 600)) +
         xlab("Number of Samples") +
         ylab("Number of Species Recorded for the First Time") +
