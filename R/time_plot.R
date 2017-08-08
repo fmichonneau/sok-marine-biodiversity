@@ -145,7 +145,7 @@ calc_n_spp_comparison <- function(idig_time) {
 
 }
 
-filter_phyla <- function(ktt, n_min = 200) {
+filter_phyla <- function(ktt, n_min = 220) {
     ktt %>%
         group_by(phylum) %>%
         filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
@@ -219,11 +219,10 @@ plot_samples_vs_spp_through_time <- function(knowledge_through_time) {
         geom_line(data = data_frame(samples = 1:100000, species = samples/100),
                   aes(x = samples, y = species), color = "#2b2b2b", linetype = 3,
                   inherit.aes = FALSE) +
-        geom_text(x = 0.1, y = 0.125, angle = 45, label = "1:1",
-                  hjust = 0,  vjust = 0, size = 3,
-                  color = "#2b2b2b", family = "Ubuntu Condensed") +
-        geom_text(x = 2.1, y = 0.125, angle = 45, label = "1:100",
-                  hjust = 0,  vjust = 0, size = 3,
+        geom_text(data = data_frame(x = c(1.39, 139), y = c(1.5, 1.5),
+                                    label = c("1:1", "1:100")),
+                  aes(x = x, y = y, label = label),
+                  angle = 45, hjust = 0,  vjust = 0, size = 3,
                   color = "#2b2b2b", family = "Ubuntu Condensed") +
         scale_x_log10() + scale_y_log10(limits = c(1, 600)) +
         xlab("Number of Samples") +
@@ -242,11 +241,12 @@ plot_samples_vs_spp_std <- function(knowledge_through_time) {
         dplyr::ungroup() %>%
         dplyr::filter(phylum %in% phy_to_keep) %>%
         dplyr::mutate(prop_new_spp = n_new_spp/n_samples,
-                      mean_new_prop = roll_meanr(prop_new_spp, n = 5),
-                      prop_spp = roll_meanr(n_spp/n_samples, n = 5)
+                      mean_new_prop = roll_meanr(prop_new_spp, n = 10, fill = 1),
+                      prop_spp = roll_meanr(n_spp/n_samples, n = 10)
                       ) %>%
-        ggplot(aes(x = year, y = prop_spp, colour = phylum)) +
+        ggplot(aes(x = year, y = mean_new_prop, colour = phylum)) +
         geom_point() +
+        geom_point(aes(x = year, y = prop_new_spp), size = .5, alpha = .7) +
         facet_wrap(~phylum) +
         scale_colour_hc(name = "")  +
         geom_smooth(se = FALSE)
