@@ -166,34 +166,63 @@ bold_status <- function(idig) {
         )
 }
 
-summary_bold_status <- function(gom_bold, koz_bold, idig_bold) {
-
+bold_status_data <- function(gom_bold, koz_bold, idig_bold) {
     dplyr::bind_rows(
                gom = bold_status(gom_bold),
                koz = bold_status(koz_bold),
                all_idigbio = bold_status(idig_bold),
                .id = "data_source"
            ) %>%
-        dplyr::filter(
-                   phylum %in% c("annelida", "arthropoda",
-                                     "bryozoa",
-                                     "chordata", "cnidaria",
-                                     "echinodermata", "mollusca",
-                                     "porifera"
-                                     )
-               ) %>%
-            dplyr::mutate(phylum = capitalize(phylum)) %>%
-            ggplot(aes(x = reorder(phylum, p_has_bold), y = p_has_bold,
-                       fill = data_source)) +
-            geom_col(position = "dodge") +
-            geom_text(aes(y = p_has_bold +.01, label = n_has_bold), position = position_dodge(.9),
-                      hjust = .1, family = "Ubuntu Condensed")  +
-            xlab("") + ylab("Proportion of species with available DNA barcodes") +
-            scale_fill_viridis(discrete = TRUE,
-                               name = "",
-                               labels = c("US EEZ", "Gulf of Mexico", "Pacific Northwest")) +
-            theme_ipsum(base_family = "Ubuntu Condensed") +
-            coord_flip()
+    dplyr::filter(
+               phylum %in% c("annelida", "arthropoda",
+                             "bryozoa",
+                             "chordata", "cnidaria",
+                             "echinodermata", "mollusca",
+                             "porifera"
+                             )
+           ) %>%
+    dplyr::mutate(phylum = capitalize(phylum))
+}
+
+plot_bold_status <- function(bold_data) {
+    bold_data %>%
+        ggplot(aes(x = reorder(phylum, p_has_bold), y = p_has_bold,
+                   fill = data_source)) +
+        geom_col(position = "dodge") +
+        geom_text(aes(y = p_has_bold +.01, label = n_has_bold), position = position_dodge(.9),
+                  hjust = .1, family = "Ubuntu Condensed")  +
+        xlab("") + ylab("Proportion of species with available DNA barcodes") +
+        scale_fill_viridis(discrete = TRUE,
+                           name = "",
+                           labels = c("US EEZ", "Gulf of Mexico", "Pacific Northwest")) +
+        theme_ipsum(base_family = "Ubuntu Condensed") +
+        coord_flip()
+}
+
+make_stat_barcoding <- function(bold_data) {
+    list(
+        min_eez_phylum = bold_data %>%
+            group_by(data_source) %>%
+            filter(data_source == "all_idigbio" &
+                   p_has_bold == min(p_has_bold)) %>%
+            pull(phylum),
+        min_eez_value = bold_data %>%
+            group_by(data_source) %>%
+            filter(data_source == "all_idigbio" &
+                   p_has_bold == min(p_has_bold)) %>%
+            pull(p_has_bold),
+        max_eez_phylum = bold_data %>%
+            group_by(data_source) %>%
+            filter(data_source == "all_idigbio" &
+                   p_has_bold == max(p_has_bold)) %>%
+            pull(phylum),
+        max_eez_value = bold_data %>%
+            group_by(data_source) %>%
+            filter(data_source == "all_idigbio" &
+                   p_has_bold == max(p_has_bold)) %>%
+            pull(p_has_bold)
+
+    )
 }
 
 

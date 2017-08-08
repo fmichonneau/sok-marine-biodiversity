@@ -456,8 +456,11 @@ targets:
   #     width: 12
   #     height: 8
 
+  barcode_status_data:
+    command: bold_status_data(gom_bold, kozloff_bold, idigbio_bold)
+
   figures/proportion_barcoded.pdf:
-    command: summary_bold_status(gom_bold, kozloff_bold, idigbio_bold)
+    command: plot_bold_status(barcode_status_data)
     plot: true
 
   #table_records_per_species:
@@ -547,6 +550,9 @@ targets:
   stat_bold:
     command: make_stat_bold(gom_bold, kozloff_bold, gom_worms, kozloff_species)
 
+  stat_barcoding:
+    command: make_stat_barcoding(barcode_status_data)
+
   prop_singleton_species:
     command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(1))
 
@@ -605,6 +611,8 @@ targets:
       - mammals_species_asm
       - amphibian_summary
       - stat_bold
+      - stat_barcoding
+      - barcode_status_data
       - prop_singleton_species
       - prop_10_specimens_species
       - prop_30_specimens_species
