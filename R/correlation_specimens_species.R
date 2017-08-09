@@ -1,7 +1,8 @@
 prepare_sampling_effort_data <- function(id) {
-      id %>%
-        mutate(east_west = ifelse(x > -100, "east", "west")) %>%
-        rename(latitude = y, longitude = x)
+    id %>%
+        dplyr::mutate(east_west = ifelse(x > -100, "east", "west")) %>%
+        dplyr::rename(latitude = y, longitude = x) %>%
+        dplyr::filter(!(is.na(latitude) | is.na(longitude)))
 }
 
 
