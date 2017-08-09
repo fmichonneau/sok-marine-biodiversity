@@ -26,9 +26,9 @@ model_sampling_effort <- function(id) {
 
 }
 
-## proportion of species known by `n_specimens`.
-calc_prop_nspecimens_species <- function(idig, n_specimens) {
-    res <- idig %>%
+## proportion of identified species known by `n_specimens`.
+calc_prop_nspecimens_species <- function(recs, n_specimens) {
+    res <- recs %>%
         dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::count(phylum, worms_valid_name, sort = TRUE)
 

@@ -499,14 +499,14 @@ targets:
     command: make_heatmap(obis_map_diversity_data, I("OBIS -- Number of species"))
 
   ## Combined OBIS + iDigBio
-  combined_data:
+  combined_records:
     command: combine_idigbio_obis(idigbio_records, obis_records)
 
   combined_data_map_samples:
-    command: data_map_samples(combined_data)
+    command: data_map_samples(combined_records)
 
   combined_data_map_diversity:
-    command: data_map_diversity(combined_data)
+    command: data_map_diversity(combined_records)
 
   combined_data_map_standardized_diversity:
     command: data_map_standardized_diversity(combined_data_map_samples, combined_data_map_diversity)
@@ -602,13 +602,13 @@ targets:
     command: make_stat_barcoding(barcode_status_data)
 
   prop_singleton_species:
-    command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(1))
+    command: calc_prop_nspecimens_species(combined_records, n_specimens=I(1))
 
   prop_10_specimens_species:
-    command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(10))
+    command: calc_prop_nspecimens_species(combined_records, n_specimens=I(10))
 
   prop_30_specimens_species:
-    command: calc_prop_nspecimens_species(idigbio_records, n_specimens=I(30))
+    command: calc_prop_nspecimens_species(combined_records, n_specimens=I(30))
 
   records_rare_phyla:
     command: calc_records_rare_phyla(idigbio_records)
