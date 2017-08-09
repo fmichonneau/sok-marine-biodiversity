@@ -479,9 +479,6 @@ targets:
   idigbio_data_map_diversity:
     command: data_map_diversity(idigbio_records)
 
-  idigbio_data_map_standardized_diversity:
-    command: data_map_standardized_diversity(idigbio_data_map_samples, idigbio_data_map_diversity)
-
   idigbio_map_samples:
     command: make_heatmap(idigbio_data_map_samples, I("iDigbio -- Number of samples"))
 
@@ -510,6 +507,9 @@ targets:
 
   combined_data_map_diversity:
     command: data_map_diversity(combined_data)
+
+  combined_data_map_standardized_diversity:
+    command: data_map_standardized_diversity(combined_data_map_samples, combined_data_map_diversity)
 
   combined_map_samples:
     command: make_heatmap(combined_data_map_samples, I("Number of samples"))
@@ -588,7 +588,7 @@ targets:
 ### plot sampling effort (correlation between number of samples vs number species
 
   figures/plot_sampling_effort.pdf:
-    command: plot_sampling_effort(idigbio_data_map_standardized_diversity)
+    command: plot_sampling_effort(combined_data_map_standardized_diversity)
     plot:
       height: 4.5
       width: 5
