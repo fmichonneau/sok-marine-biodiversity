@@ -8,7 +8,7 @@ prepare_sampling_effort_data <- function(id) {
 
 plot_sampling_effort <- function(id) {
     id %>%
-        prepare_sampling_effort_data %>%
+        prepare_sampling_effort_data() %>%
         ggplot(aes(x = n_specimen, y = n_species, shape = east_west, colour = latitude)) +
         scale_colour_viridis(option = "magma", direction = -1, end = .95, name = "Latitude") +
         geom_point(alpha = .45, position = position_jitter(width = .02, height = .02)) +
