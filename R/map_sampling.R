@@ -3,11 +3,7 @@ us_raster <- function()
     raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .2)
 
 combine_idigbio_obis <- function(idig, obis) {
-    dplyr::bind_rows(idigbio = dplyr::mutate(idig, datecollected = as.Date(datecollected)),
-                     obis = dplyr::mutate(obis,
-                                          uuid = as.character(uuid),
-                                          datecollected = as.Date(datecollected)),
-                     .id = "database") %>%
+    dplyr::bind_rows(idigbio = idig, obis = obis, .id = "database") %>%
         dplyr::select(database, phylum, worms_valid_name, decimallatitude,
                       decimallongitude, datecollected) %>%
         dplyr::filter(!is.na(worms_valid_name)) %>%

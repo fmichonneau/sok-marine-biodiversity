@@ -196,7 +196,9 @@ extract_inverts_from_db <- function(db_table, gom_phyla) {
         dplyr::collect(n = Inf) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
-                      is_binomial = is_binomial(cleaned_scientificname))
+                      is_binomial = is_binomial(cleaned_scientificname),
+                      datecollected = as.Date(datecollected),
+                      uuid = as.character(uuid))
 }
 
 filter_records_by_geo <- function(rec, map_usa) {
