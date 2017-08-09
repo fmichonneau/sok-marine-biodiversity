@@ -29,10 +29,10 @@ model_sampling_effort <- function(id) {
 ## proportion of species known by `n_specimens`.
 calc_prop_nspecimens_species <- function(idig, n_specimens) {
     res <- idig %>%
-        filter(!is.na(worms_valid_name)) %>%
-        count(phylum, worms_valid_name, sort = TRUE)
+        dplyr::filter(!is.na(worms_valid_name)) %>%
+        dplyr::count(phylum, worms_valid_name, sort = TRUE)
 
-    pdf(file = paste0("figures/distribution_specimens.pdf"))
+    pdf(file = paste0("figures/distribution_", n_specimens, "_specimens.pdf"))
     print(
         ggplot(res, aes(n, fill = phylum)) +
         geom_bar() + xlim(c(1, 100)) + scale_y_log10()
