@@ -438,6 +438,9 @@ targets:
       width: 8
       height: 5
 
+  #us_list_species:
+  #  command: combine_species_list
+
 ### summary tables
   # table_idigbio_species_sequenced:
   #   command: make_table_bold_records_per_idigbio_species(global=global_idigbio_species_with_bold_info, east_coast=east_idigbio_species_with_bold_info, west_coast=west_idigbio_species_with_bold_info, florida=florida_idigbio_species_with_bold_info)
@@ -467,28 +470,46 @@ targets:
   #   command: make_table_records_per_species()
   #   depends: bold_records_for_idigbio_species
 
-### map sampling effort --------------------------------------------------------
+### Maps diversity + samples ---------------------------------------------------
 
-  data_map_sampling_effort:
-    command: make_data_map_sampling_effort(idigbio_records)
+  ## iDigBio
 
-  data_map_diversity:
-    command: make_data_map_diversity(idigbio_records)
+  idigbio_data_map_samples:
+    command: data_map_samples(idigbio_records)
 
-  data_map_standardized_diversity:
-    command: make_data_map_standardized_diversity(data_map_sampling_effort, data_map_diversity)
+  idigbio_data_map_diversity:
+    command: data_map_diversity(idigbio_records)
 
-  map_sampling_effort:
-    command: make_heatmap_sampling(data_map_sampling_effort, I("Number of samples"))
+  idigbio_data_map_standardized_diversity:
+    command: data_map_standardized_diversity(idigbio_data_map_samples, idigbio_data_map_diversity)
 
-  map_diversity:
-    command: make_heatmap_sampling(data_map_diversity, I("Number of species"))
+  idigbio_map_samples:
+    command: make_heatmap_sampling(idigbio_data_map_samples, I("Number of samples"))
 
+  idigbio_map_diversity:
+    command: make_heatmap_sampling(idigbio_data_map_diversity, I("Number of species"))
+
+  ## OBIS
+  obis_map_samples_data:
+    command: data_map_samples(obis_records)
+
+  obis_map_diversity_data:
+    command: data_map_diversity(obis_records)
+
+  obis_map_samples:
+    command: make_heatmap_sampling(obis_map_samples_data, I("OBIS, number of samples"))
+
+  obis_map_diversity:
+    command: make_heatmap_sampling(obis_map_diversity_data, I("OBIS, number of species"))
+
+  ## map plots -----------------------------------------------------------------
   figures/map_diversity_sampling.pdf:
-    command: combine_cowplots(map_sampling_effort, map_diversity, nrow=I(2), common_legend=I(FALSE))
+    command: combine_cowplots(idigbio_map_samples, idigbio_map_diversity, nrow=I(2), common_legend=I(FALSE))
     plot:
       width: 6
       height: 7
+
+### Knowledge through time -----------------------------------------------------
 
   knowledge_through_time:
     command: make_knowledge_through_time(gom_idigbio_in_us, kozloff_idigbio_in_us, gom_gbif_in_us, kozloff_gbif_in_us, gom_worms, kozloff_species)
@@ -540,7 +561,7 @@ targets:
 ### plot sampling effort (correlation between number of samples vs number species
 
   figures/plot_sampling_effort.pdf:
-    command: plot_sampling_effort(data_map_standardized_diversity)
+    command: plot_sampling_effort(idigbio_data_map_standardized_diversity)
     plot:
       height: 4.5
       width: 5
@@ -585,14 +606,14 @@ targets:
 
 ### Attributions ---------------------------------------------------------------
 
-  idigbio_records_attributions:
-    command: idigbio_attribution(idigbio_records)
+  # idigbio_records_attributions:
+  #   command: idigbio_attribution(idigbio_records)
 
-  idigbio_gom_records_attributions:
-    command: idigbio_attribution(idigbio_gom_records)
+  # idigbio_gom_records_attributions:
+  #   command: idigbio_attribution(idigbio_gom_records)
 
-  idigbio_pnw_records_attributions:
-    command: idigbio_attribution(idigbio_pnw_records)
+  # idigbio_pnw_records_attributions:
+  #   command: idigbio_attribution(idigbio_pnw_records)
 
 
 
@@ -636,9 +657,9 @@ targets:
       - figures/idigbio_through_time.pdf
       - figures/idigbio_identification_level_through_time.pdf
       ## attributions
-      - idigbio_records_attributions
-      - idigbio_gom_records_attributions
-      - idigbio_pnw_records_attributions
+      #- idigbio_records_attributions
+      #- idigbio_gom_records_attributions
+      #- idigbio_pnw_records_attributions
     knitr: true
 
   manuscript.pdf:
