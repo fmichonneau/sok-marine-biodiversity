@@ -2,28 +2,40 @@
 us_raster <- function()
     raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .2)
 
-data_map_samples <- function(idig) {
+combine_idigbio_obis <- function(idig, obis) {
+    dplyr::bind_rows(idigbio = dplyr::mutate(idig, datecollected = as.Date(datecollected)),
+                     obis = dplyr::mutate(obis,
+                                          uuid = as.character(uuid),
+                                          datecollected = as.Date(datecollected)),
+                     .id = "database") %>%
+        dplyr::select(database, phylum, worms_valid_name, decimallatitude,
+                      decimallongitude, datecollected) %>%
+        dplyr::filter(!is.na(worms_valid_name)) %>%
+        dplyr::distinct(phylum, worms_valid_name, decimallatitude,
+                        decimallongitude, datecollected, .keep_all = TRUE)
+}
+
+data_map_samples <- function(recs) {
     us_raster <- us_raster()
-    pts <- SpatialPoints(data.frame(lon = idig$decimallongitude,
-                                    lat = idig$decimallatitude))
+    pts <- SpatialPoints(data.frame(lon = recs$decimallongitude,
+                                    lat = recs$decimallatitude))
     r <- rasterize(pts, us_raster, fun = "count")
     gg_r <- as.data.frame(as(r, "SpatialPixelsDataFrame"))
     colnames(gg_r) <- c("value", "x", "y")
     gg_r
 }
 
-
-data_map_diversity <- function(idig) {
+data_map_diversity <- function(recs) {
     us_raster <- us_raster()
     raster_cell <- mapply(function(x, y) cellFromXY(us_raster, c(x, y)),
-                          idig$decimallongitude, idig$decimallatitude)
+                          recs$decimallongitude, recs$decimallatitude)
 
-    idig_r <- data.frame(idig, rastercell = raster_cell) %>%
+    recs_r <- data.frame(recs, rastercell = raster_cell) %>%
         group_by(rastercell) %>%
         summarize(
-            n_spp = length(unique(scientificname))
+            n_spp = n_distinct(worms_valid_name)
         )
-    us_raster[na.omit(idig_r$rastercell)] <- idig_r$n_spp[!is.na(idig_r$rastercell)]
+    us_raster[na.omit(recs_r$rastercell)] <- recs_r$n_spp[!is.na(recs_r$rastercell)]
     gg_r <- as.data.frame(as(us_raster, "SpatialPixelsDataFrame"))
     colnames(gg_r) <- c("value", "x", "y")
     gg_r
@@ -44,7 +56,7 @@ data_map_standardized_diversity <- function(sampling, diversity) {
 }
 
 
-make_heatmap_sampling <- function(gg_r, title, limits = NULL) {
+make_heatmap <- function(gg_r, title, limits = NULL) {
     state <- maps::map("world", fill = TRUE, plot = FALSE)
     ## convert the 'map' to something we can work with via geom_map
     IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
@@ -87,13 +99,13 @@ make_heatmap_sampling <- function(gg_r, title, limits = NULL) {
         xlab("Longitude") + ylab("Latitude")
 }
 
-make_heatmap_by_phylum <- function(idig, file = "figures/map_diversity_per_phylum.pdf") {
-    uniq_phyla <- unique(idig$phylum)
+make_heatmap_by_phylum <- function(recs, file = "figures/map_diversity_per_phylum.pdf") {
+    uniq_phyla <- unique(recs$phylum)
 
     res <- parallel::mclapply(uniq_phyla, function(p) {
-                         idig_sub <- idig[idig$phylumrg == p, ]
-                         if (nrow(idig_sub) < 10) return(NULL)
-                         ggr <- make_data_map_diversity(idig_sub)
+                         recs_sub <- recs[recs$phylumrg == p, ]
+                         if (nrow(recs_sub) < 10) return(NULL)
+                         ggr <- make_data_map_diversity(recs_sub)
                          ggr
                      }, mc.cores = 8L)
     has_data <- !vapply(res, is.null, logical(1))

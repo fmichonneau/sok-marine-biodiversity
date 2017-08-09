@@ -484,10 +484,10 @@ targets:
     command: data_map_standardized_diversity(idigbio_data_map_samples, idigbio_data_map_diversity)
 
   idigbio_map_samples:
-    command: make_heatmap_sampling(idigbio_data_map_samples, I("Number of samples"))
+    command: make_heatmap(idigbio_data_map_samples, I("iDigbio -- Number of samples"))
 
   idigbio_map_diversity:
-    command: make_heatmap_sampling(idigbio_data_map_diversity, I("Number of species"))
+    command: make_heatmap(idigbio_data_map_diversity, I("iDigBio -- Number of species"))
 
   ## OBIS
   obis_map_samples_data:
@@ -497,14 +497,42 @@ targets:
     command: data_map_diversity(obis_records)
 
   obis_map_samples:
-    command: make_heatmap_sampling(obis_map_samples_data, I("OBIS, number of samples"))
+    command: make_heatmap(obis_map_samples_data, I("OBIS -- Number of samples"))
 
   obis_map_diversity:
-    command: make_heatmap_sampling(obis_map_diversity_data, I("OBIS, number of species"))
+    command: make_heatmap(obis_map_diversity_data, I("OBIS -- Number of species"))
+
+  ## Combined OBIS + iDigBio ---------------------------------------------------
+  combined_data:
+    command: combine_idigbio_obis(idigbio_records, obis_records)
+
+  combined_data_map_samples:
+    command: data_map_samples(combined_data)
+
+  combined_data_map_diversity:
+    command: data_map_diversity(combined_data)
+
+  combined_map_samples:
+    command: make_heatmap(combined_data_map_samples, I("Number of samples"))
+
+  combined_map_diversity:
+    command: make_heatmap(combined_data_map_diversity, I("Number of species"))
 
   ## map plots -----------------------------------------------------------------
-  figures/map_diversity_sampling.pdf:
-    command: combine_cowplots(idigbio_map_samples, idigbio_map_diversity, nrow=I(2), common_legend=I(FALSE))
+  figures/idigbio_map_sampling.pdf:
+    command: combine_cowplots(idigbio_map_samples, idigbio_map_diversity, nrow=I(2), command_legend=I(FALSE))
+    plot:
+      width: 6
+      height: 7
+
+  figures/obis_map_sampling.pdf:
+    command: combine_cowplots(obis_map_samples, obis_map_diversity, nrow=I(2), command_legend=I(FALSE))
+    plot:
+      width: 6
+      height: 7
+
+  figures/combined_map_sampling.pdf:
+    command: combine_cowplots(combined_map_samples, combined_map_diversity, nrow=I(2), common_legend=I(FALSE))
     plot:
       width: 6
       height: 7
@@ -647,7 +675,9 @@ targets:
       - recently_collected
       - not_really_in_database
       ## figures
-      - figures/map_diversity_sampling.pdf
+      - figures/combined_map_sampling.pdf
+      - figures/idigbio_map_sampling.pdf
+      - figures/obis_map_sampling.pdf
       - figures/plot_sampling_effort.pdf
       - figures/proportion_barcoded.pdf
       - figures/richness_per_db.pdf
