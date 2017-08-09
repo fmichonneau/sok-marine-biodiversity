@@ -188,6 +188,9 @@ extract_inverts_from_db <- function(db_table, gom_phyla) {
         dplyr::anti_join(arth_family_to_rm, by = c("phylum", "family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "class")) %>%
+        ## remove some vertebrates identified at higher level in the scientificname
+        ## field
+        dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
         dplyr::select(uuid, phylum, class, order, family, genus, scientificname,
                       decimallatitude, decimallongitude, datecollected, institutioncode) %>%
         dplyr::collect(n = Inf) %>%
