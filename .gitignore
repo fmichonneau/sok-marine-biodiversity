@@ -9,3 +9,4 @@ manuscript.md
 *.Rhistory
 *(copy)*
 *~
+.httr-oauth
