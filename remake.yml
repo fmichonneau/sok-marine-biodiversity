@@ -62,6 +62,10 @@ targets:
     depends:
       - data-validation/map_kozloff_idigbio.pdf
 
+### WoRMS stats
+
+  worms_stats:
+    command: read_worms_stats("data-raw/20170808_worms_stats.csv")
 
 ### Kozloff species list--------------------------------------------------------
 

@@ -1,3 +1,10 @@
+read_worms_stats <- function(worms_csv) {
+    wrms_stats <- readr::read_csv(worms_csv)
+    ## use Appletans 2012 number (removing fishes and other vertebrates)
+    wrms_stats$accepted_species_marine_non_fossil[wrms_stats$phylum == "Chordata"] <- 3053
+    wrms_stats
+}
+
 ## Storr for the WoRMS ids: given a taxon name, what is its WoRMS id? ----------
 worm_fail <- function(key, reason) {
     assertthat::is.string(key)
