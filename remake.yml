@@ -597,6 +597,14 @@ targets:
       height: 4.5
       width: 5
 
+### BOLD data ------------------------------------------------------------------
+
+  global_bold_stats_raw:
+    command: get_bold_global_coverage_raw()
+
+  global_bold_stats:
+    command: get_bold_global_coverage(global_bold_stats_raw, worms_stats)
+
 ### in text statistics ---------------------------------------------------------
 
   stat_bold:

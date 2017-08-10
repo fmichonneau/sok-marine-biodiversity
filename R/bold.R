@@ -256,3 +256,69 @@ project_contribution <- function(db, use_worms, col_nm) {
         })
     res
 }
+
+
+get_bold_global_coverage_raw <- function() {
+
+    ## This is an OK approximation of the higher taxa that are marine
+    ## for each phylum. Some are missing (acanthocephala, leeches, oligochaetes,
+    ## Chaetonotida gastrotrichs (but 0 records in BOLD on 2017-08-10), nematods)
+    ##
+    ## but also includes too much (all molluscs, all tardigrades, for instance...)
+    tribble(
+        ~phylum,  ~ taxa,
+        "Annelida", "Polychaeta",
+        "Arthropoda", "Harpacticoida",
+        "Arthropoda", "Malacostraca",
+        "Arthropoda", "Maxillopoda",
+        "Arthropoda", "Ostracoda",
+        "Arthropoda", "Pycnogonida",
+        "Brachiopoda", "Brachiopoda",
+        "Bryozoa", "Bryozoa",
+        "Cephalorhyncha", "Priapulida",
+        "Chaetognatha", "Chaetognatha",
+        "Chordata", "Appendicularia",
+        "Chordata", "Ascidiacea",
+        "Chordata", "Thaliacea",
+        "Cnidaria", "Cnidaria",
+        "Ctenophora", "Ctenophora",
+        "Dicyemida", "Dicyemida",
+        "Echinodermata", "Echinodermata",
+        "Entoprocta", "Entoprocta",
+        "Gastrotricha", "Macrodasyida",
+        "Gnathostomulida", "Gnathostomulida",
+        "Hemichordata", "Hemichordata",
+        "Mollusca", "Mollusca",
+        "Nemertea", "Nemertea",
+        "Orthonectida", "Orthonectida",
+        "Phoronida", "Phoronida",
+        "Platyhelminthes", "Turbellaria",
+        "Porifera", "Porifera",
+        "Rotifera", "Rotifera",
+        "Sipuncula", "Sipuncula",
+        "Tardigrada", "Tardigrada",
+        "Xenacoelomorpha", "Xenacoelomorpha"
+    ) %>%
+        dplyr::mutate(bold_stats = map(taxa, bold::bold_stats))
+}
+
+
+get_bold_global_coverage <- function(bold_stats_raw, wrms_stats) {
+    bold_stats_raw %>%
+        dplyr::mutate(
+                   n_records= purrr::map_int(bold_stats, "total_records"),
+                   n_bins = purrr::map_int(bold_stats, function(x) x$bins$count),
+                   n_spp = purrr::map_int(bold_stats, function(x) x$species$count)
+               ) %>%
+        dplyr::group_by(phylum) %>%
+        dplyr::summarize(n_records = sum(n_records),
+                         n_bins = sum(n_bins),
+                         n_spp = sum(n_spp)) %>%
+        dplyr::left_join(wrms_stats, by = "phylum") %>%
+        dplyr::mutate(prop_barcoded = n_spp/accepted_species_marine_non_fossil) ## %>%
+        ## dplyr::filter(prop_barcoded < 1) %>%
+        ## ggplot(aes(x = phylum, y = prop_barcoded, fill = phylum)) +
+        ## geom_col() +
+        ## coord_flip()
+
+ }
