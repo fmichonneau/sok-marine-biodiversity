@@ -84,7 +84,7 @@ We investigated the proportion of species discovered since the publication of th
 <!-- separate idigbio and (and add) obis in the results -->
 We combined `r format(nrow(idigbio_records), big.mark=",")` museum records for marine invertebrates collected within the EEZ of the continental US representing `r length(unique(tolower(idigbio_records[["phylum"]])))` phyla and `r format(length(unique(idigbio_records$worms_valid_name)), big.mark=",")` species from iDigBio. Most samples were collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A). For the East coast, species richness is the highest in South Florida but it is relatively uniform along the coastline. For the West coast, the Pacific Northwest, the San Francisco Bay Area, and Southern California have the highest richness (Fig. \@ref(fig:map-diversity-sampling)B).
 
-```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on specimen data available from iDigBio within the limits of the Exclusive Economic Zone for the continental USA. (\\#fig:map-diversity-sampling)'}
+```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS within the limits of the Exclusive Economic Zone for the continental USA. (\\#fig:map-diversity-sampling)'}
 knitr::include_graphics("figures/map_diversity_sampling.pdf")
 ```
 
