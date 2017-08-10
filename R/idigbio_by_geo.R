@@ -25,19 +25,19 @@ internal_idigbio_by_geo_fetch <- function(coords_qry, key) {
 make_hook_idigbio_by_geo <- function(coords_qry) {
     force(coords_qry)
     function(key, namespace) {
-        message("... ", appendLF = FALSE)
+        v2("... ", appendLF = FALSE)
         res <- try(internal_idigbio_by_geo_fetch(coords_qry, key),
                    silent = TRUE)
         attempts <- 0
         pred <- (inherits(res, "try-error") && !grepl("return more than", res))
         while (pred && attempts <= 3) {
-            message("sleeping ... ")
+            v3("sleeping ... ")
             Sys.sleep(exp(runif(1) * attempts))
             res <-  try(internal_idigbio_by_geo_fetch(coords_qry, key),
                         silent = TRUE)
             pred <- (inherits(res, "try-error") && !grepl("return more than", res))
             attempts <- attempts + 1
-            message("attempt ... ", attempts)
+            v3("attempt ... ", attempts)
         }
         if (pred) {
             stop(res)
@@ -120,7 +120,7 @@ create_records_db <- function(coords, db_table, gom_phyla) {
     db_create_table(con, db_table, types = idig_types, temporary = FALSE)
 
     lapply(names(coords), function(q) {
-        message("Getting iDigBio records for ", q, appendLF = FALSE)
+        v2("Getting iDigBio records for ", q, appendLF = FALSE)
         r <- get_idigbio_by_geo(coords, q) %>%
             dplyr::rename(phylum = `data.dwc:phylum`,
                           class = `data.dwc:class`,
@@ -130,7 +130,7 @@ create_records_db <- function(coords, db_table, gom_phyla) {
                           decimallatitude  = geopoint.lat,
                           decimallongitude = geopoint.lon) %>%
             dplyr::mutate_if(is.character, tolower)
-        message(" DONE.")
+        v2(" DONE.")
         db_insert_into(con, db_table, r)
     })
 

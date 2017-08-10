@@ -9,7 +9,7 @@ internal_obis_hook <- function(wkt_coords, attempt = 0) {
     res <- try(robis::occurrence(geometry = wkt_coords),
                silent = TRUE)
     while (inherits(res, "try-error") && attempt <= 3) {
-        message("attempt ", attempt, " sleeping ...")
+        v3("attempt ", attempt, " sleeping ...")
         Sys.sleep(exp(runif(1) * attempt))
         res <- internal_obis_hook(wkt_coords, attempt + 1)
     }
@@ -165,7 +165,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     db_create_table(con, db_table, types = obis_types, temporary = FALSE)
 
     lapply(names(coords), function(q) {
-        message("Getting OBIS records for ", q,  appendLF = FALSE)
+        v2("Getting OBIS records for ", q,  appendLF = FALSE)
         r <- store_obis_by_geo()$get(q)
         if (!is.null(r)) {
             r <- r %>%
@@ -183,7 +183,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
                 dplyr::mutate_if(is.character, tolower)
             db_insert_into(con, db_table, r)
         }
-        message(" DONE.")
+        v2(" DONE.")
     })
 
     db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "order", "family", "scientificname"),

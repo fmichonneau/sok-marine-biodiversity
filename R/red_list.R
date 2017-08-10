@@ -3,16 +3,16 @@ fetch_hook_red_list <- function(key, namespace) {
     default_res <- list(name = key, result = NULL)
     if (is.na(key)) return(default_res)
     is_lower_case(key)
-    message("Getting info about ", key, appendLF = FALSE)
+    v2("Getting info about ", key, appendLF = FALSE)
     res <- try(rredlist::rl_search(name = key), silent = TRUE)
     if (inherits(res, "try-error")) {
         stop("ERROR")
     }
     if (! (exists("result", res) && exists("name", res))) {
-        message("... missing?")
+        v2("... missing?")
         return(default_res)
     }
-    message(" ... DONE.")
+    v2(" ... DONE.")
     res
 }
 

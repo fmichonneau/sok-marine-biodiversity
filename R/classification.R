@@ -1,4 +1,4 @@
-get_classification_from_wid <- function(wid, verbose = FALSE) {
+get_classification_from_wid <- function(wid) {
     if (is.na(wid)) {
         return(
             data_frame(phylum = NA_character_,
@@ -7,7 +7,7 @@ get_classification_from_wid <- function(wid, verbose = FALSE) {
                        family = NA_character_)
         )
     }
-    if (verbose) message("getting classification for aphiaid ", wid)
+    v2("getting classification for aphiaid ", wid)
     classif <- store_worms_classification()$get(wid)
     empty_classif <- data_frame(phylum = character(0),
                                 class  = character(0),
@@ -34,7 +34,6 @@ add_classification <- function(data) {
     ## then the WoRMS phylum gets added as 'phylum1'
     data %>%
         dplyr::mutate(classif = purrr::map(worms_id,
-                                           get_classification_from_wid,
-                                           verbose = TRUE)) %>%
+                                           get_classification_from_wid)) %>%
         tidyr::unnest(classif)
 }

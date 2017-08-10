@@ -9,7 +9,7 @@ read_worms_stats <- function(worms_csv) {
 worm_fail <- function(key, reason) {
     assertthat::is.string(key)
     assertthat::is.string(reason)
-    message("failed to find a good candidate for: ", key)
+    v1("failed to find a good candidate for: ", key)
     cat(format(Sys.time()), key, reason, "\n",
         file = "no_match_worms.tsv", sep = "\t", append = TRUE)
     setNames(NA_character_, reason)
@@ -102,10 +102,10 @@ worms_phylum_by_wid <- function(wid) {
         stopifnot(is.character(x), length(x) == 1L)
         if (is.na(x)) return("")
         tmp_res <- store_worms_classification()$get(x)
-        message(x, " --- ", appendLF = FALSE)
+        v2(x, " --- ", appendLF = FALSE)
         res <- tmp_res[[1]]
         res <- res$name[res$rank == "Phylum"]
-        message(res)
+        v2(res)
         as.character(res)
     },  character(1))
 }

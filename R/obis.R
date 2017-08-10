@@ -8,7 +8,7 @@ fetch_hook_obis_occurrences <- function(key, namespace) {
     else if (inherits(res, "try-error")) {
         stop("something's wrong")
     } else {
-        message(" ... ", appendLF = FALSE)
+        v2(" ... ", appendLF = FALSE)
         res
     }
 }
@@ -24,9 +24,9 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
     w_id <- na.omit(wrm$worms_id)
     res <- vector("list", length(w_id))
     for (i in seq_along(w_id)) {
-        message("getting obis for ", w_id[i], appendLF = FALSE)
+        v2("getting obis for ", w_id[i], appendLF = FALSE)
         res[[i]] <- store_obis_occurrences()$get(as.character(w_id[i]))
-        message(" DONE.")
+        v2(" DONE.")
     }
     res <- dplyr::bind_rows(res)
     names(res) <- tolower(names(res))

@@ -24,7 +24,7 @@ fetch_hook_idigbio_by_sp <- function(key, namespace) {
     stopifnot(identical(key, tolower(key)))
     spp <- union(key, cleanup_species_names(key, rm_subgenus = TRUE))
 
-    message("Getting iDigBio records for ", paste(spp, collapse = ", "))
+    v2("Getting iDigBio records for ", paste(spp, collapse = ", "))
 
     qry <- list(scientificname = as.list(spp),
                 basisofrecord = "PreservedSpecimen"
