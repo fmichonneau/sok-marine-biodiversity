@@ -415,23 +415,7 @@ targets:
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
 
-  idigbio_samples_through_time_data:
-    command: make_knowledge_through_time_idigbio(idigbio_records_all)
 
-  idigbio_samples_through_time:
-    command: plot_cum_samples_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
-
-  idigbio_species_through_time:
-    command: plot_cum_spp_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
-
-  idigbio_effort_through_time:
-    command: plot_samples_vs_spp_through_time(idigbio_samples_through_time_data)
-
-  figures/idigbio_through_time.pdf:
-    command: combine_cowplots_2(idigbio_samples_through_time, idigbio_species_through_time, idigbio_effort_through_time)
-    plot:
-      width:  8
-      height: 8
 
   idigbio_identification_level_through_time:
     command: data_identification_level_through_time(idigbio_records)
@@ -625,7 +609,64 @@ targets:
   # idigbio_pnw_records_attributions:
   #   command: idigbio_attribution(idigbio_pnw_records)
 
+### Samples and species collected through time ---------------------------------
 
+ ## iDigBio
+ idigbio_samples_through_time_data:
+    command: make_knowledge_through_time(idigbio_records)
+
+  idigbio_samples_through_time:
+    command: plot_cum_samples_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
+
+  idigbio_species_through_time:
+    command: plot_cum_spp_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
+
+  idigbio_effort_through_time:
+    command: plot_samples_vs_spp_through_time(idigbio_samples_through_time_data)
+
+  figures/idigbio_through_time.pdf:
+    command: combine_cowplots_2(idigbio_samples_through_time, idigbio_species_through_time, idigbio_effort_through_time)
+    plot:
+      width:  8
+      height: 8
+
+  ## OBIS
+  obis_samples_through_time_data:
+    command: make_knowledge_through_time(obis_records)
+
+  obis_samples_through_time:
+    command: plot_cum_samples_through_time(obis_samples_through_time_data, facet=I(FALSE))
+
+  obis_species_through_time:
+    command: plot_cum_spp_through_time(obis_samples_through_time_data, facet=I(FALSE))
+
+  obis_effort_through_time:
+    command: plot_samples_vs_spp_through_time(obis_samples_through_time_data)
+
+  figures/obis_through_time.pdf:
+    command: combine_cowplots_2(obis_samples_through_time, obis_species_through_time, obis_effort_through_time)
+    plot:
+      width:  8
+      height: 8
+
+  ## combined
+  combined_samples_through_time_data:
+    command: make_knowledge_through_time(combined_records)
+
+  combined_samples_through_time:
+    command: plot_cum_samples_through_time(combined_samples_through_time_data, facet=I(FALSE))
+
+  combined_species_through_time:
+    command: plot_cum_spp_through_time(combined_samples_through_time_data, facet=I(FALSE))
+
+  combined_effort_through_time:
+    command: plot_samples_vs_spp_through_time(combined_samples_through_time_data)
+
+  figures/combined_through_time.pdf:
+    command: combine_cowplots_2(combined_samples_through_time, combined_species_through_time, combined_effort_through_time)
+    plot:
+      width:  8
+      height: 8
 
 
 ### Manuscript -----------------------------------------------------------------
@@ -667,6 +708,8 @@ targets:
       - figures/database_overlap.pdf # not in use
       - figures/database_overlap_percent.pdf
       - figures/idigbio_through_time.pdf
+      - figures/obis_through_time.pdf
+      - figures/combined_through_time.pdf
       - figures/idigbio_identification_level_through_time.pdf
       ## attributions
       #- idigbio_records_attributions
