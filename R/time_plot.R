@@ -1,18 +1,3 @@
-preprocess_gbif <- function(gom_gbif, koz_gbif) {
-    bind_rows(gom = gom_gbif, koz = koz_gbif, .id = "fauna") %>%
-        select(fauna, taxon_name, taxonrank, scientificname, year, is_in_eez) %>%
-        filter(taxonrank == "SPECIES") %>%
-        mutate(phylum = tolower(taxon_name)) %>%
-        select(-taxonrank, -taxon_name)
-}
-
-## no date info in OBIS?
-## preprocess_obis <- function(gom_obis, koz_obis) {
-##     res <- bind_rows(gom = gom_obis, koz = koz_obis, .id = "fauna")
-##     res
-## }
-
-
 idigbio_add_year <- function(idig) {
     idig %>%
         mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z")),
@@ -21,69 +6,9 @@ idigbio_add_year <- function(idig) {
         filter(!is.na(year))
 }
 
-preprocess_idigbio <- function(gom_idig, koz_idig) {
-    res <- bind_rows(gom = gom_idig, koz = koz_idig, .id = "fauna")  %>%
-        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
-        mutate(year = year(parsed_date)) %>%
-        select(scientificname, is_in_eez, year, `data.dwc:phylum`, fauna) %>%
-        rename(phylum = `data.dwc:phylum`) %>%
-        mutate(phylum = tolower(phylum))
-}
-
-make_knowledge_through_time <- function(gom_idig, koz_idig, gom_gbif, koz_gbif,
-                                        gom_spp, koz_spp) {
-
-    ## Combine the data from the public databases (GBIF and iDigBio)
-    idig <- preprocess_idigbio(gom_idig, koz_idig)
-    gbif <- preprocess_gbif(gom_gbif, koz_gbif)
-
-    res <- dplyr::bind_rows(idigbio = idig, gbif = gbif, .id = "database") %>%
-        dplyr::mutate(year = replace(year, year > 2017 | year < 1800, NA)) %>%
-        dplyr::filter(!is.na(year) & is_in_eez == TRUE)
-
-    ## Combine the species lists from GOM and Kozloff
-    spp_total <- dplyr::bind_rows(gom = gom_spp, koz = koz_spp, .id = "fauna") %>%
-        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
-        dplyr::group_by(fauna, phylum) %>%
-        dplyr::tally() %>%
-        dplyr::mutate(phylum = tolower(phylum)) %>%
-        dplyr::rename(n_spp_total = n) %>%
-        dplyr::select(-taxon_name)
-
-    ## Get number of samples per phylum and year
-    n_samples <- res %>%
-        dplyr::group_by(database, fauna, phylum, year) %>%
-        dplyr::arrange(year) %>%
-        dplyr::summarize(n_samples = n()) %>%
-        dplyr::mutate(cum_n_samples = cumsum(n_samples))
-
-    ## Get number of "new" species by phylum through time
-    n_species <- res %>%
-        dplyr::group_by(database, fauna, phylum, scientificname, year) %>%
-        dplyr::arrange(year) %>%
-        dplyr::tally() %>%
-        dplyr::mutate(min_year = min(year)) %>%
-        dplyr::select(-n) %>%
-        dplyr::distinct(database, fauna, phylum, scientificname, min_year, .keep_all = TRUE) %>%
-        dplyr::group_by(database, fauna, phylum, min_year) %>%
-        dplyr::arrange(min_year) %>%
-        dplyr::summarize(
-            n_new_spp = n()
-        ) %>%
-        dplyr::mutate(cum_n_new_spp = cumsum(n_new_spp)) %>%
-        dplyr::rename(year =  min_year) %>%
-        dplyr::left_join(spp_total, by = c("fauna", "phylum")) %>%
-        dplyr::mutate(cum_p_new_spp = cum_n_new_spp/n_spp_total)
-
-    dplyr::left_join(n_samples, n_species, by = c("database", "fauna", "phylum", "year"))
-
-}
-
-
 make_knowledge_through_time_idigbio <- function(idigbio) {
 
     idigbio <- idigbio %>%
-        add_worms() %>%
         idigbio_add_year() %>%
         dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
 

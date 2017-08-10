@@ -540,35 +540,6 @@ targets:
       width: 6
       height: 7
 
-### Knowledge through time -----------------------------------------------------
-
-  knowledge_through_time:
-    command: make_knowledge_through_time(gom_idigbio_in_us, kozloff_idigbio_in_us, gom_gbif_in_us, kozloff_gbif_in_us, gom_worms, kozloff_species)
-
-  figures/cum_spp_through_time.pdf:
-    command: plot_cum_spp_through_time(knowledge_through_time)
-    plot: true
-
-  figures/cum_samples_through_time.pdf:
-    command: plot_cum_samples_through_time(knowledge_through_time)
-    plot: true
-
-  figures/new_spp_per_effort.pdf:
-    command: plot_new_effort(knowledge_through_time)
-    plot:
-      width: 12
-      height: 8
-
-  figures/cum_frac_through_time.pdf:
-    command: plot_cum_frac_through_time(knowledge_through_time)
-    plot: true
-
-  figures/change_trend_through_time.pdf:
-    command: plot_change_trend_through_time(knowledge_through_time)
-    plot:
-      width: 12
-      height: 8
-
 ### plot summary database ------------------------------------------------------
 
   summary_richness_per_db_gom:
