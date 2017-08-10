@@ -405,11 +405,13 @@ data_identification_level_through_time <- function(idig_records) {
 
 plot_identification_level_through_time <- function(id_level) {
     id_level %>%
+        ## count subspecies as species level identification
+        dplyr::mutate(id_level = replace(id_level, id_level == "subspecies", "species")) %>%
         count(year, phylum, id_level) %>%
         group_by(year, phylum) %>%
         mutate(p = n/sum(n),
                n_lots = sum(n)) %>%
-        filter(id_level == "species" | id_level == "subspecies",
+        filter(id_level == "species",
                phylum %in% c("annelida", "arthropoda", "chordata",
                              "cnidaria", "echinodermata", "mollusca")) %>%
         ungroup() %>%
