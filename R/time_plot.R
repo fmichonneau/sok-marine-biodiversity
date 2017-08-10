@@ -23,12 +23,13 @@ make_knowledge_through_time <- function(recs) {
         ) %>%
         dplyr::mutate(cum_n_samples = cumsum(n_samples))
 
-    n_spp <- idigbio %>%
+    ## get number of species per phylum per year
+    n_spp <- recs %>%
         dplyr::distinct(phylum, worms_valid_name, year) %>%
         dplyr::count(phylum, year) %>%
         dplyr::rename(n_spp = n)
 
-    n_species <- idigbio %>%
+    n_species <- recs %>%
         dplyr::group_by(phylum, worms_valid_name, year) %>%
         dplyr::arrange(year) %>%
         dplyr::tally() %>%
@@ -271,7 +272,7 @@ plot_institutions_through_time <- function(idig_records) {
 
 
 get_id_level <- function(nm) {
-    message("id level for: ", nm, appendLF = FALSE)
+    v3("id level for: ", nm, appendLF = FALSE)
     stopifnot(length(nm) == 1L)
     if (is_binomial(cleanup_species_names(nm, rm_subgenus=TRUE))) {
         r <- "species"
@@ -291,7 +292,7 @@ get_id_level <- function(nm) {
         res <- store_worms_classification()$get(as.character(wid$valid_AphiaID))
         r <- tolower(res$rank[nrow(res)])
     }
-    message(" is: ", r)
+    v3(" is: ", r)
     r
 }
 
