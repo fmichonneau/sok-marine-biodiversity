@@ -110,7 +110,7 @@ gcd.hf <- function(long1, lat1, long2, lat2, warn = TRUE) {
     return(d) # Distance in km
 }
 
-format_output <- function(x) {
+format_output <- function(x, ...) {
     sprintf("%.1f", x)
 }
 
