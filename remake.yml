@@ -623,7 +623,7 @@ targets:
     command: calc_prop_nspecimens_species(combined_records, n_specimens=I(30))
 
   records_rare_phyla:
-    command: calc_records_rare_phyla(idigbio_records)
+    command: calc_records_rare_phyla(idigbio_records, obis_records, worms_stats, gom_phyla)
 
   n_idigbio_phyla:
     command: calc_n_idigbio_phyla(idigbio_records)

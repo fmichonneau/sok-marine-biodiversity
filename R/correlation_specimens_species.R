@@ -53,14 +53,34 @@ calc_prop_species_not_collected_since <- function(idig, max_year) {
     format_output(nrow(dplyr::filter(res, last_collected < max_year))/nrow(res)*100)
 }
 
-calc_records_rare_phyla <- function(idig) {
-    res <- idig %>%
-        dplyr::count(phylum, sort = TRUE) %>%
-        dplyr::mutate(is_rare = dplyr::if_else(n < 500, n, 0L))
+calc_records_rare_phyla <- function(idig, obis, wrms_stats, gom_phyla) {
+
+    summary_db <- . %>%
+        dplyr::filter(is_marine == TRUE,
+                      phylum %in% gom_phyla) %>%
+        dplyr::mutate(phylum = replace(phylum,
+                                       phylum %in% c("kinoryncha", "loricifera",
+                                                     "nematomorpha", "priapulida"),
+                                       "cephalorhyncha")) %>%
+        dplyr::group_by(phylum) %>%
+        dplyr::summarize(
+                   n_records = n(),
+                   n_spp = n_distinct(worms_valid_name)
+               ) %>%
+        dplyr::arrange(desc(n_records)) %>%
+        dplyr::left_join(dplyr::mutate(wrms_stats, phylum = tolower(phylum)),
+                         by = "phylum") %>%
+        dplyr::mutate(is_rare = dplyr::if_else(n_records < 500, n_records, 0L),
+                      prop_collected = n_spp/accepted_species_marine_non_fossil)
+
+    idig_res <- idig %>% summary_db
+    obis_res <- obis %>% summary_db
+
+    res <- dplyr::bind_rows(idigbio = idig_res, obis = obis_res, .id = "database")
 
     list(
-        n_rare_phyla = dplyr::filter(res, is_rare > 0) %>% nrow(),
-        prop_rare_phyla = format_output((sum(res$is_rare)/sum(res$n))*100)
+        n_rare_phyla = dplyr::filter(idig_res, is_rare > 0) %>% nrow(),
+        prop_rare_phyla = format_output(sum(idig_res$is_rare)/sum(idig_res$n_records) * 100)
     )
 }
 
