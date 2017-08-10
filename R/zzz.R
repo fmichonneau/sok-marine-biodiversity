@@ -26,5 +26,24 @@ init <- function() {
         dir.create("../data-validation")
 }
 
+## control output level based on verbosity level
+
+options(verbose_level = 1L)
+verbose <- function(..., level) {
+    stopifnot(identical(length(level), 1L),
+              is.integer(level))
+
+    verbose_level <- getOption("verbose_level")
+
+    if (is.null(verbose_level))
+        verbose_level <- 1L
+
+    if (level <= verbose_level)
+        message(...)
+}
+
+v1 <- function(...) verbose(..., level = 1L)
+v2 <- function(...) verbose(..., level = 2L)
+v3 <- function(...) verbose(..., level = 3L)
 
 init()
