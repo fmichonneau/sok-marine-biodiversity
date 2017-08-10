@@ -239,19 +239,10 @@ plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
 
 }
 
-
-idigbio_parse_year <- function(idig) {
-    idig %>%
-        dplyr::mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z"))) %>%
-        dplyr::mutate(year = year(parsed_date)) %>%
-        dplyr::mutate(year = replace(year, year > 2016 | year < 1800, NA)) %>%
-        dplyr::filter(!is.na(year))
-}
-
 make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata", "Annelida", "Arthropoda", "Mollusca", "Porifera")) {
     idig %>%
         filter(is_marine == TRUE) %>%
-        idigbio_parse_year() %>%
+        parse_year() %>%
         mutate(`data.dwc:phylum` = capitalize(`data.dwc:phylum`, strict = TRUE)) %>%
         filter(year >=  1900,
                `data.dwc:phylum` %in% to_keep) %>%

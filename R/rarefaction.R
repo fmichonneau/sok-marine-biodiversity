@@ -1,7 +1,7 @@
 rarefaction_data <- function(idig) {
 
     res <- idig %>%
-        idigbio_add_year() %>%
+        parse_year() %>%
         filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id)) %>%
         dplyr::filter(!is.na(year), year >=  1900,  year < 2017) %>%
         dplyr::filter(phylum != "annelida") %>%

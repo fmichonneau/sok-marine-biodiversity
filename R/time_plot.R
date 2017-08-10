@@ -1,25 +1,21 @@
-idigbio_add_year <- function(idig) {
-    idig %>%
-        mutate(parsed_date = parse_date_time(datecollected, c("Y", "ymd", "ym", "%Y-%m-%d%H:%M:%S%z")),
-               year = year(parsed_date)) %>%
-        mutate(year = replace(year, year > 2017 | year < 1850, NA)) %>%
-        filter(!is.na(year))
-}
+make_knowledge_through_time <- function(recs) {
 
-make_knowledge_through_time_idigbio <- function(idigbio) {
+    ## add year column, and remove records that can't be matched to an
+    ## accepted WoRMS name.
+    recs <- recs %>%
+        parse_year() %>%
+        dplyr::filter(is_marine == TRUE, !is.na(worms_valid_name))
 
-    idigbio <- idigbio %>%
-        idigbio_add_year() %>%
-        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
-
-
-    spp_total <-  idigbio %>%
+    ## get total number of species per phylum
+    spp_total <-  recs %>%
         dplyr::group_by(phylum) %>%
         dplyr::summarize(
             n_spp_total = n_distinct(worms_valid_name)
         )
 
-    n_samples <- idigbio %>%
+    ## get number of samples per year and phylum and the cumulative
+    ## number of samples per phylum
+    n_samples <- recs %>%
         dplyr::group_by(phylum, year) %>%
         dplyr::arrange(year) %>%
         dplyr::summarize(
@@ -247,7 +243,7 @@ plot_change_trend_through_time <- function(knowledge_through_time) {
 
 plot_institutions_through_time <- function(idig_records) {
     idig <- idig_records %>%
-        idigbio_add_year() %>%
+        parse_year() %>%
         dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
 
     inst_to_keep <- idig %>%
@@ -317,7 +313,7 @@ data_identification_level_through_time <- function(idig_records) {
     res <- idig_records %>%
         mutate(id_level = vapply(cleaned_scientificname, get_id_level, character(1))) %>%
         filter(id_level != "unknown", !is.na(id_level)) %>%
-        idigbio_add_year()
+        parse_year()
 
     res %>%
         distinct(cleaned_scientificname, .keep_all = TRUE) %>%

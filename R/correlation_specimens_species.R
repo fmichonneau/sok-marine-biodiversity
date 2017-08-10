@@ -45,7 +45,7 @@ calc_prop_nspecimens_species <- function(recs, n_specimens) {
 calc_prop_species_not_collected_since <- function(idig, max_year) {
     res <- idig %>%
         dplyr::filter(is_marine == TRUE) %>%
-        idigbio_parse_year() %>%
+        parse_year() %>%
         group_by(worms_valid_name) %>%
         summarize(
             last_collected = max(year, na.rm = TRUE)
