@@ -167,15 +167,21 @@ bold_status_data <- function(gom_bold, koz_bold, idig_bold) {
 }
 
 plot_bold_status <- function(bold_data) {
+    plot_order <- bold_data %>%
+        dplyr::filter(data_source == "all_idigbio") %>%
+        dplyr::arrange(p_has_bold) %>%
+        pull(phylum)
+
     bold_data %>%
-        ggplot(aes(x = reorder(phylum, p_has_bold), y = p_has_bold,
-                   fill = data_source)) +
+        ggplot(aes(x = factor(phylum, levels = plot_order), y = p_has_bold,
+                   fill = forcats::fct_rev(data_source))) +
         geom_col(position = "dodge") +
         geom_text(aes(y = p_has_bold +.01, label = n_has_bold), position = position_dodge(.9),
                   hjust = .1, family = "Ubuntu Condensed")  +
         xlab("") + ylab("Proportion of species with available DNA barcodes") +
         scale_fill_viridis(discrete = TRUE,
                            name = "",
+                           breaks = c("all_idigbio", "gom", "koz"),
                            labels = c("US EEZ", "Gulf of Mexico", "Pacific Northwest")) +
         theme_ipsum(base_family = "Ubuntu Condensed") +
         coord_flip()
