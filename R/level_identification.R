@@ -1,7 +1,6 @@
 prop_identified_by_phylum <- function(db) {
 
     db %>%
-        parse_year() %>%
         dplyr::filter(!is.na(year)) %>%
         dplyr::mutate(year_5 = cut(year, (max(year)-min(year))/5)) %>%
         dplyr::group_by(phylum, year_5) %>%

@@ -4,9 +4,10 @@ us_raster <- function()
 
 combine_idigbio_obis <- function(idig, obis) {
     dplyr::bind_rows(idigbio = idig, obis = obis, .id = "database") %>%
+        dplyr::filter(!is.na(worms_valid_name),
+                      is_marine == TRUE) %>%
         dplyr::select(database, phylum, worms_valid_name, decimallatitude,
                       decimallongitude, datecollected) %>%
-        dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::distinct(phylum, worms_valid_name, decimallatitude,
                         decimallongitude, datecollected, .keep_all = TRUE)
 }

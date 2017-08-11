@@ -205,7 +205,8 @@ filter_records_by_geo <- function(rec, map_usa) {
     rec %>%
         is_within_eez_records(map_usa) %>%
         dplyr::filter(is_in_eez == TRUE) %>%
-        add_worms()
+        add_worms() %>%
+        parse_year()
 }
 
 
@@ -241,13 +242,12 @@ plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
 
 make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata", "Annelida", "Arthropoda", "Mollusca", "Porifera")) {
     idig %>%
-        filter(is_marine == TRUE) %>%
-        parse_year() %>%
-        mutate(`data.dwc:phylum` = capitalize(`data.dwc:phylum`, strict = TRUE)) %>%
+        filter(is_marine == TRUE, !is.na(year)) %>%
+        mutate(`phylum` = capitalize(`phylum`, strict = TRUE)) %>%
         filter(year >=  1900,
-               `data.dwc:phylum` %in% to_keep) %>%
+               `phylum` %in% to_keep) %>%
         group_by(year, institutioncode, `data.dwc:phylum`) %>%
-        tally %>%
+        tally() %>%
         ggplot(aes(x = year, y = n)) +
         geom_bar(aes(fill=institutioncode), stat = "identity") +
         geom_smooth(method = "lm", formula = y ~ splines::bs(x, 6), se = FALSE) + #geom_smooth() +

@@ -1,10 +1,7 @@
 make_knowledge_through_time <- function(recs) {
 
-    ## add year column, and remove records that can't be matched to an
-    ## accepted WoRMS name.
     recs <- recs %>%
-        parse_year() %>%
-        dplyr::filter(is_marine == TRUE, !is.na(worms_valid_name))
+        dplyr::filter(!is.na(year))
 
     ## get total number of species per phylum
     spp_total <-  recs %>%
@@ -244,8 +241,8 @@ plot_change_trend_through_time <- function(knowledge_through_time) {
 
 plot_institutions_through_time <- function(idig_records) {
     idig <- idig_records %>%
-        parse_year() %>%
-        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id))
+        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id),
+                      !is.na(year))
 
     inst_to_keep <- idig %>%
         dplyr::count(institutioncode, sort = TRUE) %>%
@@ -313,8 +310,7 @@ test_id_level <- function() {
 data_identification_level_through_time <- function(idig_records) {
     res <- idig_records %>%
         mutate(id_level = vapply(cleaned_scientificname, get_id_level, character(1))) %>%
-        filter(id_level != "unknown", !is.na(id_level)) %>%
-        parse_year()
+        filter(id_level != "unknown", !is.na(id_level), !is.na(year))
 
     res %>%
         distinct(cleaned_scientificname, .keep_all = TRUE) %>%
