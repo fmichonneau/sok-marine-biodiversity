@@ -57,10 +57,14 @@ targets:
     depends:
       - manuscript.pdf
       - manuscript.docx
+      - data_validation
 
   data_validation:
     depends:
       - data-validation/map_kozloff_idigbio.pdf
+      - validate_idigbio_records
+      - validate_obis_records
+      - validate_combined_records
 
 ### WoRMS stats
 
@@ -415,8 +419,6 @@ targets:
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
 
-
-
   idigbio_identification_level_through_time:
     command: data_identification_level_through_time(idigbio_records)
 
@@ -667,6 +669,17 @@ targets:
     plot:
       width:  8
       height: 8
+
+### Data validation ------------------------------------------------------------
+
+  validate_idigbio_records:
+    command: validate_records(idigbio_records)
+
+  validate_obis_records:
+    command: validate_records(obis_records)
+
+  validate_combined_records:
+    command: validate_records(combined_records)
 
 
 ### Manuscript -----------------------------------------------------------------
