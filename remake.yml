@@ -82,7 +82,7 @@ targets:
     command: add_iucn_status(kozloff_species)
 
   kozloff_bold:
-    command: find_bold_records(kozloff_species)
+    command: find_bold_records(kozloff_species, I("worms_valid_name"))
 
   ## iDigbio -------------------------------------------------------------------
   kozloff_idigbio_raw:
@@ -164,7 +164,7 @@ targets:
     command: add_iucn_status(gom_worms)
 
   gom_bold:
-    command: find_bold_records(gom_worms)
+    command: find_bold_records(gom_worms, I("worms_valid_name"))
 
   ## iDigBio -------------------------------------------------------------------
   gom_idigbio_raw:
@@ -234,7 +234,7 @@ targets:
     command: read_idigbio_mammals("data/idigbio_mammals.feather")
 
   mammals_bold_idigbio:
-    command: find_bold_records(mammals_species_idigbio, use_worms = I(FALSE))
+    command: find_bold_records(mammals_species_idigbio, I("cleaned_scientificname"))
 
   ## species list of mammals from the American Society of Mammologists
   ## (http://www.mammalsociety.org/mammals-list)
@@ -251,7 +251,7 @@ targets:
   mammals_asm_bold:
     ## this produces messages about not finding a valid WoRMS ID, but it's OK here as
     ## it happens as we are trying to look for synonyms in case there is no match
-    command: find_bold_mammals(mammals_species_asm)
+    command: find_bold_mammals(mammals_species_asm, I("cleaned_scientificname"))
 
   mammals_asm_summary:
     command: make_idig_bold_summary(mammals_asm_idigbio, mammals_asm_bold)
@@ -307,7 +307,7 @@ targets:
     command: add_iucn_status(idigbio_records)
 
   idigbio_bold:
-    command: find_bold_records(idigbio_records)
+    command: find_bold_records(idigbio_records, I("worms_valid_name"))
 
   ## OBIS ----------------------------------------------------------------------
   obis_database:

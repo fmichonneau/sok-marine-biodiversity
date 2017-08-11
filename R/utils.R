@@ -73,16 +73,6 @@ is_binomial <- function(nm) {
            logical(1))
 }
 
-
-keep_marine_taxa <- function(worms) {
-    res <- worms %>%
-        dplyr::filter(!is.na(is_marine),
-                      is_marine == TRUE,
-                      worms_valid_name != "not in worms") %>%
-        dplyr::distinct(worms_valid_name, .keep_all = TRUE)
-    res
-}
-
 capitalize <- function(s, strict = FALSE) {
     cap <- function(s) paste(toupper(substring(s, 1, 1)),
                        {s <- substring(s, 2); if(strict) tolower(s) else s},

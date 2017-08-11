@@ -67,28 +67,10 @@ internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
     res
 }
 
-preprocess_bold <- function(worms, use_worms) {
-    if (use_worms) {
-        res <- keep_marine_taxa(worms)
-    } else {
-        res <- worms %>%
-            dplyr::filter(is_binomial == TRUE) %>%
-            dplyr::disctint(cleaned_scientificname, .keep_all = TRUE)
-    }
-}
-
-find_bold_records <- function(worms, use_worms = TRUE) {
-
-    res <- preprocess_bold(worms, use_worms)
-
-    if (use_worms)
-        col_nm <- "worms_valid_name"
-    else {
-        col_nm <- "cleaned_scientificname"
-    }
-
-    internal_add_bold(res, col_nm) %>%
-        dplyr::filter_(.dots = lazyeval::interp(~ !is.na(var.), var. = as.name(col_nm)))
+find_bold_records <- function(recs, col_nm) {
+    if (!exists(col_nm, recs))
+        stop("invalid column name")
+    internal_add_bold(res, col_nm)
 }
 
 
@@ -227,9 +209,6 @@ make_stat_barcoding <- function(bold_data) {
 
 
 project_contribution <- function(db, use_worms, col_nm) {
-
-    db <- preprocess_bold(db, use_worms)
-
 
     res <- as.list(unique(db[[col_nm]])) %>%
         map_df(function(x) {
