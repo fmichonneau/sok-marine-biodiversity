@@ -12,5 +12,5 @@ get_not_in_kozloff <- function(koz, gom)  {
         dplyr::mutate_if(is.integer, as.character) %>%
         add_classification() %>%
         dplyr::arrange(phylum, order, class, family) %>%
-        readr::write_csv("/tmp/test.csv")
+        readr::write_csv("data-validation/families_not_in_kozloff_but_in_gom.csv")
 }
