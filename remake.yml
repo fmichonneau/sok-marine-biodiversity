@@ -611,8 +611,8 @@ targets:
 
 ### Samples and species collected through time ---------------------------------
 
- ## iDigBio
- idigbio_samples_through_time_data:
+  ## iDigBio
+  idigbio_samples_through_time_data:
     command: make_knowledge_through_time(idigbio_records)
 
   idigbio_samples_through_time:
