@@ -206,7 +206,8 @@ filter_records_by_geo <- function(rec, map_usa) {
         is_within_eez_records(map_usa) %>%
         dplyr::filter(is_in_eez == TRUE) %>%
         add_worms() %>%
-        parse_year()
+        parse_year() %>%
+        add_classification()
 }
 
 
