@@ -70,7 +70,7 @@ internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
 find_bold_records <- function(recs, col_nm) {
     if (!exists(col_nm, recs))
         stop("invalid column name")
-    internal_add_bold(res, col_nm)
+    internal_add_bold(recs, col_nm)
 }
 
 
