@@ -20,9 +20,9 @@ map_kozloff <- function(koz_idig) {
 
     koz_idig %>%
         filter(!is.na(decimallatitude), !is.na(decimallongitude)) %>%
-        mutate(`data.dwc:phylum` = gsub("[^a-z]", "", tolower(`data.dwc:phylum`))) %>%
+        mutate(`phylum` = gsub("[^a-z]", "", tolower(`phylum`))) %>%
     ggplot(.) +
-        geom_point(aes(x = decimallongitude, y = decimallatitude, colour = `data.dwc:phylum`),
+        geom_point(aes(x = decimallongitude, y = decimallatitude, colour = `phylum`),
                    size = .6, alpha = .3) +
         geom_map(data=state_map, map=state_map,
                  aes(x=long, y=lat, map_id=id),
