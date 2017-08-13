@@ -348,6 +348,9 @@ targets:
   obis_gom_records:
     command: add_worms(obis_gom_records_raw)
 
+  combined_gom_records:
+    command: combine_idigbio_obis(idigbio_gom_records, obis_gom_records)
+
   data/gom_compare_database_coverage.csv:
     command: generate_upsetr_csv(list = gom_worms, idigbio = idigbio_gom_records, obis = obis_gom_records, file="data/gom_compare_database_coverage.csv")
 
@@ -380,6 +383,9 @@ targets:
 
   obis_pnw_records:
     command: add_worms(obis_pnw_records_raw)
+
+  combined_pnw_records:
+    command: combine_idigbio_obis(idigbio_pnw_records, obis_pnw_records)
 
   data/kozloff_compare_database_coverage.csv:
     command: generate_upsetr_csv(list = kozloff_species, idigbio = idigbio_pnw_records, obis = obis_pnw_records, file = "data/kozloff_compare_database_coverage.csv")
@@ -691,6 +697,8 @@ targets:
       - obis_gom_records
       - idigbio_pnw_records
       - obis_pnw_records
+      - combined_gom_records
+      - combined_pnw_records
       - gom_worms
       - kozloff_species
       - mammals_species_asm
