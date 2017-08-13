@@ -59,6 +59,13 @@ generate_upsetr_csv <- function(..., file) {
 
     d <- list(...)
 
+    d <- lapply(d, function(x) {
+        if (exists("year", x)) {
+            x$year <- as.integer(x$year)
+        }
+        x
+    })
+
     dplyr::bind_rows(d, .id = "database") %>%
         dplyr::count(phylum, worms_valid_name, database) %>%
         tidyr::spread(database, n) %>%

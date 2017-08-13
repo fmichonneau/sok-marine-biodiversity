@@ -7,7 +7,7 @@ combine_idigbio_obis <- function(idig, obis) {
         dplyr::filter(!is.na(worms_valid_name),
                       is_marine == TRUE) %>%
         dplyr::select(database, phylum, worms_valid_name, decimallatitude,
-                      decimallongitude, datecollected) %>%
+                      decimallongitude, datecollected, year) %>%
         dplyr::distinct(phylum, worms_valid_name, decimallatitude,
                         decimallongitude, datecollected, .keep_all = TRUE)
 }
