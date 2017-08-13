@@ -18,8 +18,7 @@ validate_records <- function(recs, gom_phyla) {
     ## only phyla from list are represented (and they are all represented)
     recs_phyla <- unique(recs$phylum)
     list_phyla <- all(recs_phyla %in% gom_phyla) &&
-        length(setdiff(recs_phyla, gom_phyla)) == 0L &&
-        length(setdiff(gom_phyla, recs_phyla)) == 0L
+        length(setdiff(recs_phyla, gom_phyla)) == 0L
 
     if (!list_phyla)
         stop("Some phyla aren't what they should be.")
@@ -49,15 +48,15 @@ validate_records <- function(recs, gom_phyla) {
     ## check there aren't any fishes
     if (any(recs$worms_class %in% chordata_classes_to_rm()) ||
         any(recs$worms_family %in% chordata_families_to_rm()))
-        stop("This dataset smells fishy.")
+        warning("This dataset smells fishy.")
 
     ## check there aren't any insects
     if (any(recs$worms_class %in% arthropod_classes_to_rm()))
-        stop("There is a bug in this dataset.")
+        warning("There is a bug in this dataset.")
 
     ## records with dates outside range
-    if (any(recs$year > 2017)  | any(recs$year < 1850))
-        stop("Some years are outside allowed range.")
+    if (any(na.omit(recs$year) > 2017)  || any(na.omit(recs$year) < 1850))
+        warning("Some years are outside allowed range.")
 
     year_is_na <- is.na(recs$year)
     message("Proportion of records with missing year data: ",

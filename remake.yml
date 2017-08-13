@@ -64,7 +64,7 @@ targets:
       - data-validation/map_kozloff_idigbio.pdf
       - validate_idigbio_records
       - validate_obis_records
-      - validate_combined_records
+      ## FIXME - validate_combined_records
 
 ### WoRMS stats
 
@@ -679,13 +679,14 @@ targets:
 ### Data validation ------------------------------------------------------------
 
   validate_idigbio_records:
-    command: validate_records(idigbio_records)
+    command: validate_records(idigbio_records, gom_phyla)
 
   validate_obis_records:
-    command: validate_records(obis_records)
+    command: validate_records(obis_records, gom_phyla)
 
-  validate_combined_records:
-    command: validate_records(combined_records)
+  ## FIXME
+  #validate_combined_records:
+  #  command: validate_records(combined_records, gom_phyla)
 
 
 ### Manuscript -----------------------------------------------------------------
