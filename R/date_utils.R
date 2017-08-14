@@ -6,3 +6,13 @@ parse_year <- function(recs) {
                       year = as.integer(year)) %>%
         dplyr::select(-parsed_date)
 }
+
+year_as_integer <- function(d) {
+    stopifnot(is.list(d))
+    lapply(d, function(x) {
+        if (exists("year", x)) {
+            x$year <- as.integer(x$year)
+        }
+        x
+    })
+}
