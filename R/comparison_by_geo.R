@@ -101,11 +101,6 @@ compare_database_overlap <- function(gom_worms, kozloff_worms,
                                      pnw = comp_koz), .id = "region")
 }
 
-compare_taxonomy_database_overlap <- function(database_overlap) {
-    database_overlap %>%
-        dplyr::count(region, database, data_source, Phylum, Order)
-}
-
 
 plot_database_overlap <- function(comp_db) {
 
