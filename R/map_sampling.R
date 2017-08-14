@@ -28,6 +28,17 @@ combine_all_sources <- function(...) {
         deduplicate_records()
 }
 
+get_species_list <- function(...) {
+    d <- lapply(list(...), function(dt) {
+        dt %>%
+            dplyr::distinct(worms_phylum, worms_valid_name)
+    })
+    dplyr::bind_rows(d) %>%
+        dplyr::distinct(worms_phylum, worms_valid_name) %>%
+        dplyr::filter(!is.na(worms_valid_name) | !is.na(worms_phylum))
+}
+
+
 data_map_samples <- function(recs) {
     us_raster <- us_raster()
     pts <- SpatialPoints(data.frame(lon = recs$decimallongitude,

@@ -504,6 +504,9 @@ targets:
   combined_records:
     command: combine_idigbio_obis(idigbio_records, obis_records)
 
+  combined_species:
+    command: get_species_list(idigbio_records, obis_records)
+
   combined_data_map_samples:
     command: data_map_samples(combined_records)
 
@@ -708,6 +711,7 @@ targets:
       - combined_pnw_records
       - total_gom_records
       - total_pnw_records
+      - combined_species
       - gom_worms
       - kozloff_species
       - mammals_species_asm
