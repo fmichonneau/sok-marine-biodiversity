@@ -54,11 +54,25 @@ data_map_diversity <- function(recs) {
     raster_cell <- mapply(function(x, y) cellFromXY(us_raster, c(x, y)),
                           recs$decimallongitude, recs$decimallatitude)
 
-    recs_r <- data.frame(recs, rastercell = raster_cell) %>%
+    recs_r <- dplyr::bind_cols(recs, rastercell = raster_cell)
+    recs_spp <-  recs_r %>%
         group_by(rastercell) %>%
         summarize(
             n_spp = n_distinct(worms_valid_name)
         )
+
+    ## not in use
+    h_index <- recs_r %>%
+        dplyr::select(phylum, worms_valid_name, rastercell) %>%
+        dplyr::group_by(rastercell, worms_valid_name) %>%
+        dplyr::summarize(n_records_per_spp = n()) %>%
+        dplyr::group_by(rastercell) %>%
+        dplyr::mutate(n_records_per_cell = sum(n_records_per_spp),
+                      p_i = n_records_per_spp/n_records_per_cell) %>%
+        dplyr::group_by(rastercell) %>%
+        dplyr::summarize(h_idx = - sum(p_i * log(p_i, 2)))
+
+    recs_r <- dplyr::full_join(recs_spp, h_index, by = "rastercell")
     us_raster[na.omit(recs_r$rastercell)] <- recs_r$n_spp[!is.na(recs_r$rastercell)]
     gg_r <- as.data.frame(as(us_raster, "SpatialPixelsDataFrame"))
     colnames(gg_r) <- c("value", "x", "y")
