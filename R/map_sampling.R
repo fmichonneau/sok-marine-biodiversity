@@ -2,14 +2,30 @@
 us_raster <- function()
     raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .2)
 
-combine_idigbio_obis <- function(idig, obis) {
-    dplyr::bind_rows(idigbio = idig, obis = obis, .id = "database") %>%
+deduplicate_records <- function(data) {
+    data %>%
         dplyr::filter(!is.na(worms_valid_name),
                       is_marine == TRUE) %>%
-        dplyr::select(database, phylum, worms_valid_name, decimallatitude,
+        dplyr::select(data_source, phylum, worms_valid_name, decimallatitude,
                       decimallongitude, datecollected, year) %>%
         dplyr::distinct(phylum, worms_valid_name, decimallatitude,
                         decimallongitude, datecollected, .keep_all = TRUE)
+}
+
+combine_idigbio_obis <- function(idig, obis) {
+    dplyr::bind_rows(idigbio = idig, obis = obis, .id = "data_source") %>%
+    deduplicate_records()
+}
+
+combine_all_sources <- function(...) {
+    d <- list(...)
+    if (is.null(names(d))) {
+        stop("Data sources need to be named")
+    }
+    d <- year_as_integer(d)
+    d %>%
+        dplyr::bind_rows(.id = "data_source") %>%
+        deduplicate_records()
 }
 
 data_map_samples <- function(recs) {
