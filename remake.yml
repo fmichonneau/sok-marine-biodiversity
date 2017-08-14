@@ -703,6 +703,7 @@ targets:
   manuscript.md:
     depends:
       - idigbio_records
+      - obis_records
       - idigbio_gom_records
       - obis_gom_records
       - idigbio_pnw_records
