@@ -6,25 +6,17 @@ deduplicate_records <- function(data) {
     data %>%
         dplyr::filter(!is.na(worms_valid_name),
                       is_marine == TRUE) %>%
-        dplyr::select(data_source, phylum, worms_valid_name, decimallatitude,
+        dplyr::select(phylum, worms_valid_name, decimallatitude,
                       decimallongitude, datecollected, year) %>%
         dplyr::distinct(phylum, worms_valid_name, decimallatitude,
                         decimallongitude, datecollected, .keep_all = TRUE)
 }
 
-combine_idigbio_obis <- function(idig, obis) {
-    dplyr::bind_rows(idigbio = idig, obis = obis, .id = "data_source") %>%
-    deduplicate_records()
-}
-
-combine_all_sources <- function(...) {
+combine_records <- function(...) {
     d <- list(...)
-    if (is.null(names(d))) {
-        stop("Data sources need to be named")
-    }
     d <- year_as_integer(d)
     d %>%
-        dplyr::bind_rows(.id = "data_source") %>%
+        dplyr::bind_rows() %>%
         deduplicate_records()
 }
 
