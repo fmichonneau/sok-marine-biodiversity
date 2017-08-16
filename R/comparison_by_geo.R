@@ -21,27 +21,12 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
 
-combine_species_list <- function(..., use_names = FALSE) {
-
-    select_worms <- . %>%
-        dplyr::select(phylum, worms_valid_name)
-
-    if (use_names && !is.null(names(list(...)))) {
-        col_name <- "source"
-    } else col_name <- NULL
-
-    list(...) %>%
-        purrr::map_df(select_worms, .id = col_name) %>%
-        dplyr::filter(!is.na(worms_valid_name)) %>%
-        dplyr::distinct(phylum, worms_valid_name)
-}
-
 combined_regional_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
                              pnw_worms, pnw_idigbio, pnw_obis) {
 
     list(
-        gom = combine_species_list(gom_worms, gom_idigbio, gom_obis),
-        pnw = combine_species_list(pnw_worms, pnw_idigbio, pnw_obis)
+        gom = combine_species_list(checklist = gom_worms, idigbio = gom_idigbio, obis = gom_obis),
+        pnw = combine_species_list(checklist = pnw_worms, idigbio = pnw_idigbio, obis = pnw_obis)
     ) %>%
         dplyr::bind_rows(.id = "region")
 }
@@ -57,14 +42,7 @@ generate_upsetr_csv <- function(..., file) {
         }, integer(1))
     }
 
-    d <- list(...)
-
-    d <- year_as_integer(d)
-
-    dplyr::bind_rows(d, .id = "database") %>%
-        dplyr::count(phylum, worms_valid_name, database) %>%
-        tidyr::spread(database, n) %>%
-        dplyr::filter(!is.na(worms_valid_name)) %>%
+    combine_species_list(...) %>%
         dplyr::mutate(bold = has_bold_record(worms_valid_name)) %>%
         dplyr::mutate_if(is.integer, funs(if_else(is.na(.) | . == 0L, 0L, 1L))) %>%
         readr::write_csv(path = file)

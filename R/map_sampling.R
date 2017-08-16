@@ -20,14 +20,20 @@ combine_records <- function(...) {
         deduplicate_records()
 }
 
-get_species_list <- function(...) {
-    d <- lapply(list(...), function(dt) {
-        dt %>%
-            dplyr::distinct(worms_phylum, worms_valid_name)
-    })
-    dplyr::bind_rows(d) %>%
-        dplyr::distinct(worms_phylum, worms_valid_name) %>%
-        dplyr::filter(!is.na(worms_valid_name) | !is.na(worms_phylum))
+combine_species_list <- function(...) {
+    d <- list(...)
+    if (is.null(names(d))) {
+        stop("arguments need to be named")
+    }
+
+    d %>%
+        purrr::map_df(function(dt) {
+                   dt %>%
+                       dplyr::distinct(worms_phylum, worms_valid_name) %>%
+                       dplyr::filter(!is.na(worms_phylum) | !is.na(worms_phylum))
+               }, .id = "data_source") %>%
+        dplyr::count(data_source, worms_phylum, worms_valid_name) %>%
+        tidyr::spread(data_source, n)
 }
 
 
