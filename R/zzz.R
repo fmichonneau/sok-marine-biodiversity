@@ -24,6 +24,10 @@ init <- function() {
     ## code is evaluated in ./R/ folder
     if (!dir.exists("../data-validation"))
         dir.create("../data-validation")
+    ## for some reasons these 2 keys in the OBIS fail consistently
+    ## so we are removing them everytime to force fetching them
+    store_obis_occurrences()$del("391707")
+    store_obis_occurrences()$del("220659")
 }
 
 ## control output level based on verbosity level
