@@ -10,7 +10,6 @@ get_not_in_kozloff <- function(koz, gom)  {
                           else NA_integer_
                       }, integer(1))) %>%
         dplyr::mutate_if(is.integer, as.character) %>%
-        add_classification() %>%
         dplyr::arrange(phylum, order, class, family) %>%
         readr::write_csv("data-validation/families_not_in_kozloff_but_in_gom.csv")
 }

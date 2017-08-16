@@ -157,5 +157,6 @@ add_worms <- function(sp_list) {
         worms_valid_name = valid_name,
         is_fuzzy = is_fuzzy
     )
-    dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname")
+    dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname") %>%
+        add_classification()
 }

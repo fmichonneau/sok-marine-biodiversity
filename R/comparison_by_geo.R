@@ -4,8 +4,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
                           phylum) %>%
-            dplyr::filter(!is.na(worms_id)) %>%
-            add_classification()
+            dplyr::filter(!is.na(worms_id))
     list(
         ## in spp_list but not in geo_list
         not_in_list =
