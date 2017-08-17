@@ -3,7 +3,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
             dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
-                          phylum) %>%
+                          worms_phylum) %>%
             dplyr::filter(!is.na(worms_id))
     list(
         ## in spp_list but not in geo_list
@@ -86,18 +86,18 @@ plot_database_overlap <- function(comp_db) {
                        "echinodermata", "chordata")
 
     comp_db <- comp_db %>%
-        dplyr::mutate(phylum = tolower(phylum)) %>%
-        dplyr::filter(phylum %in% phyla_to_keep)
+        dplyr::mutate(worms_phylum = tolower(worms_phylum)) %>%
+        dplyr::filter(worms_phylum %in% phyla_to_keep)
 
     ## to have 2 sided plot, we take the negative value of the count
     ## for the records that are NOT in the geographical range in the
     ## database.
     data_for_plot <- comp_db %>%
-        dplyr::count(region, database, data_source, phylum) %>%
+        dplyr::count(region, database, data_source, worms_phylum) %>%
         dplyr::mutate(number = ifelse(data_source == "not_in_geo", -n, n)) %>%
         dplyr::select(-n) %>%
         tidyr::spread(data_source, number) %>%
-        dplyr::mutate(phylum = capitalize(phylum))
+        dplyr::mutate(phylum = capitalize(worms_phylum))
 
     ## Clean up phylum names to use as labels in plot
     phylum_label <- data_for_plot %>%
@@ -176,19 +176,19 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
                        "echinodermata", "chordata")
 
     comp_db <- comp_db %>%
-        dplyr::mutate(phylum = tolower(phylum)) %>%
-        dplyr::filter(phylum %in% phyla_to_keep)
+        dplyr::mutate(worms_phylum = tolower(worms_phylum)) %>%
+        dplyr::filter(worms_phylum %in% phyla_to_keep)
 
     spp_per_phylum <- full_list %>%
-        dplyr::count(region, phylum) %>%
+        dplyr::count(region, worms_phylum) %>%
         dplyr::rename(n_spp = n)
 
     ## to have 2 sided plot, we take the negative value of the count
     ## for the records that are NOT in the geographical range in the
     ## database.
     data_for_plot_raw <- comp_db %>%
-        dplyr::count(region, database, data_source, phylum) %>%
-        dplyr::left_join(spp_per_phylum, by = c("region", "phylum")) %>%
+        dplyr::count(region, database, data_source, worms_phylum) %>%
+        dplyr::left_join(spp_per_phylum, by = c("region", "worms_phylum")) %>%
         dplyr::mutate(p = n/n_spp) %>%
         dplyr::mutate(number = ifelse(data_source == "not_in_geo", -p, p))
 
@@ -206,8 +206,8 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
 
     data_for_plot <- dplyr::left_join(prop_for_plot,
                                       nspp_for_plot,
-                                      by = c("region", "database", "phylum")) %>%
-        dplyr::mutate(phylum = capitalize(phylum))
+                                      by = c("region", "database", "worms_phylum")) %>%
+        dplyr::mutate(phylum = capitalize(worms_phylum))
 
 
     ## Clean up phylum names to use as labels in plot
