@@ -12,12 +12,30 @@ deduplicate_records <- function(data) {
                         decimallongitude, datecollected, .keep_all = TRUE)
 }
 
-combine_records <- function(...) {
+combine_records <- function(..., map) {
     d <- list(...)
     d <- year_as_integer(d)
     d %>%
         dplyr::bind_rows() %>%
-        deduplicate_records()
+        deduplicate_records() %>%
+        add_geo(map = map)
+}
+
+## add info on whether a record is on the East coast, West coast, or the Gulf of
+## Mexico.  In this function, if a record is in the GOM, it is not on the East
+## coast
+add_geo <- function(d, map) {
+    d <- d %>%
+        is_within_gom_records(map = map) %>%
+        dplyr::mutate(is_east_coast = if_else(decimallongitude > -100 &
+                                             !is_in_gom, TRUE, FALSE),
+                      is_west_coast = if_else(decimallongitude < -100,
+                                             TRUE, FALSE))
+
+    ## check that no record gets assigned more than one geographic area
+    if (any(d$is_in_gom + d$is_east_coast + d$is_west_coast) > 3)
+        stop("something's wrong!")
+    d
 }
 
 combine_species_list <- function(...) {

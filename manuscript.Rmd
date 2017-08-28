@@ -83,14 +83,38 @@ The lack to tools for the authors of these checklist to have access to museum re
 
 ### What do we know about marine invertebrates in the US?
 
-<!-- add sentence -->
+
 <!-- separate idigbio and (and add) obis in the results -->
 
 We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species (`r n_distinct(na.omit(combined_species$worms_phylum))` phyla) of marine invertebrates in the continental US EEZ by combining  `r format(nrow(idigbio_records), big.mark=",")` museum records from iDigBio (`r format(n_distinct(idigbio_records$worms_valid_name), big.mark = ",")` species, `r n_distinct(na.omit(idigbio_records$worms_phylum))` phyla), and `r format(nrow(obis_records), big.mark=",")` records from OBIS (`r format(n_distinct(obis_records$worms_valid_name), big.mark=",")` species,
-`r n_distinct(na.omit(obis_records$worms_phylum))` phyla). Extant marine invertebrates occurring in the US represent less than 0.4% of the total iDigBio records, as it currently holds records for over 106 million specimens, and they represent about 1% of the records that occur in the United States (about 33 million records in iDigBio). Marine invertebrates that occur in the US represent approximately 4% of the 48 million occurrence records in OBIS.
+`r n_distinct(na.omit(obis_records$worms_phylum))` phyla). Extant marine invertebrates occurring in the US represent less than 0.4% of the total number of iDigBio records (106 million), and about 1% of the US records (33 million records). Marine invertebrates that occur in the US represent approximately 4% of the 48 million occurrence records in OBIS.
+
+```{r local-richness}
+count_spp <- . %>%
+    dplyr::pull(worms_valid_name) %>%
+    dplyr::n_distinct()
+
+n_spp_gom <- combined_records %>%
+    dplyr::filter(is_in_gom == TRUE) %>%
+    count_spp
+
+n_spp_east <- combined_records %>%
+    dplyr::filter(is_east_coast == TRUE) %>%
+    count_spp
+
+n_spp_west <- combined_records %>%
+    dplyr::filter(is_west_coast == TRUE) %>%
+    count_spp
+```
+
+
+Most samples have been collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A). More records have been collected from the Atlantic coast, than the Gulf of Mexico, and the Pacific coast (`r format(sum(combined_records$is_east_coast), big.mark=",")`, `r format(sum(combined_records$is_in_gom), big.mark=",")`, and `r format(sum(combined_records$is_west_coast), big.mark=",")` records respectively). The highest species richness has been recorded from the Gulf of Mexico (`r format(n_spp_gom, big.mark=",")` species), followed by the Atlantic coast (`r format(n_spp_east, big.mark=",")` species) an d the Pacific coast (`r format(n_spp_west, big.mark=",")` species).
+
+
+
 
 <!-- need to add latitudinal gradient map -->
-Most samples have been collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A). On the East coast, species richness is highest at low latitudes, while it increases towards high latitude on the West coast (Fig. \@ref(fig:map-diversity-sampling)B).
+On the East coast, species richness is highest at low latitudes, while it increases towards high latitude on the West coast (Fig. \@ref(fig:map-diversity-sampling)B).
 
 
 ```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS within the limits of the Exclusive Economic Zone for the continental USA. (\\#fig:map-diversity-sampling)'}
