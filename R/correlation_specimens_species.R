@@ -28,6 +28,18 @@ plot_sampling_effort <- function(id, map_gom) {
         theme_ipsum(base_family = "Ubuntu Condensed")
 }
 
+## proportion of cells with less than 500 observations, where the number of
+## species is within 10% of the number of observations.
+calc_stat_sampling_effort <- function(id, map_gom) {
+    res <- id %>%
+        prepare_sampling_effort_data(map_gom) %>%
+        dplyr::mutate(within_90 = (n_species - (n_specimen * .9)) > 0) %>%
+        dplyr::filter(n_specimen <= 500) %>%
+        dplyr::pull(within_90)
+    list(
+        p = mean(res),
+        n = length(res)
+        )
 }
 
 model_sampling_effort <- function(id) {
