@@ -1,17 +1,53 @@
 plot_gradient <- function(idig) {
-
     idig %>%
-        dplyr::mutate(coast = if_else(decimallongitude > -100, "east", "west")) %>%
         dplyr::mutate(
-                   lat_grad = ntile(decimallatitude, 100)
+                   lat_grad = ntile(decimallatitude, 100),
+                   lat_cut = cut(decimallatitude, 100)
                ) %>%
-        dplyr::group_by(coast, phylum, lat_grad) %>%
-        dplyr::summarize(n_spp = n_distinct(cleaned_scientificname),
-                         n_obs = n()) %>%
-        dplyr::filter(phylum %in% c("arthropoda", "mollusca", "annelida", "echinodermata", "cnidaria")) %>%
-        dplyr::mutate(p_samp = n_spp/n_obs) %>%
-        ggplot(aes(x = lat_grad, y = n_spp, color = phylum, shape = coast, size = n_obs)) +
-        geom_point() + facet_grid(phylum ~ coast) +
-        geom_smooth(aes(weight = n_obs))
+        dplyr::mutate(coast = if_else(decimallongitude > -100, "Atlantic Ocean", "Pacific Ocean")) %>%
+        dplyr::mutate(coast = if_else(is_in_gom == TRUE, "gom", coast)) %>%
+        dplyr::mutate(coast = factor(coast, levels = c("Pacific Ocean", "Atlantic Ocean"))) %>%
+        dplyr::filter(coast != "gom") %>%
+        dplyr::group_by(coast, lat_grad) %>%
+        dplyr::summarize(
+                   lat_cat = mean(decimallatitude),
+                   n_spp = n_distinct(worms_valid_name),
+                   n_obs = n()
+               ) %>%
+        dplyr::mutate(p_samp = n_spp/(log(n_obs))) %>%
+        ggplot(aes(x = lat_cat, y = n_spp, color = coast, size = n_obs)) +
+        geom_point() + facet_grid( ~ coast) +
+        geom_smooth(method = "lm", formula = y ~ splines::bs(x, degree = 3),
+                    show.legend = FALSE, aes(weight = I(sqrt(n_obs)))) +
+        scale_size(range = c(0.2, 3),  name = "Number of observations") +
+        scale_colour_hc() + guides(color = FALSE) +
+        xlab("Latitude") + ylab("Number of Species")
+}
 
+####
+
+if (FALSE) {
+
+    ## attempt at plotting diversity on the side of the plot
+    library(ggstance)
+    library(ggjoy)
+    library(ggplot2)
+    library(cowplot)
+
+
+    richness_east <- remake::fetch("combined_records") %>%
+        dplyr::filter(decimallongitude > -100) %>%
+        dplyr::mutate(lat_cut = cut(decimallatitude, seq(floor(min(decimallatitude)), ceiling(max(decimallatitude)), by = 1)),
+                      lat_unit = ceiling(decimallatitude),
+                      lat = ntile(decimallatitude, 100)) %>%
+        dplyr::group_by(lat) %>%
+        dplyr::summarize(n_spp = n_distinct(worms_valid_name))
+
+    pmain <- remake::fetch("idigbio_map_diversity")
+
+    ydens <- cowplot::axis_canvas(pmain, axis = "y") +
+        geom_vridgeline(data = richness_east, aes(y = lat, x = 0, width = n_spp), stat = "identity")
+
+    p1 <- insert_yaxis_grob(pmain, ydens, width = grid::unit(.2, "null"), position = "right")
+    ggdraw(p1)
 }

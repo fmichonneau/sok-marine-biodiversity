@@ -519,6 +519,12 @@ targets:
   combined_map_diversity:
     command: make_heatmap(combined_data_map_diversity, I("Number of species"))
 
+  figures/combined_gradient.pdf:
+    command: plot_gradient(combined_records)
+    plot:
+      width: 8.5
+      height: 3.5
+
   ## map plots -----------------------------------------------------------------
   figures/idigbio_map_sampling.pdf:
     command: combine_cowplots(idigbio_map_samples, idigbio_map_diversity, nrow=I(2), common_legend=I(FALSE))
@@ -740,6 +746,7 @@ targets:
       - prop_spp_barcoded
       ## figures
       - figures/combined_map_sampling.pdf
+      - figures/combined_gradient.pdf
       - figures/idigbio_map_sampling.pdf
       - figures/obis_map_sampling.pdf
       - figures/plot_sampling_effort.pdf
