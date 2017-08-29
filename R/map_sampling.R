@@ -51,7 +51,8 @@ combine_species_list <- function(...) {
                        dplyr::filter(!is.na(worms_phylum) | !is.na(worms_phylum))
                }, .id = "data_source") %>%
         dplyr::count(data_source, worms_phylum, worms_valid_name) %>%
-        tidyr::spread(data_source, n)
+        tidyr::spread(data_source, n) %>%
+        find_bold_records(col_nm = "worms_valid_name")
 }
 
 

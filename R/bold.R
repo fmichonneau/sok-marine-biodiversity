@@ -187,6 +187,14 @@ plot_bold_status <- function(bold_data) {
         coord_flip()
 }
 
+calc_prop_spp_barcoded <- function(recs) {
+    res <- recs$n_bold_records > 0
+    list(
+        p_barcoded = mean(res),
+        n_barcoded = sum(res)
+    )
+}
+
 make_stat_barcoding <- function(bold_data) {
     list(
         min_eez_phylum = bold_data %>%

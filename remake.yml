@@ -585,6 +585,9 @@ targets:
   stat_sampling_effort:
     command: calc_stat_sampling_effort(combined_data_map_standardized_diversity, map_gom)
 
+  prop_spp_barcoded:
+    command: calc_prop_spp_barcoded(combined_species)
+
   prop_singleton_species:
     command: calc_prop_nspecimens_species(combined_records, n_specimens=I(1))
 
@@ -734,6 +737,7 @@ targets:
       - summary_richness_per_db_koz
       - recently_collected
       - not_really_in_database
+      - prop_spp_barcoded
       ## figures
       - figures/combined_map_sampling.pdf
       - figures/idigbio_map_sampling.pdf
