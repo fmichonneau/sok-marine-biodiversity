@@ -561,10 +561,10 @@ targets:
 ### plot sampling effort (correlation between number of samples vs number species
 
   figures/plot_sampling_effort.pdf:
-    command: plot_sampling_effort(combined_data_map_standardized_diversity)
+    command: plot_sampling_effort(combined_data_map_standardized_diversity, map_gom)
     plot:
       height: 4.5
-      width: 5
+      width: 6.5
 
 ### BOLD data ------------------------------------------------------------------
 

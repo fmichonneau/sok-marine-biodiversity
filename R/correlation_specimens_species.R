@@ -1,22 +1,32 @@
-prepare_sampling_effort_data <- function(id) {
+prepare_sampling_effort_data <- function(id, map_gom) {
     id %>%
-        dplyr::mutate(east_west = ifelse(x > -100, "east", "west")) %>%
-        dplyr::rename(latitude = y, longitude = x) %>%
-        dplyr::filter(!(is.na(latitude) | is.na(longitude)))
+        dplyr::rename(decimallatitude = y, decimallongitude = x) %>%
+        is_within_gom_records(map_gom) %>%
+        dplyr::mutate(region = case_when(
+                          decimallongitude > -100 & is_in_gom == FALSE ~ "atlantic",
+                          decimallongitude > -100 & is_in_gom == TRUE ~ "gom",
+                          decimallongitude < -100 ~ "pacific"
+                      )) %>%
+        dplyr::rename(latitude = decimallatitude, longitude = decimallongitude)
 }
 
 
-plot_sampling_effort <- function(id) {
+plot_sampling_effort <- function(id, map_gom) {
     id %>%
-        prepare_sampling_effort_data() %>%
-        ggplot(aes(x = n_specimen, y = n_species, shape = east_west, colour = latitude)) +
-        scale_colour_viridis(option = "magma", direction = -1, end = .95, name = "Latitude") +
-        geom_point(alpha = .45, position = position_jitter(width = .02, height = .02)) +
+        prepare_sampling_effort_data(map_gom) %>%
+        dplyr::filter(n_specimen > 0, n_species > 0) %>%
+        ggplot(aes(x = n_specimen, y = n_species,
+                   shape = region, colour = latitude)) +
+        scale_colour_viridis(option = "magma", direction = -1,
+                             end = .95, name = "Latitude") +
+        geom_point(alpha = .45,
+                   position = position_jitter(width = .02, height = .02)) +
         geom_abline(slope = 1, intercept = 0) +
         xlab("Number of records") + ylab("Number of species") +
         scale_x_log10() + scale_y_log10() +
-        scale_shape(name = "", labels = c("East coast", "West coast")) +
+        scale_shape(name = "", labels = c("Atlantic Ocean", "Gulf of Mexico", "Pacific Ocean")) +
         theme_ipsum(base_family = "Ubuntu Condensed")
+}
 
 }
 
