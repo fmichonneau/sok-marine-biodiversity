@@ -582,6 +582,9 @@ targets:
   stat_barcoding:
     command: make_stat_barcoding(barcode_status_data)
 
+  stat_sampling_effort:
+    command: calc_stat_sampling_effort(combined_data_map_standardized_diversity, map_gom)
+
   prop_singleton_species:
     command: calc_prop_nspecimens_species(combined_records, n_specimens=I(1))
 
@@ -709,6 +712,7 @@ targets:
       - combined_pnw_records
       - total_gom_records
       - total_pnw_records
+      - combined_records
       - combined_species
       - gom_worms
       - kozloff_worms
@@ -717,6 +721,7 @@ targets:
       - stat_bold
       - stat_barcoding
       - barcode_status_data
+      - stat_sampling_effort
       - prop_singleton_species
       - prop_10_specimens_species
       - prop_30_specimens_species
