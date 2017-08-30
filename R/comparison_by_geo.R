@@ -317,7 +317,8 @@ get_species_in_common <- function(gom_worms, idigbio_gom_records, obis_gom_recor
 
 not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
 
-    .idig <- . %>% fetch_spp_from_idigbio() %>%
+    .idig <- . %>%
+        fetch_spp_from_idigbio() %>%
         parse_year() %>%
         dplyr::mutate(
                    cleaned_scientificname = cleanup_species_names(scientificname),
@@ -399,8 +400,23 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
         gom_in_dbs = spp_gom,
         pnw_in_dbs = spp_pnw
     )
-
 }
+
+n_spp_not_in_lists <- function(db_overlap) {
+    list(
+        gom_not_in_list = db_overlap %>%
+            dplyr::filter(region == "gom", data_source == "not_in_list") %>%
+            dplyr::pull(worms_valid_name) %>%
+            dplyr::n_distinct(),
+        pnw_not_in_list = db_overlap %>%
+            dplyr::filter(region == "pnw", data_source == "not_in_list") %>%
+            dplyr::pull(worms_valid_name) %>%
+            dplyr::n_distinct()
+    )
+}
+
+
+
 
 ## Species that appear to not be in iDigbio for the geographical list,
 ## either because they do not have GPS coordinates associated with

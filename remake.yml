@@ -630,6 +630,9 @@ targets:
   not_really_in_database:
     command: get_not_really_in_database(database_overlap, map_usa)
 
+  spp_not_in_lists:
+    command: n_spp_not_in_lists(database_overlap)
+
 ### Attributions ---------------------------------------------------------------
 
   # idigbio_records_attributions:
@@ -749,6 +752,7 @@ targets:
       - summary_richness_per_db_koz
       - recently_collected
       - not_really_in_database
+      - spp_not_in_lists
       - prop_spp_barcoded
       ## figures
       - figures/combined_map_sampling.pdf
