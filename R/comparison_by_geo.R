@@ -32,17 +32,9 @@ combined_regional_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
 
 generate_upsetr_csv <- function(..., file) {
 
-    has_bold_record <- function(worms_sp) {
-        vapply(worms_sp, function(w) {
-            r <- store_bold_specimens_per_species()$get(tolower(w))
-            if (is.null(r) || inherits(r, "character"))
-                0L
-            else nrow(r)
-        }, integer(1))
-    }
-
     combine_species_list(...) %>%
-        dplyr::mutate(bold = has_bold_record(worms_valid_name)) %>%
+        dplyr::mutate(bold = as.integer(n_bold_records > 0)) %>%
+        dplyr::select(-starts_with("n_")) %>%
         dplyr::mutate_if(is.integer, funs(if_else(is.na(.) | . == 0L, 0L, 1L))) %>%
         readr::write_csv(path = file)
 
