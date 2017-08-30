@@ -141,7 +141,7 @@ get_bold_bins <- function(gom, koz) {
 
 bold_status <- function(idig) {
     idig %>%
-        dplyr::group_by(phylum) %>%
+        dplyr::group_by(worms_phylum) %>%
         dplyr::summarize(
                    p_has_bold = mean(n_bold_records > 0),
                    n_has_bold = sum(n_bold_records > 0)
@@ -156,14 +156,14 @@ bold_status_data <- function(gom_bold, koz_bold, idig_bold) {
                .id = "data_source"
            ) %>%
     dplyr::filter(
-               phylum %in% c("annelida", "arthropoda",
+               worms_phylum %in% c("annelida", "arthropoda",
                              "bryozoa",
                              "chordata", "cnidaria",
                              "echinodermata", "mollusca",
                              "porifera"
                              )
            ) %>%
-    dplyr::mutate(phylum = capitalize(phylum))
+    dplyr::mutate(phylum = capitalize(worms_phylum))
 }
 
 plot_bold_status <- function(bold_data) {

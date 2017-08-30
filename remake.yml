@@ -348,6 +348,9 @@ targets:
   combined_gom_records:
     command: combine_idigbio_obis(idigbio_gom_records, obis_gom_records)
 
+  total_gom_species:
+    command: combine_species_list(idigbio = idigbio_gom_records, obis = obis_gom_records, checklist = gom_worms)
+
   total_gom_records:
     command: combine_records(idigbio=idigbio_gom_records, obis=obis_gom_records, checklist=gom_worms, map=map_gom)
 
@@ -385,7 +388,10 @@ targets:
     command: add_worms(obis_pnw_records_raw)
 
   combined_pnw_records:
-    command: combine_records(idigbio_pnw_records, obis_pnw_records, map = map_gom)
+    command: combine_records(idigbio_pnw_records, obis_pnw_records, map = map_gom) # note: map_gom isn't a mistake, we use it to assign records to GOM as a region, but probably not in use here.
+
+  total_pnw_species:
+    command: combine_species_list(idigio = idigbio_pnw_records, obis = obis_pnw_records, checklist = kozloff_worms)
 
   total_pnw_records:
       command: combine_records(idigbio=idigbio_pnw_records, obis=obis_pnw_records, checklist=kozloff_worms, map = map_gom)
@@ -459,7 +465,7 @@ targets:
   #     height: 8
 
   barcode_status_data:
-    command: bold_status_data(gom_bold, kozloff_bold, idigbio_bold)
+    command: bold_status_data(total_gom_species, total_pnw_species, combined_species)
 
   figures/proportion_barcoded.pdf:
     command: plot_bold_status(barcode_status_data)
