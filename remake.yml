@@ -739,6 +739,8 @@ targets:
       - combined_pnw_records
       - total_gom_records
       - total_pnw_records
+      - total_gom_species
+      - total_pnw_species
       - combined_records
       - combined_species
       - gom_worms
