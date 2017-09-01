@@ -487,11 +487,14 @@ targets:
 ### Maps diversity + samples ---------------------------------------------------
 
   ## iDigBio
+  idigbio_data_map:
+    command: data_map(idigbio_records)
+
   idigbio_data_map_samples:
-    command: data_map_samples(idigbio_records)
+    command: data_map_samples(idigbio_data_map)
 
   idigbio_data_map_diversity:
-    command: data_map_diversity(idigbio_records)
+    command: data_map_diversity(idigbio_data_map)
 
   idigbio_map_samples:
     command: make_heatmap(idigbio_data_map_samples, I("iDigbio -- Number of samples"))
@@ -500,11 +503,14 @@ targets:
     command: make_heatmap(idigbio_data_map_diversity, I("iDigBio -- Number of species"))
 
   ## OBIS
+  obis_map_data:
+    command: data_map(obis_records)
+
   obis_map_samples_data:
-    command: data_map_samples(obis_records)
+    command: data_map_samples(obis_map_data)
 
   obis_map_diversity_data:
-    command: data_map_diversity(obis_records)
+    command: data_map_diversity(obis_map_data)
 
   obis_map_samples:
     command: make_heatmap(obis_map_samples_data, I("OBIS -- Number of samples"))
@@ -519,11 +525,14 @@ targets:
   combined_species:
     command: combine_species_list(idigbio = idigbio_records, obis = obis_records)
 
+  combined_data_map:
+    command: data_map(combined_records)
+
   combined_data_map_samples:
-    command: data_map_samples(combined_records)
+    command: data_map_samples(combined_data_map)
 
   combined_data_map_diversity:
-    command: data_map_diversity(combined_records)
+    command: data_map_diversity(combined_data_map)
 
   combined_data_map_standardized_diversity:
     command: data_map_standardized_diversity(combined_data_map_samples, combined_data_map_diversity)
