@@ -1,6 +1,6 @@
 
 us_raster <- function()
-    raster(vals = NA, xmn = -127, ymn = 23, xmx = -61, ymx = 50, res = .2)
+    raster(vals = NA, xmn = -130, ymn = 23, xmx = -61, ymx = 50, res = .2)
 
 
 data_map_samples <- function(recs) {
