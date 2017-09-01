@@ -32,6 +32,8 @@ packages:
   - hrbrthemes
   - UpSetR
   - ggthemes
+  - gganimate
+  - tweenr
   ## APIs
   - bold
   - worrms
