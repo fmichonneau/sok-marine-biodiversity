@@ -75,7 +75,7 @@ targets:
       - outputs/list_species_gom.csv
       - outputs/list_species_pnw.csv
       - outputs/map_diversity_by_phylum.pdf
-      - outputs/bubble_combined_samples.mp4
+      #- outputs/bubble_combined_samples.mp4
 
 ### WoRMS stats
 
@@ -301,6 +301,9 @@ targets:
   map_usa:
     command: get_map_usa("data-raw/USA-EEZ/eez.shp")
 
+  usa_raster:
+    command: raster_from_map(map_usa)
+
   coords_idigbio_usa:
     command: get_coords_idigbio_query(map_usa)
 
@@ -336,6 +339,9 @@ targets:
 
   map_gom:
     command: get_felder_map_gom("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
+
+  gom_raster:
+    command: raster_from_map(map_gom)
 
   coords_gom_query:
     command: get_coords_idigbio_query(map_gom, cellsize=I(.2))
@@ -378,6 +384,9 @@ targets:
 
   map_pnw:
     command: get_map_pnw()
+
+  pnw_raster:
+    command: raster_from_map(map_pnw)
 
   coords_pnw_query:
     command: get_coords_idigbio_query(map_pnw, cellsize=I(.5))
@@ -492,7 +501,7 @@ targets:
 
   ## iDigBio
   idigbio_data_map:
-    command: data_map(idigbio_records)
+    command: data_map(idigbio_records, raster=usa_raster)
 
   idigbio_data_map_samples:
     command: data_map_samples(idigbio_data_map)
@@ -501,14 +510,20 @@ targets:
     command: data_map_diversity(idigbio_data_map)
 
   idigbio_map_samples:
-    command: make_heatmap(idigbio_data_map_samples, I("iDigbio -- Number of samples"))
+    command: make_heatmap(idigbio_data_map_samples, I("iDigbio -- Number of samples"), base_map = map_usa)
 
   idigbio_map_diversity:
-    command: make_heatmap(idigbio_data_map_diversity, I("iDigBio -- Number of species"))
+    command: make_heatmap(idigbio_data_map_diversity, I("iDigBio -- Number of species"), base_map = map_usa)
+
+  figures/idigbio_map_sampling.pdf:
+    command: combine_cowplots(idigbio_map_samples, idigbio_map_diversity, nrow=I(2), common_legend=I(FALSE))
+    plot:
+      width: 6
+      height: 7
 
   ## OBIS
   obis_map_data:
-    command: data_map(obis_records)
+    command: data_map(obis_records, raster = usa_raster)
 
   obis_map_samples_data:
     command: data_map_samples(obis_map_data)
@@ -517,10 +532,16 @@ targets:
     command: data_map_diversity(obis_map_data)
 
   obis_map_samples:
-    command: make_heatmap(obis_map_samples_data, I("OBIS -- Number of samples"))
+    command: make_heatmap(obis_map_samples_data, I("OBIS -- Number of samples"), base_map = map_usa)
 
   obis_map_diversity:
-    command: make_heatmap(obis_map_diversity_data, I("OBIS -- Number of species"))
+    command: make_heatmap(obis_map_diversity_data, I("OBIS -- Number of species"), base_map = map_usa)
+
+  figures/obis_map_sampling.pdf:
+    command: combine_cowplots(obis_map_samples, obis_map_diversity, nrow=I(2), common_legend=I(FALSE))
+    plot:
+      width: 6
+      height: 7
 
   ## Combined OBIS + iDigBio
   combined_records:
@@ -530,7 +551,7 @@ targets:
     command: combine_species_list(idigbio = idigbio_records, obis = obis_records)
 
   combined_data_map:
-    command: data_map(combined_records)
+    command: data_map(combined_records, raster=usa_raster)
 
   combined_data_map_samples:
     command: data_map_samples(combined_data_map)
@@ -542,10 +563,10 @@ targets:
     command: data_map_standardized_diversity(combined_data_map_samples, combined_data_map_diversity)
 
   combined_map_samples:
-    command: make_heatmap(combined_data_map_samples, I("Number of samples"))
+    command: make_heatmap(combined_data_map_samples, I("Number of samples"), base_map = map_usa)
 
   combined_map_diversity:
-    command: make_heatmap(combined_data_map_diversity, I("Number of species"))
+    command: make_heatmap(combined_data_map_diversity, I("Number of species"), base_map = map_usa)
 
   figures/combined_gradient.pdf:
     command: plot_gradient(combined_records)
@@ -553,30 +574,63 @@ targets:
       width: 8.5
       height: 3.5
 
-  ## map plots -----------------------------------------------------------------
-  figures/idigbio_map_sampling.pdf:
-    command: combine_cowplots(idigbio_map_samples, idigbio_map_diversity, nrow=I(2), common_legend=I(FALSE))
-    plot:
-      width: 6
-      height: 7
-
-  figures/obis_map_sampling.pdf:
-    command: combine_cowplots(obis_map_samples, obis_map_diversity, nrow=I(2), common_legend=I(FALSE))
-    plot:
-      width: 6
-      height: 7
-
   figures/combined_map_sampling.pdf:
     command: combine_cowplots(combined_map_samples, combined_map_diversity, nrow=I(2), common_legend=I(FALSE))
     plot:
       width: 6
       height: 7
 
+
+  ## Gulf of Mexico maps
+  combined_data_gom_map:
+    command: data_map(combined_gom_records, raster=gom_raster)
+
+  combined_data_gom_map_samples:
+    command: data_map_samples(combined_data_gom_map)
+
+  combined_data_gom_map_diversity:
+    command: data_map_diversity(combined_data_gom_map)
+
+  combined_map_gom_samples:
+    command: make_heatmap(combined_data_gom_map_samples, I("Number of samples"), base_map=map_gom)
+
+  combined_map_gom_diversity:
+    command: make_heatmap(combined_data_gom_map_diversity, I("Number of species"), base_map=map_gom)
+
+  figures/combined_gom_sampling.pdf:
+    command: combine_cowplots(combined_map_gom_samples, combined_map_gom_diversity, nrow=I(2), common_legend=I(FALSE))
+    plot:
+      width: 6
+      height: 7
+
+  ## PNW maps
+  combined_data_pnw_map:
+    command: data_map(combined_pnw_records, raster=pnw_raster)
+
+  combined_data_pnw_map_samples:
+    command: data_map_samples(combined_data_pnw_map)
+
+  combined_data_pnw_map_diversity:
+    command: data_map_diversity(combined_data_pnw_map)
+
+  combined_map_pnw_samples:
+    command: make_heatmap(combined_data_pnw_map_samples, I("Number of samples"), base_map=map_pnw)
+
+  combined_map_pnw_diversity:
+    command: make_heatmap(combined_data_pnw_map_diversity, I("Number of species"), base_map=map_pnw)
+
+  figures/combined_pnw_sampling.pdf:
+    command: combine_cowplots(combined_map_pnw_samples, combined_map_pnw_diversity, common_legend=I(FALSE))
+    plot:
+      width: 6
+      height: 7
+
+  ## maps for supplementary materials
   outputs/map_diversity_by_phylum.pdf:
-    command: make_heatmap_by_phylum(combined_records, file="outputs/map_diversity_by_phylum.pdf")
+    command: make_heatmap_by_phylum(combined_records, file="outputs/map_diversity_by_phylum.pdf", raster = usa_raster, base_map = map_usa)
 
   outputs/bubble_combined_samples.mp4:
-    command: bubble_map(combined_records, "outputs/bubble_combined_samples.mp4")
+    command: bubble_map(combined_records, "outputs/bubble_combined_samples.mp4", usa_raster)
 
 ### plot summary database ------------------------------------------------------
 

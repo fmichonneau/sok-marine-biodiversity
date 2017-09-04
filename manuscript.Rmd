@@ -248,4 +248,20 @@ This study is fully reproducible and the code needed to perform the analyses inc
 
 \newpage
 
-<!-- ## Supplementary material -->
+## Supplementary material
+
+```{r gom-maps, fig.cap="Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS for the Gulf of Mexico."}
+knitr::include_graphics("figures/combined_gom_sampling.pdf")
+```
+
+```{r pnw-maps, fig.cap="Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS for the Pacific Northwest."}
+knitr::include_graphics("figures/combined_pnw_sampling.pdf")
+```
+
+```{r idigbio-usa-maps, fig.cap="Spatial distribution of the number of samples (A), and species richness (B) for marine invertebrates based on records retrieved from iDigBio within the limits of the Exclusive Economic Zone for the contiental USA."}
+knitr::include_graphics("figures/idigbio_map_sampling.pdf")
+```
+
+```{r obis-usa-maps, fig.cap="Spatial distribution of the number of samples (A), and species richness (B) for marine invertebrates based on records retrieved from OBIS within the limits of the Exclusive Economic Zone for the contiental USA."}
+knitr::include_graphics("figures/obis_map_sampling.pdf")
+```
