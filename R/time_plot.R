@@ -285,7 +285,7 @@ get_id_level <- function(nm) {
         }
     } else {
         wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))
-        if (is.na(wid)) return(NA_character_)
+        if (!inherits(wid, "data.frame")) return("NA_character_")
         res <- store_worms_classification()$get(as.character(wid$valid_AphiaID))
         r <- tolower(res$rank[nrow(res)])
     }
