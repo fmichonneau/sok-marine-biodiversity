@@ -74,6 +74,7 @@ targets:
       - outputs/list_species_us.csv
       - outputs/list_species_gom.csv
       - outputs/list_species_pnw.csv
+      - outputs/bubble_combined_samples.mp4
 
 ### WoRMS stats
 
@@ -355,7 +356,7 @@ targets:
     command: add_worms(obis_gom_records_raw)
 
   combined_gom_records:
-    command: combine_idigbio_obis(idigbio_gom_records, obis_gom_records)
+    command: combine_records(idigbio = idigbio_gom_records, obis = obis_gom_records, map = map_gom)
 
   total_gom_species:
     command: combine_species_list(idigbio = idigbio_gom_records, obis = obis_gom_records, checklist = gom_worms)
@@ -570,6 +571,9 @@ targets:
       width: 6
       height: 7
 
+  outputs/bubble_combined_samples.mp4:
+    command: bubble_map(combined_records, "outputs/bubble_combined_samples.mp4")
+
 ### plot summary database ------------------------------------------------------
 
   summary_richness_per_db_gom:
@@ -640,9 +644,6 @@ targets:
 
   n_spp_comparison:
     command: calc_n_spp_comparison(idigbio_samples_through_time_data)
-
-  #prop_species_not_collected_since_1990:
-  #  command: calc_prop_species_not_collected_since(idigbio_species_list_dates, I(1990))
 
   recently_collected:
     command: not_in_list_collected_recently(database_overlap, map_gom, map_pnw)
