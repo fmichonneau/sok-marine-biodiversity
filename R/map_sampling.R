@@ -102,24 +102,25 @@ make_heatmap <- function(gg_r, title) {
         xlab("Longitude") + ylab("Latitude")
 }
 
-make_heatmap_by_phylum <- function(recs, file = "figures/map_diversity_per_phylum.pdf") {
+make_heatmap_by_phylum <- function(recs, file) {
     uniq_phyla <- unique(recs$phylum)
 
     res <- parallel::mclapply(uniq_phyla, function(p) {
-                         recs_sub <- recs[recs$phylumrg == p, ]
+                         recs_sub <- recs[recs$phylum == p, ]
                          if (nrow(recs_sub) < 10) return(NULL)
-                         ggr <- make_data_map_diversity(recs_sub)
+                         ggr <- data_map(recs_sub) %>% data_map_diversity()
                          ggr
-                     }, mc.cores = 8L)
+                     }, mc.cores = getOption("mc.cores"))
+
     has_data <- !vapply(res, is.null, logical(1))
     res <- res[has_data]
     max_limit <- dplyr::bind_rows(res) %>%
         max(.$value)
+
     names(res) <- uniq_phyla[has_data]
     pmaps <- parallel::mclapply(seq_along(res),
                        function(gg) {
-                           make_heatmap_sampling(res[[gg]], names(res)[gg],
-                                                 limits = max_limit)
+                           make_heatmap(res[[gg]], names(res)[gg])
                   }, mc.cores = 8L)
     pdf(file = file)
     on.exit(dev.off())
