@@ -61,6 +61,7 @@ store_idigbio_by_geo <- function(coords, store_path = "data/idigbio_by_geo") {
 ## split the area into 4 squares, and look for records within
 ## them. Its recursive nature should make it work.
 get_idigbio_by_geo <- function(coords, q) {
+
     res <- try(store_idigbio_by_geo(coords)$get(q), silent = TRUE)
     if (inherits(res, "try-error")) {
         if (grepl("return more than", res)) {
@@ -76,10 +77,12 @@ get_idigbio_by_geo <- function(coords, q) {
                 purrr::map(function(x) set_names(x, c("xmin", "ymax", "xmax", "ymin"))) %>%
                 purrr::map(as.list) %>%
                 purrr::map_df(as_tibble) %>%
-                dplyr::bind_cols(data_frame(key = rep(q, 4))) %>%
+                dplyr::mutate(key = paste(xmin, ymax, xmax, ymin, sep = "|")) %>%
                 coords_to_query()
-            return(lapply(names(.r), function(x)
-                get_idigbio_by_geo(.r, x)))
+            res <- lapply(names(.r), function(x)
+                get_idigbio_by_geo(.r, x)) %>%
+                dplyr::bind_rows()
+            res
         } else stop("Error with iDigBio query")
     } else {
         return(res)
