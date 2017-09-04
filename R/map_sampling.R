@@ -62,7 +62,7 @@ data_map_standardized_diversity <- function(sampling, diversity) {
 }
 
 
-make_heatmap <- function(gg_r, title, limits = NULL) {
+make_heatmap <- function(gg_r, title) {
 
     ## we use the world map to get Canda, Mexico and Caribbean islands
     state <- maps::map("world", fill = TRUE, plot = FALSE)
@@ -89,7 +89,7 @@ make_heatmap <- function(gg_r, title, limits = NULL) {
         scale_fill_gradient2(low = "#5E98AE", mid = "#E3C94A", high = "#D5331E",
                              midpoint = mid_point,
                              breaks = c(1, 10, 100, 1000, 5000), trans = "log",
-                             limits = limits, na.value = NA) +
+                             na.value = NA) +
         geom_map(data=state_map, map=state_map,
                  aes(map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
