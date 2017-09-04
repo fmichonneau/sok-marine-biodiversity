@@ -144,7 +144,8 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     ## Before putting all the records in the database we need to make
     ## sure they are cached. I am not sure why it's needed here and
     ## not for iDigBio; but it seems that the data retrieval is slower
-    ## for the OBIS API.  EDIT: I seems it was a quirk from trying to
+    ## for the OBIS API.
+    ## EDIT: I seems it was a quirk from trying to
     ## functionalize the handling of the DB connection. Commenting it
     ## out now, but if needs to be recreated from scratch, keeping it
     ## here in case it's useful.
