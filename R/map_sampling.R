@@ -179,7 +179,10 @@ animated_map <- function(recrds, file = "/tmp/sampling_map.mp4")  {
 
 bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4")  {
 
-    gg_r <- recrds %>% filter(year < 1900)
+    ## number of frames per year:
+    n_frames <- 20
+
+    gg_r <- recrds
     gg_r <- split(gg_r, gg_r$year)
     gg_r <- lapply(gg_r, data_map)
     gg_r <- bind_rows(gg_r, .id = "year")
@@ -210,40 +213,47 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4")  {
         bubbles_start <- x %>%
             dplyr::filter(!is.na(value)) %>%
             dplyr::mutate(color = "red",
-                          size = 5 * value,
+                          size = 10 * value,
                           alpha = 1)
         bubbles_end <- bubbles_start %>%
             dplyr::mutate(size = .1,
                           alpha = 0)
 
         ts <- list(bubbles_start, bubbles_end)
-        tf <- tweenr::tween_states(ts, tweenlength = 1, statelength = 1,
-                                   ease = "back-out", nframes = 48)
+        tf <- tweenr::tween_states(ts, tweenlength = 3, statelength = 1,
+                                   ease = "quadratic-out", nframes = n_frames)
         tf
     })
     tf <- bind_rows(ts_l, .id = "year_frame") %>%
         dplyr::mutate(year_frame = as.integer(year_frame),
-                      cum_frame = 48 * (year_frame - min(year_frame)),
-                      full_frame = .frame + cum_frame)
+                      cum_frame = n_frames * (year_frame - min(year_frame)),
+                      full_frame = .frame + cum_frame,
+                      x_year = -100, y_year = 40)
 
-    p <- ggplot() +
-        geom_point(data = tf, aes(x, y, color = color,
-                                  size = size, alpha = alpha, frame = full_frame)) +
-        geom_raster(data = gg_r, aes(x = x, y = y, fill = value), na.rm = TRUE) +
+    p <- ggplot(data = tf, aes(frame = full_frame)) +
+        geom_raster(data = gg_r, aes(x = x, y = y, fill = value), na.rm = TRUE,
+                    inherit.aes = FALSE) +
         scale_fill_gradient2(low = "#5E98AE", mid = "#E3C94A", high = "#D5331E",
                              midpoint = mid_point,
                              breaks = c(1, 10, 100, 1000, 5000), trans = "log",
                              na.value = NA) +
         geom_map(data=state_map, map=state_map,
                  aes(map_id=id),
-                 fill="gray20", colour = "gray20", size = .05) +
+                 fill="gray20", colour = "gray20", size = .05, inherit.aes = FALSE) +
+        geom_text(aes(x = x_year, y = y_year, label = year_frame),
+                  colour = "white", size = 13) +
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
-                     colour = "gray80", binwidth = 500, size = .1) +
+                     colour = "gray80", binwidth = 500, size = .1,
+                     inherit.aes = FALSE) +
+        geom_point(aes(x, y, color = color, size = size, alpha = alpha)) +
+        scale_size(range = c(3, 25), guide = FALSE) +
+        scale_colour_identity(guide = FALSE) +
+        scale_alpha(guide = FALSE) +
         coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
         theme_bw(base_family = "Ubuntu Condensed") +
         theme(legend.title = element_blank()) +
         xlab("Longitude") + ylab("Latitude")
 
-    animation::ani.options(ani.width = 1200, ani.height =  800, interval = 1/24)
+    animation::ani.options(ani.width = 1600, ani.height = 900, interval = 1/24)
     gganimate::gganimate(p, file)
 }
