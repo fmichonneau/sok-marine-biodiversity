@@ -154,6 +154,7 @@ first_5 <- function(x) {
 
 combine_plots <- function(..., output) {
     files <- c(...)
+    check_prog_exists("pdfjam", "error", "pdfjam is needed to generate some figures.")
     if (length(files) > 2) stop("can't deal with this now.")
     if (all(file.exists(files))) {
         cmd <- paste("pdfjam ", paste(files, collapse = "  "),
@@ -161,4 +162,54 @@ combine_plots <- function(..., output) {
                      output)
         system(cmd)
     }
+}
+
+
+annotate_pdf <- function(infile, text, geometry = c("topleft", "topright"),
+                         offset = 10, font = "Helvetica", fonsize = 13, output) {
+
+    check_prog_exists("cpdf", "warning", "Skipping annotations.")
+    ## annotate
+    cmd <- paste0("cpdf -add-text \"", text, "\"",
+                  " -", geometry, " ", offset,
+                  " -font \"", font, "\" ",
+                  infile,
+                  " -o ", output)
+    system(cmd)
+}
+
+
+check_prog_exists <- function(prog, outcome = c("warning", "error"), ...) {
+    outcome <- match.arg(outcome)
+    ## find if cpdf is installed
+    wc_chk <- system(paste("which", prog), ignore.stdout = TRUE,
+                    ignore.stderr = TRUE)
+
+    outcome <- switch(outcome,
+                      warning = warning,
+                      error = stop)
+
+    if (identical(wc_chk, 1L)) {
+        outcome(paste(prog, "not found.", paste(..., collapse = " ")))
+        return(NULL)
+    }
+}
+
+
+combine_upsetr_plots <- function(gom_plot, pnw_plot, output) {
+
+    gom_annot <- file.path(tempdir(), paste0("annot-", basename(gom_plot)))
+    pnw_annot <- file.path(tempdir(), paste0("annot-", basename(pnw_plot)))
+
+    annotate_pdf(gom_plot, text = "A. Gulf of Mexico",
+                 geometry = "topright", output = gom_annot)
+    annotate_pdf(pnw_plot,  text = "B. Pacific Northwest",
+                 geometry = "topright", output = pnw_annot)
+
+    if (!(file.exists(gom_annot) && file.exists(pnw_annot))) {
+        stop("something went wrong with pdf annotations")
+    }
+
+    combine_plots(gom_annot, pnw_annot, output = output)
+
 }
