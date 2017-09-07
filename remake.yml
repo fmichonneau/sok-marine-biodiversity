@@ -632,6 +632,16 @@ targets:
   outputs/bubble_combined_samples.mp4:
     command: bubble_map(combined_records, "outputs/bubble_combined_samples.mp4", usa_raster)
 
+  ## rank abundance plots
+  rastercell_distribution:
+    command: n_rastercell_per_species(combined_records, usa_raster)
+
+  figures/rank_abundance.pdf:
+    command: plot_rank_abundance(rastercell_distribution)
+    plot:
+      width: 8
+      height: 4
+
 ### plot summary database ------------------------------------------------------
 
   summary_richness_per_db_gom:
@@ -850,6 +860,7 @@ targets:
       - figures/obis_through_time.pdf
       - figures/combined_through_time.pdf
       - figures/idigbio_identification_level_through_time.pdf
+      - figures/rank_abundance.pdf ## for supp mat
       ## attributions
       #- idigbio_records_attributions
       #- idigbio_gom_records_attributions

@@ -127,6 +127,7 @@ knitr::include_graphics("figures/combined_gradient.pdf")
 knitr::include_graphics("figures/plot_sampling_effort.pdf")
 ```
 
+The median number of cells occupied by species is `r median(rastercell_distribution$n_cell)`.
 
 Spatial patterns of species richness are however strongly confounded by sampling effort. There is a high correlation between the number of samples and number of species per cell used in Fig. \@ref(fig:map-diversity-sampling), and `r format_output(stat_sampling_effort$p * 100)`% (n = `r stat_sampling_effort$n`) of the cells with $\leq$ 500 records have a number of species within 10% of the number of records (Fig. \@ref(fig:correlation-sampling)). 
 
@@ -271,4 +272,8 @@ knitr::include_graphics("figures/idigbio_map_sampling.pdf")
 
 ```{r obis-usa-maps, fig.cap="Spatial distribution of the number of samples (A), and species richness (B) for marine invertebrates based on records retrieved from OBIS within the limits of the Exclusive Economic Zone for the contiental USA."}
 knitr::include_graphics("figures/obis_map_sampling.pdf")
+```
+
+```{r rank-abundance, fig.cap="Rank abundance plots for most represented phyla."}
+knitr::include_graphics("figures/rank_abundance.pdf")
 ```
