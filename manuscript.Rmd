@@ -54,8 +54,15 @@ We extracted `r format(sum(gom_worms$is_marine, na.rm=TRUE), big.mark=",")` and 
 knitr::include_graphics("figures/database_coverage.pdf")
 ```
 
-A higher proportion of the species included in the regional list for the GOM are captured in biodiversity databases than for the PNW. While `r format_output((3890 + 2663 + 1025 + 316 + 102 + 49 )/n_distinct(total_gom_records$worms_valid_name) * 100)`%  of the species included in the checklist for the GOM have records in at least one of the biodiversity database (Fig. \@ref(fig:database-coverage)A), only `r format_output((352 + 292 + 281 + 235 + 76 + 38)/n_distinct(total_pnw_records$worms_valid_name)*100)`% do for the PNW  (Fig. \@ref(fig:database-coverage)B). Additionally, a higher proportion of species occur in the biodiversity databases but are not included in the regional checklist for the GOM compared with the PNW (GOM: `r format_output((1253 + 848 + 556 + 216 + 190 + 124) / n_distinct(total_gom_records$worms_valid_name)*100)`%, $n =$ `r format(n_distinct(total_gom_records$worms_valid_name), big.mark=",")`; PNW:
-`r format_output( (281 + 151 + 145 + 80 + 78 + 45) / n_distinct(total_pnw_records$worms_valid_name)*100)`%, $n =$ `r format(n_distinct(total_pnw_records$worms_valid_name), big.mark=",")`).
+```{r}
+set_size_gom <- function(...)
+    set_size_with_checklist(..., d = remake::fetch("total_gom_species"))
+set_size_pnw <- function(...)
+    set_size_with_checklist(..., d = remake::fetch("total_pnw_species"))
+```
+
+A higher proportion of the species included in the regional list for the GOM are captured in biodiversity databases than for the PNW. While `r format_output(set_size_gom("checklist","idigbio","obis")/n_distinct(total_gom_records$worms_valid_name) * 100)`%  of the species included in the checklist for the GOM have records in at least one of the biodiversity database (Fig. \@ref(fig:database-coverage)A), only `r format_output(set_size_pnw("checklist","idigbio","obis")/n_distinct(total_pnw_records$worms_valid_name)*100)`% do for the PNW  (Fig. \@ref(fig:database-coverage)B). Additionally, a higher proportion of species occur in the biodiversity databases but are not included in the regional checklist for the GOM compared with the PNW (GOM: `r format_output(set_size_gom("checklist","idigbio","obis",include_checklist=FALSE) / n_distinct(total_gom_records$worms_valid_name)*100)`%, $n =$ `r format(n_distinct(total_gom_records$worms_valid_name), big.mark=",")`; PNW:
+`r format_output( set_size_pnw("checklist","idigbio","obis",include_checklist=FALSE) / n_distinct(total_pnw_records$worms_valid_name)*100)`%, $n =$ `r format(n_distinct(total_pnw_records$worms_valid_name), big.mark=",")`).
 
 
 ```{r compare_database_overlap, fig.cap='Proportions of the total number of species by phylum that are absent from faunistic lists but are in iDigBio or OBIS ("Not in list"), and absent from iDigBio or OBIS but are in the faunistic lists ("Not in databases"). The numbers represent the number of species. (\\#fig:database-overlap)'}

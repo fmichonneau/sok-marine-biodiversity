@@ -21,7 +21,7 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
 }
 
 combined_regional_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
-                             pnw_worms, pnw_idigbio, pnw_obis) {
+                                     pnw_worms, pnw_idigbio, pnw_obis) {
 
     list(
         gom = combine_species_list(checklist = gom_worms, idigbio = gom_idigbio, obis = gom_obis),
@@ -54,8 +54,26 @@ compare_database_overlap <- function(gom_worms, kozloff_worms,
     comp_koz <- dplyr::bind_rows(list(idigbio = idig_koz, obis = obis_koz),
                                  .id = "database")
 
-    comp_db <- dplyr::bind_rows(list(gom = comp_gom,
-                                     pnw = comp_koz), .id = "region")
+    dplyr::bind_rows(list(gom = comp_gom, pnw = comp_koz), .id = "region")
+}
+
+## For a data frame d formated as the input for upset, calculate the size of the
+## intersect for the lists specified in ...
+## For instance for the intersect of bold, checklist, and idigbio, for the
+## total list fromm GOM: set_size("bold", "checklist", "idigbio", d=total_gom_species)
+set_size_with_checklist <- function(..., include_checklist = TRUE, d) {
+    d <- generate_species_list(d)
+    sets <- c(...)
+    if (length(sets) < 2) stop("at least 2 sets needed")
+    if (!"checklist" %in% sets) stop(sQuote("checklist"), " should be included.")
+    if (!all(sets %in% names(d)))
+        stop("Sets not found: ", sets[!sets %in% names(d)])
+    sel_set <- dplyr::select(d, sets)
+
+    ## We want the species that are in the checklist and in at least one other
+    ## data source.
+    sum(sel_set[["checklist"]] == as.integer(include_checklist) &
+        rowSums(sel_set) >=  (2 - as.integer(!include_checklist)))
 }
 
 
