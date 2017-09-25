@@ -308,16 +308,9 @@ test_id_level <- function() {
 }
 
 data_identification_level_through_time <- function(idig_records) {
-    res <- idig_records %>%
+    idig_records %>%
         mutate(id_level = vapply(cleaned_scientificname, get_id_level, character(1))) %>%
         filter(id_level != "unknown", !is.na(id_level), !is.na(year))
-
-    res %>%
-        distinct(cleaned_scientificname, .keep_all = TRUE) %>%
-        sample_n(500) %>%
-        write_csv("/tmp/res.csv")
-
-    res
 }
 
 
