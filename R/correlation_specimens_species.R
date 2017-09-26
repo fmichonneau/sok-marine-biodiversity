@@ -74,14 +74,13 @@ calc_prop_species_not_collected_since <- function(idig, max_year) {
     format_output(nrow(dplyr::filter(res, last_collected < max_year))/nrow(res)*100)
 }
 
-calc_records_rare_phyla <- function(idig, obis, wrms_stats, gom_phyla) {
+calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
 
     ## OBIS is included here, but I'm not doing anything with it at
     ## this stage
 
     summary_db <- . %>%
-        dplyr::filter(is_marine == TRUE,
-                      phylum %in% gom_phyla) %>%
+        dplyr::filter(is_marine == TRUE) %>%
         dplyr::group_by(phylum) %>%
         dplyr::summarize(
                    n_records = n(),

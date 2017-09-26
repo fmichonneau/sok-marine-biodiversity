@@ -192,18 +192,33 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
         dplyr::select(phylum, class, family) %>%
         dplyr::distinct(phylum, class, family)
 
-    ## check phyla that get filtered out
-    db %>%
+    phyla_to_keep_clean <- list_phyla %>%
+        dplyr::filter(common_phylum != "to_drop") %>%
+        dplyr::distinct(common_phylum) %>%
+        dplyr::pull(common_phylum)
+
+    all_phyla_to_keep <- list_phyla %>%
+        dplyr::filter(common_phylum != "to_drop",
+                      !is.na(phylum)) %>%
+        dplyr::distinct(phylum) %>%
+        dplyr::pull(phylum)
+
+    phyla_in_db <- db %>%
         dplyr::distinct(phylum) %>%
         dplyr::collect(n = Inf) %>%
-        dplyr::anti_join(data_frame(phylum = gom_phyla), by = "phylum") %>%
-        readr::write_csv(paste0("data-validation/check_", db_table, "_phyla.csv"))
+        dplyr::pull(phylum)
+
+    ## make sure all phyla are in the dictionary
+    if (!all(phyla_in_db %in% list_phyla[["phylum"]]))
+        stop("Some phyla in the database are not in the dictionary: ",
+             paste(phyla_in_db[!phyla_in_db %in% list_phyla[["phylum"]]],
+                   collapse = ", "))
 
     db %>%
         ## First let's get the phylum names from the Gulf of Mexico list,
         ## that will take care of plants, fungi, and records with no
         ## specified phylum
-        dplyr::filter(phylum %in% gom_phyla) %>%
+        dplyr::filter(phylum %in% all_phyla_to_keep) %>%
         ## only the obviously non-marine arthropods and the vertebrates
         dplyr::anti_join(arth_family_to_rm, by = c("phylum", "family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "family")) %>%
@@ -218,7 +233,10 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
                       is_binomial = is_binomial(cleaned_scientificname),
                       datecollected = as.Date(datecollected),
-                      uuid = as.character(uuid))
+                      uuid = as.character(uuid)) %>%
+        dplyr::left_join(list_phyla) %>%
+        dplyr::select(-phylum,
+                      phylum = common_phylum)
 }
 
 filter_records_by_geo <- function(rec, map_usa) {

@@ -80,10 +80,15 @@ targets:
       - outputs/map_diversity_by_phylum.pdf
       #- outputs/bubble_combined_samples.mp4
 
-### WoRMS stats
+### WoRMS stats ----------------------------------------------------------------
 
   worms_stats:
     command: read_worms_stats("data-raw/20170808_worms_stats.csv")
+
+### List phyla -----------------------------------------------------------------
+
+  list_phyla:
+    command: get_phyla("data-raw/phylum_dictionary.csv")
 
 ### Kozloff species list--------------------------------------------------------
 
@@ -168,9 +173,6 @@ targets:
 
   gom_species_raw:
     command: get_gom_species()
-
-  gom_phyla:
-    command: list_gom_phyla(gom_species_raw)
 
   gom_worms:
     command: add_worms(gom_species_raw)
@@ -315,7 +317,7 @@ targets:
     command: create_records_db(coords_usa, db_table=I("us_idigbio"))
 
   idigbio_records_all:
-    command: extract_inverts_from_db(db_table=I("us_idigbio"), gom_phyla)
+    command: extract_inverts_from_db(db_table=I("us_idigbio"), list_phyla)
     depends: idigbio_database
 
   idigbio_records:
@@ -332,7 +334,7 @@ targets:
     command: create_obis_db(coords_usa, db_table=I("us_obis"))
 
   obis_records_all:
-    command: extract_inverts_from_db(db_table=I("us_obis"), gom_phyla)
+    command: extract_inverts_from_db(db_table=I("us_obis"), list_phyla)
     depends: obis_database
 
   obis_records:
@@ -350,17 +352,17 @@ targets:
     command: get_coords_idigbio_query(map_gom, cellsize=I(.2))
 
   idigbio_gom_database:
-    command: create_records_db(coords_gom, db_table=I("gom_idigbio"), gom_phyla=gom_phyla)
+    command: create_records_db(coords_gom, db_table=I("gom_idigbio"))
 
   idigbio_gom_records_all:
-    command: extract_inverts_from_db(db_table=I("gom_idigbio"), gom_phyla)
+    command: extract_inverts_from_db(db_table=I("gom_idigbio"), list_phyla)
     depends: idigbio_gom_database
 
   idigbio_gom_records:
     command: filter_records_by_geo(idigbio_gom_records_all, map_gom)
 
   obis_gom_records_raw:
-    command: fill_store_obis_by_geo(map_gom, gom_phyla=gom_phyla)
+    command: fill_store_obis_by_geo(map_gom, list_phyla)
 
   obis_gom_records:
     command: add_worms(obis_gom_records_raw)
@@ -398,14 +400,14 @@ targets:
     command: create_records_db(coords_pnw, db_table=I("kozloff_idigbio"))
 
   idigbio_pnw_records_all:
-    command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), gom_phyla)
+    command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), list_phyla)
     depends: idigbio_pnw_database
 
   idigbio_pnw_records:
     command: filter_records_by_geo(idigbio_pnw_records_all, map_pnw)
 
   obis_pnw_records_raw:
-    command: fill_store_obis_by_geo(map_pnw, gom_phyla=gom_phyla)
+    command: fill_store_obis_by_geo(map_pnw, list_phyla)
 
   obis_pnw_records:
     command: add_worms(obis_pnw_records_raw)
@@ -705,7 +707,7 @@ targets:
     command: calc_prop_nspecimens_species(combined_records, n_specimens=I(30))
 
   records_rare_phyla:
-    command: calc_records_rare_phyla(idigbio_records, obis_records, worms_stats, gom_phyla)
+    command: calc_records_rare_phyla(idigbio_records, obis_records, worms_stats)
 
   n_idigbio_phyla:
     command: calc_n_idigbio_phyla(idigbio_records)
@@ -798,10 +800,10 @@ targets:
 ### Data validation ------------------------------------------------------------
 
   validate_idigbio_records:
-    command: validate_records(idigbio_records, gom_phyla)
+    command: validate_records(idigbio_records, list_phyla)
 
   validate_obis_records:
-    command: validate_records(obis_records, gom_phyla)
+    command: validate_records(obis_records, list_phyla)
 
   validate_idigbio_coords_usa:
     command: validate_idigbio_storr(coords_usa)

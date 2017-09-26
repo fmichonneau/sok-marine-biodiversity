@@ -1,4 +1,4 @@
-validate_records <- function(recs, gom_phyla) {
+validate_records <- function(recs, list_phyla) {
 
     recs_name <- deparse(substitute(recs))
     v1("Working with: ", recs_name)
@@ -17,8 +17,8 @@ validate_records <- function(recs, gom_phyla) {
 
     ## only phyla from list are represented (and they are all represented)
     recs_phyla <- unique(recs$phylum)
-    list_phyla <- all(recs_phyla %in% gom_phyla) &&
-        length(setdiff(recs_phyla, gom_phyla)) == 0L
+    list_phyla <- all(recs_phyla %in% list_phyla$common_phyla[list_phyla$common_phyla != "to_drop"]) &&
+        length(setdiff(recs_phyla, list_phyla$common_phyla[list_phyla$common_phyla != "to_drop"])) == 0L
 
     if (!list_phyla)
         stop("Some phyla aren't what they should be.")
