@@ -860,6 +860,7 @@ targets:
       - not_really_in_database
       - spp_not_in_lists
       - prop_spp_barcoded
+      - rastercell_distribution
       ## figures
       - figures/combined_map_sampling.pdf
       - figures/combined_gradient.pdf
