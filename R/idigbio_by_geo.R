@@ -82,6 +82,7 @@ get_idigbio_by_geo <- function(coords, q) {
             res <- lapply(names(.r), function(x)
                 get_idigbio_by_geo(.r, x)) %>%
                 dplyr::bind_rows()
+            store_idigbio_by_geo(coords)$set(q, res)
             res
         } else stop("Error with iDigBio query")
     } else {
