@@ -156,14 +156,13 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     ## }
 
     ## Then we can do what we were doing with iDigBio records
-    con <- connect_sok_db()
-    db_begin(con)
-    on.exit(db_rollback(con, db_table))
+    db_begin(sok_db)
+    on.exit(db_rollback(sok_db, db_table))
 
-    if (db_has_table(con, db_table))
-        db_drop_table(con, db_table)
+    if (db_has_table(sok_db, db_table))
+        db_drop_table(sok_db, db_table)
 
-    db_create_table(con, db_table, types = obis_types, temporary = FALSE)
+    db_create_table(sok_db, db_table, types = obis_types, temporary = FALSE)
 
     lapply(names(coords), function(q) {
         v2("Getting OBIS records for ", q,  appendLF = FALSE)
@@ -182,17 +181,16 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
                                            names(obis_types)))) %>%
                 ## to make it comparable to iDigBio, content gets lowercased
                 dplyr::mutate_if(is.character, tolower)
-            db_insert_into(con, db_table, r)
+            db_insert_into(sok_db, db_table, r)
         }
         v2(" DONE.")
     })
 
-    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "order", "family", "scientificname"),
+    db_create_indexes(sok_db, db_table, indexes = list(c("phylum", "class", "order", "family", "scientificname"),
                                                     c("phylum"), c("class"), c("family"), c("order"),
                                                     c("scientificname")),
                       unique = FALSE)
-    db_analyze(con, db_table)
-    db_commit(con)
-    DBI::dbDisconnect(con)
+    db_analyze(sok_db, db_table)
+    db_commit(sok_db)
     on.exit(NULL)
 }

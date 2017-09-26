@@ -127,15 +127,13 @@ create_records_db <- function(coords, db_table) {
                                   "scientificname", "country",
                                   "decimallatitude", "decimallongitude"
                                   ))
+    db_begin(sok_db)
+    on.exit(db_rollback(sok_db, db_table))
 
-    con <- connect_sok_db()
-    db_begin(con)
-    on.exit(db_rollback(con, db_table))
+    if (db_has_table(sok_db, db_table))
+        db_drop_table(sok_db, db_table)
 
-    if (db_has_table(con, db_table))
-        db_drop_table(con, db_table)
-
-    db_create_table(con, db_table, types = idig_types, temporary = FALSE)
+    db_create_table(sok_db, db_table, types = idig_types, temporary = FALSE)
 
     lapply(names(coords), function(q) {
         v2("Getting iDigBio records for ", q, appendLF = FALSE)
@@ -149,15 +147,14 @@ create_records_db <- function(coords, db_table) {
                           decimallongitude = geopoint.lon) %>%
             dplyr::mutate_if(is.character, tolower)
         v2(" DONE.")
-        db_insert_into(con, db_table, r)
+        db_insert_into(sok_db, db_table, r)
     })
 
-    db_create_indexes(con, db_table, indexes = list(c("phylum", "class", "family", "scientificname"),
+    db_create_indexes(sok_db, db_table, indexes = list(c("phylum", "class", "family", "scientificname"),
                                                     c("country")),
                       unique = FALSE)
-    db_analyze(con, db_table)
-    db_commit(con)
-    DBI::dbDisconnect(con)
+    db_analyze(sok_db, db_table)
+    db_commit(sok_db)
     on.exit(NULL)
 }
 
@@ -169,10 +166,7 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
     ## - invertebrates
     ## - marine
 
-    data_db <- connect_sok_db()
-    on.exit(DBI::dbDisconnect(data_db))
-
-    db <- data_db %>%
+    db <- sok_db %>%
         dplyr::tbl(db_table)
 
     arth_class_to_rm <- arthropod_classes_to_rm()

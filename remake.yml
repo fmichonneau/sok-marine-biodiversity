@@ -6,7 +6,8 @@ packages:
   - readxl
   - readr
   - feather
-  - RSQLite
+  - RPostgreSQL
+  - pool
   - storr
   - tibble
   ## geospatial tools
