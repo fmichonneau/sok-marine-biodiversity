@@ -323,8 +323,8 @@ plot_identification_level_through_time <- function(id_level) {
         mutate(p = n/sum(n),
                n_lots = sum(n)) %>%
         filter(id_level == "species",
-               phylum %in% c("annelida", "arthropoda", "chordata",
-                             "porifera", "echinodermata", "mollusca")) %>%
+               phylum %in% c("annelida", "arthropoda", "porifera",
+                             "cnidaria", "echinodermata", "mollusca")) %>%
         ungroup() %>%
         mutate(phylum = capitalize(phylum)) %>%
         ggplot(aes(x = year, y = p, colour = phylum, fill = phylum)) +
