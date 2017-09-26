@@ -8,7 +8,7 @@ output:
     #  before_body: ../template/doc_prefix.tex
     #  in_header: ../template/preamble.tex
     keep_tex: yes
-    latex_engine: pdflatex
+    latex_engine: xelatex
     number_sections: no
     toc: no
 fontsize: 12pt
