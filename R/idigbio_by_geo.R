@@ -90,6 +90,21 @@ get_idigbio_by_geo <- function(coords, q) {
     }
 }
 
+validate_idigbio_storr <- function(coords) {
+    res <- vapply(names(coords), function(x)
+        inherits(store_idigbio_by_geo(coords)$get(x), "try-error"),
+        logical(1)
+        )
+    if (sum(res) > 0) {
+        stop("Coordinates at these positions are problematic: ",
+             paste(names(which(res)), collapse = ", "))
+    } else {
+        v3("the coordinates look good")
+    }
+}
+
+
+
 
 get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
     bb_eez <- generate_bounding_boxes(map_usa, cellsize = cellsize)
@@ -102,7 +117,7 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 ## database that will store the results use_cache: if TRUE, this uses
 ## the results from the iDigBio storr; if false, the entire storr is
 ## destroyed before
-create_records_db <- function(coords, db_table, gom_phyla) {
+create_records_db <- function(coords, db_table) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "REAL", "REAL"),

@@ -67,6 +67,9 @@ targets:
       - data-validation/map_kozloff_idigbio.pdf
       - validate_idigbio_records
       - validate_obis_records
+      - validate_idigbio_coords_usa
+      - validate_idigbio_coords_gom
+      - validate_idigbio_coords_pnw
       ## FIXME - validate_combined_records
 
   outputs:
@@ -304,12 +307,12 @@ targets:
   usa_raster:
     command: raster_from_map(map_usa)
 
-  coords_idigbio_usa:
+  coords_usa:
     command: get_coords_idigbio_query(map_usa)
 
   ## iDigBio -------------------------------------------------------------------
   idigbio_database:
-    command: create_records_db(coords_idigbio_usa, db_table=I("us_idigbio"), gom_phyla=gom_phyla)
+    command: create_records_db(coords_usa, db_table=I("us_idigbio"))
 
   idigbio_records_all:
     command: extract_inverts_from_db(db_table=I("us_idigbio"), gom_phyla)
@@ -326,7 +329,7 @@ targets:
 
   ## OBIS ----------------------------------------------------------------------
   obis_database:
-    command: create_obis_db(coords_idigbio_usa, db_table=I("us_obis"), gom_phyla=gom_phyla)
+    command: create_obis_db(coords_usa, db_table=I("us_obis"))
 
   obis_records_all:
     command: extract_inverts_from_db(db_table=I("us_obis"), gom_phyla)
@@ -343,11 +346,11 @@ targets:
   gom_raster:
     command: raster_from_map(map_gom)
 
-  coords_gom_query:
+  coords_gom:
     command: get_coords_idigbio_query(map_gom, cellsize=I(.2))
 
   idigbio_gom_database:
-    command: create_records_db(coords_gom_query, db_table=I("gom_idigbio"), gom_phyla=gom_phyla)
+    command: create_records_db(coords_gom, db_table=I("gom_idigbio"), gom_phyla=gom_phyla)
 
   idigbio_gom_records_all:
     command: extract_inverts_from_db(db_table=I("gom_idigbio"), gom_phyla)
@@ -388,11 +391,11 @@ targets:
   pnw_raster:
     command: raster_from_map(map_pnw)
 
-  coords_pnw_query:
+  coords_pnw:
     command: get_coords_idigbio_query(map_pnw, cellsize=I(.5))
 
   idigbio_pnw_database:
-    command: create_records_db(coords_pnw_query, db_table=I("kozloff_idigbio"))
+    command: create_records_db(coords_pnw, db_table=I("kozloff_idigbio"))
 
   idigbio_pnw_records_all:
     command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), gom_phyla)
@@ -799,6 +802,18 @@ targets:
 
   validate_obis_records:
     command: validate_records(obis_records, gom_phyla)
+
+  validate_idigbio_coords_usa:
+    command: validate_idigbio_storr(coords_usa)
+    depends: idigbio_database
+
+  validate_idigbio_coords_gom:
+    command: validate_idigbio_storr(coords_gom)
+    depends: idigbio_gom_database
+
+  validate_idigbio_coords_pnw:
+    command: validate_idigbio_storr(coords_pnw)
+    depends: idigbio_pnw_database
 
   ## FIXME
   #validate_combined_records:
