@@ -128,8 +128,7 @@ create_records_db <- function(coords, db_table) {
                                   "decimallatitude", "decimallongitude"
                                   ))
 
-    db <- connect_sok_db()
-    con <- db$con
+    con <- connect_sok_db()
     db_begin(con)
     on.exit(db_rollback(con, db_table))
 
@@ -158,11 +157,12 @@ create_records_db <- function(coords, db_table) {
                       unique = FALSE)
     db_analyze(con, db_table)
     db_commit(con)
+    DBI::dbDisconnect(con)
     on.exit(NULL)
 }
 
 
-extract_inverts_from_db <- function(db_table, gom_phyla) {
+extract_inverts_from_db <- function(db_table, list_phyla) {
 
     ## We only want:
     ## - unique records
@@ -170,6 +170,7 @@ extract_inverts_from_db <- function(db_table, gom_phyla) {
     ## - marine
 
     data_db <- connect_sok_db()
+    on.exit(DBI::dbDisconnect(data_db))
 
     db <- data_db %>%
         dplyr::tbl(db_table)

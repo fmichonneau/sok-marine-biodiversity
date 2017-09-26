@@ -40,7 +40,8 @@ add_classification <- function(data) {
         .Names = c("worms_id", "worms_phylum", "worms_class",
                    "worms_order", "worms_family"))
 
-    con <- connect_sok_db()$con
+    con <- connect_sok_db()
+    on.exit(DBI::dbDisconnect(con))
 
     if (!db_has_table(con, wrms_tbl)) {
         db_create_table(con, wrms_tbl, types = wrms_types, temporary = FALSE)
@@ -65,11 +66,11 @@ add_classification <- function(data) {
                                                get_classification_from_wid)) %>%
             tidyr::unnest(classif)
         to_add_to_db$worms_id <- as.integer(to_add_to_db$worms_id)
-        dbWriteTable(connect_sok_db()$con, wrms_tbl, to_add_to_db, append = TRUE,
+        dbWriteTable(connect_sok_db(), wrms_tbl, to_add_to_db, append = TRUE,
                      field.types = wrms_types, row.names = FALSE)
     }
 
-    wid_tbl_mem <- tbl(connect_sok_db()$con, wrms_tbl) %>%
+    wid_tbl_mem <- tbl(connect_sok_db(), wrms_tbl) %>%
         dplyr::filter(worms_id %in% wid_to_match) %>%
         dplyr::collect(n = Inf) %>%
         dplyr::mutate(worms_id = as.character(worms_id))

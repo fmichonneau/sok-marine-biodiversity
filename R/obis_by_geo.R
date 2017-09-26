@@ -155,8 +155,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     ## }
 
     ## Then we can do what we were doing with iDigBio records
-    db <- connect_sok_db()
-    con <- db$con
+    con <- connect_sok_db()
     db_begin(con)
     on.exit(db_rollback(con, db_table))
 
@@ -193,5 +192,6 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
                       unique = FALSE)
     db_analyze(con, db_table)
     db_commit(con)
+    DBI::dbDisconnect(con)
     on.exit(NULL)
 }
