@@ -144,7 +144,7 @@ Further biases exist across phyla and body size. Large-bodied and easily accessi
 
 The proportion of samples that are identified to species in museum collections show a marked decline in recent decades in most taxa other than mollusks, demonstrating limiting taxonomic effort and expertise (Fig. \@ref(fig:identification-through-time)). There is a marked break in the central trend around the 1970's indicating that it now takes decades, on average, to identify samples deposited in collections. For diverse groups such as annelids or arthropods, the proportion of specimens identified to the species-level is now below 30%.
 
-```{r id_though_time, fig.cap='Proportion of marine invertebrate specimens collected through time identified at the species level. Trend lines are  B-splines of the 3rd degree polynomial. For all groups, we observe a decline in the proportion of specimens collected identified at the species leveld. (\\#fig:identification-through-time)'}
+```{r id_though_time, fig.cap='Proportion of marine invertebrate specimens collected through time identified at the species level. Trend lines are  B-splines of the 3rd degree polynomial. For all groups, we observe a decline in the proportion of specimens collected identified at the species level. (\\#fig:identification-through-time)'}
 knitr::include_graphics("figures/idigbio_identification_level_through_time.pdf")
 ```
 
