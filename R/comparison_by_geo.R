@@ -331,7 +331,8 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
                    is_binomial = is_binomial(cleaned_scientificname)
                ) %>%
         add_worms() %>%
-        filter(!is.na(worms_valid_name), !is.na(year))
+        filter(!is.na(worms_valid_name), !is.na(year),
+               !is.na(decimallatitude), !is.na(decimallongitude))
 
     .obis <- . %>%
         fetch_spp_from_obis(feather_out = NULL) %>%
