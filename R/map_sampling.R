@@ -1,8 +1,11 @@
 
 raster_from_map <- function(map) {
-    bbox <- round(lawn::lawn_bbox(map), 0))
-    raster::raster(vals = NA, xmn = bbox[1], ymn = bbox[2],
-                   xmx = bbox[3], ymx = bbox[4], res = .2)
+    bbox <- round(lawn::lawn_bbox(map), 0)
+    ## let's make the bounding box a little larger to accommodate rounding:
+    raster::raster(vals = NA,
+                   xmn = bbox[1] - 1, ymn = bbox[2] - 1,
+                   xmx = bbox[3] + 1, ymx = bbox[4] + 1,
+                   res = .2)
 }
 
 add_rastercell <- function(d, raster) {
@@ -15,6 +18,10 @@ add_rastercell <- function(d, raster) {
 data_map <- function(recs, raster) {
 
     recs <- add_rastercell(recs, raster)
+
+    if (any(is.na(recs$rastercell))) {
+        stop("something is wrong with the limits of the raster.")
+    }
 
     recs_r <- recs %>%
         dplyr::group_by(rastercell) %>%
@@ -78,14 +85,15 @@ plot_rank_abundance <- function(recs) {
 }
 
 data_map_standardized_diversity <- function(sampling, diversity) {
-    sampling <- sampling %>%
-        rename(n_specimen = value)
-    diversity <- diversity %>%
-        rename(n_species = value)
 
-    res <- bind_cols(sampling, dplyr::select(diversity, n_species)) %>%
+    sampling <- sampling %>%
+        dplyr::rename(n_specimen = value)
+    diversity <- diversity %>%
+        dplyr::rename(n_species = value)
+
+    res <- dplyr::full_join(sampling, diversity, by = c("x", "y")) %>%
         dplyr::select(x, y, n_specimen, n_species) %>%
-        mutate(value = n_species*n_species/n_specimen)
+        dplyr::mutate(value = n_species*n_species/n_specimen)
 
     res
 }

@@ -13,8 +13,8 @@ prepare_sampling_effort_data <- function(id, map_gom) {
 
 plot_sampling_effort <- function(id, map_gom) {
     id %>%
-        prepare_sampling_effort_data(map_gom) %>%
         dplyr::filter(n_specimen > 0, n_species > 0) %>%
+        prepare_sampling_effort_data(map_gom) %>%
         ggplot(aes(x = n_specimen, y = n_species,
                    shape = region, colour = latitude)) +
         scale_colour_viridis(option = "magma", direction = -1,
