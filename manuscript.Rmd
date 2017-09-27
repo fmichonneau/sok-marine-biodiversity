@@ -259,7 +259,13 @@ We thank WoRMS, BOLD, iDigBio, OBIS, MarineRegions, NCBI, and all other data pro
 
 \newpage
 
-## Supplementary material
+# Supplementary material
+
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+\setcounter{figure}{0}
+
 
 ```{r gom-maps, fig.cap="Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS for the Gulf of Mexico."}
 knitr::include_graphics("figures/combined_gom_sampling.pdf")
@@ -280,3 +286,8 @@ knitr::include_graphics("figures/obis_map_sampling.pdf")
 ```{r rank-abundance, fig.cap="Rank abundance plots for most represented phyla."}
 knitr::include_graphics("figures/rank_abundance.pdf")
 ```
+
+
+* list of marine invertebrate species from the continental USA: `list_species_us.csv`
+* list of marine invertebrate species from the Gulf of Mexico: `list_species_gom.csv`
+* list of marine invertebrate species from the Pacific Northwest: `list_species_pnw.csv`
