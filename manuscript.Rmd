@@ -247,6 +247,9 @@ To assess the proportion of species for which DNA barcodes are available, we que
 This study is fully reproducible and the code needed to perform the analyses included here is available from: https://github.com/fmichonneau/sok-marine-biodiversity, and archived on Zenodo (doi:xxx.xxx.xxxx). The data downloaded from the databases at the time of analysis are archived on Zenodo (doi:xxx.xxx.xxx)/
 
 
+## Acknowledgments
+
+We thank WoRMS, BOLD, iDigBio, OBIS, MarineRegions, NCBI, and all other data providers that aim to make more accessible biodiversity data. We would also like to acknowledge the efforts of rOpenSci (https://ropensci.org) for developping tools to make these data sources available in R. We are grateful to Julie Allen, Robert Lasley, Kevin Love, and Pamela Soltis, for providing suggestions that improved the manuscript.
 
 
 ## References
