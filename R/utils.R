@@ -131,21 +131,6 @@ is_lower_case <- function(x) {
        stop(x, " is not lowercase.")
 }
 
-
-filter_raw_records <- function(db) {
-
-    if (inherits(db, "character")) {
-        db <- feather::read_feather(db)
-        names(db) <- tolower(names(db))
-    }
-
-    if (any(duplicated(db$uuid)))
-        stop("duplicated UUID values!")
-
-    db %>%
-        filter(!is.na(decimallatitude) | !is.na(decimallongitude))
-}
-
 first_5 <- function(x) {
     n <- ifelse(length(x) > 5, 5, length(x))
     paste(x[seq_len(n)], collapse = ", ")
