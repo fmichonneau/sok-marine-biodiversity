@@ -34,6 +34,7 @@ is_within_map_records <- function(area) {
                        coord_key = paste(lat, long, sep = "|"))
 
         simplified_coords <-  res_lawn %>%
+            dplyr::filter(!is.na(lat), !is.na(long)) %>%
             dplyr::select(coord_key, lat, long) %>%
             dplyr::distinct(coord_key, .keep_all = TRUE)
 
