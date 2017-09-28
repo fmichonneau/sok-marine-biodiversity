@@ -88,7 +88,7 @@ abundance_sample_species <- function(recs) {
 
 plot_rank_abundance <- function(recs) {
     recs %>%
-        dplyr::filter(phylum %in% c("arthropoda", "annelida", "molluca",
+        dplyr::filter(phylum %in% c("arthropoda", "annelida", "mollusca",
                                     "echinodermata", "cnidaria", "porifera")) %>%
         dplyr::group_by(phylum) %>%
         dplyr::mutate(rank_n = max(dplyr::min_rank(n_cell)) - dplyr::min_rank(n_cell)) %>%
