@@ -642,11 +642,17 @@ targets:
   rastercell_distribution:
     command: n_rastercell_per_species(combined_records, usa_raster)
 
-  figures/rank_abundance.pdf:
+  plot_raster_cell_distribution:
     command: plot_rank_abundance(rastercell_distribution)
+
+  plot_sample_rank_distribution:
+    command: abundance_sample_species(combined_records)
+
+  figures/plot_rank_abundance.pdf:
+    command: simple_cowplot(plot_sample_rank_distribution, plot_raster_cell_distribution)
     plot:
-      width: 8
-      height: 4
+      height: 8
+      width: 6
 
 ### plot summary database ------------------------------------------------------
 

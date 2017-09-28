@@ -23,3 +23,15 @@ combine_cowplots_2 <- function(g1, g2, g3) {
     bottom_row <- plot_grid(g3, labels = "C", align = "h", rel_widths = c(1, .1))
     plot_grid(combine_cowplots(g1, g2, common_legend = TRUE), bottom_row, nrow = 2)
 }
+
+simple_cowplot <- function(g1, g2) {
+    leg <- get_legend(g1 + theme(legend.position = "bottom"))
+    p <- plot_grid(g1 + theme(legend.position = "none"),
+                   g2 + theme(legend.position = "none"),
+                   align = "vh",
+                   labels = c("A", "B"),
+                   hjust = -1,
+                   nrow = 2,
+                   scale = .9)
+    plot_grid(p, leg, ncol = 1, rel_heights = c(1, .2))
+}

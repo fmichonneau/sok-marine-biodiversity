@@ -283,8 +283,8 @@ knitr::include_graphics("figures/idigbio_map_sampling.pdf")
 knitr::include_graphics("figures/obis_map_sampling.pdf")
 ```
 
-```{r rank-abundance, fig.cap="Rank abundance plots for most represented phyla."}
-knitr::include_graphics("figures/rank_abundance.pdf")
+```{r rank-abundance, fig.cap="Rank abundance plots for most represented phyla based on the number of samples (A), and the number of cells occupied in map of Fig. \\@ref(fig:map-diversity-sampling) (B)"}
+knitr::include_graphics("figures/plot_rank_abundance.pdf")
 ```
 
 

@@ -69,6 +69,23 @@ n_rastercell_per_species <- function(recs, raster) {
         dplyr::arrange(desc(n_cell))
 }
 
+abundance_sample_species <- function(recs) {
+    recs %>%
+        dplyr::count(phylum, worms_valid_name) %>%
+        dplyr::filter(phylum %in% c("arthropoda", "annelida", "mollusca",
+                                    "echinodermata", "cnidaria", "porifera")) %>%
+        dplyr::group_by(phylum) %>%
+        dplyr::mutate(rank_n = max(dplyr::min_rank(n)) - dplyr::min_rank(n)) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(phylum = capitalize(phylum)) %>%
+        ggplot(aes(x = rank_n, y = n, colour = phylum)) +
+        geom_line() +
+        geom_point(size = .2) +
+        scale_y_log10() +
+        xlab("Rank abundance") + ylab("Number of samples") +
+        scale_colour_hc(name = "")
+}
+
 plot_rank_abundance <- function(recs) {
     recs %>%
         dplyr::filter(phylum %in% c("arthropoda", "annelida", "molluca",
@@ -81,7 +98,8 @@ plot_rank_abundance <- function(recs) {
         geom_line() +
         geom_point(size = .2) +
         scale_y_log10() +
-        xlab("Rank abundance") + ylab("Number of cells occupied")
+        xlab("Rank abundance") + ylab("Number of cells occupied") +
+        scale_colour_hc(name = "")
 }
 
 data_map_standardized_diversity <- function(sampling, diversity) {
