@@ -17,10 +17,11 @@ validate_records <- function(recs, list_phyla) {
 
     ## only phyla from list are represented (and they are all represented)
     recs_phyla <- unique(recs$phylum)
-    list_phyla <- all(recs_phyla %in% list_phyla$common_phyla[list_phyla$common_phyla != "to_drop"]) &&
-        length(setdiff(recs_phyla, list_phyla$common_phyla[list_phyla$common_phyla != "to_drop"])) == 0L
 
-    if (!list_phyla)
+    check_phyla <- all(recs_phyla %in% list_phyla$common_phylum[list_phyla$common_phylum != "to_drop"]) &&
+        length(setdiff(recs_phyla, list_phyla$common_phylum[list_phyla$common_phylum != "to_drop"])) == 0L
+
+    if (!check_phyla)
         stop("Some phyla aren't what they should be.")
 
     ## only records with non-empty worms_valid_name field
