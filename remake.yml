@@ -103,7 +103,7 @@ targets:
     command: add_iucn_status(kozloff_worms)
 
   kozloff_bold:
-    command: find_bold_records(kozloff_worms, I("worms_valid_name"))
+    command: find_bold_records(kozloff_worms, I("worms_valid_name"), map_usa)
 
   ## iDigbio -------------------------------------------------------------------
   kozloff_idigbio_raw:
@@ -182,7 +182,7 @@ targets:
     command: add_iucn_status(gom_worms)
 
   gom_bold:
-    command: find_bold_records(gom_worms, I("worms_valid_name"))
+    command: find_bold_records(gom_worms, I("worms_valid_name"), map_usa)
 
   ## iDigBio -------------------------------------------------------------------
   gom_idigbio_raw:
@@ -252,7 +252,7 @@ targets:
     command: read_idigbio_mammals("data/idigbio_mammals.feather")
 
   mammals_bold_idigbio:
-    command: find_bold_records(mammals_species_idigbio, I("cleaned_scientificname"))
+    command: find_bold_records(mammals_species_idigbio, I("cleaned_scientificname"), map_usa)
 
   ## species list of mammals from the American Society of Mammologists
   ## (http://www.mammalsociety.org/mammals-list)
@@ -269,7 +269,7 @@ targets:
   mammals_asm_bold:
     ## this produces messages about not finding a valid WoRMS ID, but it's OK here as
     ## it happens as we are trying to look for synonyms in case there is no match
-    command: find_bold_mammals(mammals_species_asm, I("cleaned_scientificname"))
+    command: find_bold_mammals(mammals_species_asm, I("cleaned_scientificname"), map_usa)
 
   mammals_asm_summary:
     command: make_idig_bold_summary(mammals_asm_idigbio, mammals_asm_bold)
@@ -283,7 +283,7 @@ targets:
     command: fetch_counts_idigbio(amphibian_species)
 
   amphibian_bold:
-    command: fetch_vert_bold(amphibian_species)
+    command: fetch_vert_bold(amphibian_species, map_usa)
 
   amphibian_summary:
     command: make_idig_bold_summary(amphibian_idigbio, amphibian_bold)
@@ -328,7 +328,7 @@ targets:
     command: add_iucn_status(idigbio_records)
 
   idigbio_bold:
-    command: find_bold_records(idigbio_records, I("worms_valid_name"))
+    command: find_bold_records(idigbio_records, I("worms_valid_name"), map_usa)
 
   ## OBIS ----------------------------------------------------------------------
   obis_database:
