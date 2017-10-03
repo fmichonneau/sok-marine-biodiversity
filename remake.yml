@@ -372,7 +372,7 @@ targets:
     command: combine_records(idigbio = idigbio_gom_records, obis = obis_gom_records, map = map_gom)
 
   total_gom_species:
-    command: combine_species_list(idigbio = idigbio_gom_records, obis = obis_gom_records, checklist = gom_worms)
+    command: combine_species_list(idigbio = idigbio_gom_records, obis = obis_gom_records, checklist = gom_worms, map_usa)
 
   total_gom_records:
     command: combine_records(idigbio=idigbio_gom_records, obis=obis_gom_records, checklist=gom_worms, map=map_gom)
@@ -417,7 +417,7 @@ targets:
     command: combine_records(idigbio_pnw_records, obis_pnw_records, map = map_gom) # note: map_gom isn't a mistake, we use it to assign records to GOM as a region, but probably not in use here.
 
   total_pnw_species:
-    command: combine_species_list(idigbio = idigbio_pnw_records, obis = obis_pnw_records, checklist = kozloff_worms)
+    command: combine_species_list(idigbio = idigbio_pnw_records, obis = obis_pnw_records, checklist = kozloff_worms, map_usa)
 
   total_pnw_records:
       command: combine_records(idigbio=idigbio_pnw_records, obis=obis_pnw_records, checklist=kozloff_worms, map = map_gom)
@@ -434,7 +434,7 @@ targets:
   ## Synthesis -----------------------------------------------------------------
 
   combined_regional_species_list:
-    command: combined_regional_by_geo(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_worms, idigbio_pnw_records, obis_pnw_records)
+    command: combined_regional_by_geo(gom_worms, idigbio_gom_records, obis_gom_records, kozloff_worms, idigbio_pnw_records, obis_pnw_records, map_usa)
 
   figures/database_coverage.pdf:
     command: combine_upsetr_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
@@ -554,7 +554,7 @@ targets:
     command: combine_records(idigbio_records, obis_records, map = map_gom)
 
   combined_species:
-    command: combine_species_list(idigbio = idigbio_records, obis = obis_records)
+    command: combine_species_list(idigbio = idigbio_records, obis = obis_records, map_usa)
 
   combined_data_map:
     command: data_map(combined_records, raster=usa_raster)
@@ -689,6 +689,9 @@ targets:
 
   global_bold_stats:
     command: get_bold_global_coverage(global_bold_stats_raw, worms_stats)
+
+  bold_geography_stats:
+    command: bold_geo_stats(combined_species)
 
 ### in text statistics ---------------------------------------------------------
 
@@ -870,6 +873,7 @@ targets:
       - spp_not_in_lists
       - prop_spp_barcoded
       - rastercell_distribution
+      - bold_geography_stats
       ## figures
       - figures/combined_map_sampling.pdf
       - figures/combined_gradient.pdf

@@ -21,11 +21,14 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
 }
 
 combined_regional_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
-                                     pnw_worms, pnw_idigbio, pnw_obis) {
+                                     pnw_worms, pnw_idigbio, pnw_obis,
+                                     map_usa) {
 
     list(
-        gom = combine_species_list(checklist = gom_worms, idigbio = gom_idigbio, obis = gom_obis),
-        pnw = combine_species_list(checklist = pnw_worms, idigbio = pnw_idigbio, obis = pnw_obis)
+        gom = combine_species_list(checklist = gom_worms, idigbio = gom_idigbio, obis = gom_obis,
+                                   map_usa),
+        pnw = combine_species_list(checklist = pnw_worms, idigbio = pnw_idigbio, obis = pnw_obis,
+                                   map_usa)
     ) %>%
         dplyr::bind_rows(.id = "region")
 }

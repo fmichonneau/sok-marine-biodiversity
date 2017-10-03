@@ -34,7 +34,7 @@ add_geo <- function(d, map) {
     d
 }
 
-combine_species_list <- function(...) {
+combine_species_list <- function(..., map_usa) {
     d <- list(...)
     if (is.null(names(d)) && !all(nzchar(names(names(d))))) {
         stop("arguments need to be named")
@@ -51,7 +51,7 @@ combine_species_list <- function(...) {
         dplyr::count(data_source, worms_phylum, worms_valid_name,
                      worms_id) %>%
         tidyr::spread(data_source, n) %>%
-        find_bold_records(col_nm = "worms_valid_name")
+        find_bold_records(col_nm = "worms_valid_name", map_usa = map_usa)
 }
 
 
