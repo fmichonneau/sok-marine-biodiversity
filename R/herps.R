@@ -35,6 +35,6 @@ fetch_counts_idigbio <- function(amph) {
         dplyr::select(order, family, species_name, count)
 }
 
-fetch_vert_bold <- function(amph) {
-    internal_add_bold(amph, "species_name")
+fetch_vert_bold <- function(amph, map_usa) {
+    find_bold_records(amph, "species_name", map_usa)
 }
