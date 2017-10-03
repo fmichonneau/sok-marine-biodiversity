@@ -69,7 +69,7 @@ find_bold_mammals <- function(mam_asm) {
     mam_spp <- mam_asm %>%
         dplyr::select(species_name) %>%
         unique
-    res <- internal_add_bold(mam_spp, "species_name")
+    res <- find_bold_records(mam_spp, "species_name")
     res
 }
 
