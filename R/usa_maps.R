@@ -49,7 +49,7 @@ is_within_map_records <- function(area) {
         if (nrow(res_is_within) > 0) {
             res_lawn[[paste0("is_in_", area)]] <- res_lawn$coord_key %in% res_is_within$coord_key
         } else {
-            res_lawn[[paste0("is_in_", area)]] <- NA
+            res_lawn[[paste0("is_in_", area)]] <- FALSE
         }
         dplyr::select(res_lawn, -lat, -long, -coord_key)
     }

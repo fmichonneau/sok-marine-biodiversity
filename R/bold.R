@@ -75,7 +75,7 @@ internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
         n_coords[i] <-  ifelse(is.null(bold) || inherits(bold, "character"),
                                0, sum((!is.na(bold$lat)) & (!is.na(bold$lon))))
         within_north_america[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
-                                          FALSE, any(north_america_countries() %in% tolower(bold$country)))
+                                          NA, any(north_america_countries() %in% tolower(bold$country)))
         n_within_eez[i] <- any_within_eez
 
     }
