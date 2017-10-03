@@ -50,7 +50,22 @@ internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
     for (i in seq_len(nrow(res))) {
         if ((!store_bold_specimens_per_species()$exists(tolower(res[[col_nm]][i]))) &&
             show_progress) pb$tick()
+
         bold <- store_bold_specimens_per_species()$get(tolower(res[[col_nm]][i]))
+
+        if (inherits(bold, "data.frame")) {
+            coord_data <- data_frame(decimallatitude = bold$lat,
+                                     decimallongitude = bold$lon) %>%
+                dplyr::filter(!is.na(decimallatitude) |
+                              !is.na(decimallongitude))
+            if (nrow(coord_data) > 0) {
+                any_within_eez <- any(is_within_eez_records(
+                    coord_data,map_usa)$is_in_eez)
+            } else any_within_eez <- NA
+        } else {
+            any_within_eez <- NA
+        }
+
         bold_rcrd[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
                                0, nrow(bold))
         bold_bin[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
@@ -59,11 +74,17 @@ internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
                                0, sum(!is.na(bold$country)))
         n_coords[i] <-  ifelse(is.null(bold) || inherits(bold, "character"),
                                0, sum((!is.na(bold$lat)) & (!is.na(bold$lon))))
+        within_north_america[i] <- ifelse(is.null(bold) || inherits(bold, "character"),
+                                          FALSE, any(north_america_countries() %in% tolower(bold$country)))
+        n_within_eez[i] <- any_within_eez
+
     }
     res$n_bold_records <- bold_rcrd
-    res$n_bins <- bold_bin
-    res$n_country <- n_country
-    res$n_coords <- n_coords
+    res$n_bold_bins <- bold_bin
+    res$n_bold_country <- n_country
+    res$n_bold_coords <- n_coords
+    res$bold_within_north_america <- within_north_america
+    res$n_bold_within_eez <- n_within_eez
 
     res
 }
@@ -316,3 +337,36 @@ get_bold_global_coverage <- function(bold_stats_raw, wrms_stats) {
         ## coord_flip()
 
  }
+
+
+### trying to figure out where the barcodes samples are coming from North America
+north_america_countries <- function() {
+    c("cuba", "bahamas", "turks and caicos", "bermuda",
+      "canada", "mexico", "united states")
+
+}
+
+## calculate stats from BOLD geographic data
+bold_geo_stats <- function(bold_data) {
+
+
+    browser()
+    list(
+        n = nrow(bold_data),
+        ## proportion of species with no geographic info in BOLD
+        p_no_geo_info = mean(
+        (bold_data$n_bold_records > 0 &
+         (## no country info
+             bold_data$n_bold_country == 0L |
+             ## OR no coordinates
+             bold_data$n_bold_coods == 0L)
+        )),
+        ## proportion of species that have at least 1 record within the EEZ
+        ## boundaries
+        p_within_eez = mean(bold_data$n_bold_within_eez > 0, na.rm = TRUE),
+        ## proportion of species that have at least one north american country
+        ## listed in BOLD
+        p_in_north_america = mean(bold_data$bold_within_north_america, na.rm = TRUE)
+    )
+
+}
