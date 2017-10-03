@@ -243,65 +243,6 @@ targets:
       height: 8
       width: 12
 
-### American mammals  ----------------------------------------------------------
-
-  data/idigbio_mammals.feather:
-    command: convert_to_feather("data-raw/vertebrates/idigbio_mammals_occurrence_raw.csv", feather_out="data/idigbio_mammals.feather")
-
-  mammals_species_idigbio:
-    command: read_idigbio_mammals("data/idigbio_mammals.feather")
-
-  mammals_bold_idigbio:
-    command: find_bold_records(mammals_species_idigbio, I("cleaned_scientificname"), map_usa)
-
-  ## species list of mammals from the American Society of Mammologists
-  ## (http://www.mammalsociety.org/mammals-list)
-  ## downloaded on 2017-02-15
-  mammals_species_asm:
-    command: read_asm_mammals("data-raw/vertebrates/mammals_species_usa.csv")
-
-  mammals_asm_idigbio_raw:
-    command: asm_mammals_idigbio(mammals_species_asm)
-
-  mammals_asm_idigbio:
-    command: asm_mammals_idigbio_summary(mammals_species_asm, mammals_asm_idigbio_raw)
-
-  mammals_asm_bold:
-    ## this produces messages about not finding a valid WoRMS ID, but it's OK here as
-    ## it happens as we are trying to look for synonyms in case there is no match
-    command: find_bold_mammals(mammals_species_asm, I("cleaned_scientificname"), map_usa)
-
-  mammals_asm_summary:
-    command: make_idig_bold_summary(mammals_asm_idigbio, mammals_asm_bold)
-
-  ### American Amphibians ----------------------------------------------------
-
-  amphibian_species:
-    command: list_us_amphibians()
-
-  amphibian_idigbio:
-    command: fetch_counts_idigbio(amphibian_species)
-
-  amphibian_bold:
-    command: fetch_vert_bold(amphibian_species, map_usa)
-
-  amphibian_summary:
-    command: make_idig_bold_summary(amphibian_idigbio, amphibian_bold)
-
-  ### American Birds -----------------------------------------------------------
-
-  bird_species:
-    command: list_us_birds(file="data-raw/vertebrates/NACC_list_species_birds.csv")
-
-  bird_idigbio:
-    command: fetch_counts_idigbio(bird_species)
-
-  bird_bold:
-    command: fetch_vert_bold(bird_species)
-
-  bird_summary:
-    command: make_idig_bold_summary(bird_idigbio, bird_bold)
-
 ### get species list from the US using iDigBio ---------------------------------
 
   map_usa:
@@ -716,6 +657,9 @@ targets:
   prop_30_specimens_species:
     command: calc_prop_nspecimens_species(combined_records, n_specimens=I(30))
 
+  prop_missing_depth:
+    command: calc_prop_missing_depth(obis_records)
+
   records_rare_phyla:
     command: calc_records_rare_phyla(idigbio_records, obis_records, worms_stats)
 
@@ -831,6 +775,31 @@ targets:
   #validate_combined_records:
   #  command: validate_records(combined_records, gom_phyla)
 
+### Estimate richness ----------------------------------------------------------
+
+  gom_list_rasters:
+    command: list_rasters(map_gom)
+
+  gom_with_cells:
+    command: add_cell_id(combined_gom_records, gom_list_rasters)
+
+  gom_species_per_cell:
+    command: species_per_cell(gom_with_cells)
+
+  gom_sampled_richness:
+    command: sample_richness_in_cells(gom_species_per_cell, gom_list_rasters)
+
+  us_list_rasters:
+    command: list_rasters(map_usa)
+
+  us_with_cells:
+    command: add_cell_id(combined_records, us_list_rasters)
+
+  us_species_per_cell:
+    command: species_per_cell(us_with_cells)
+
+  us_sampled_richness:
+    command: sample_richness_in_cells(us_species_per_cell, us_list_rasters)
 
 ### Manuscript -----------------------------------------------------------------
 
@@ -852,8 +821,6 @@ targets:
       - combined_species
       - gom_worms
       - kozloff_worms
-      - mammals_species_asm
-      - amphibian_summary
       - stat_bold
       - stat_barcoding
       - barcode_status_data
@@ -861,6 +828,7 @@ targets:
       - prop_singleton_species
       - prop_10_specimens_species
       - prop_30_specimens_species
+      - prop_missing_depth
       - n_idigbio_phyla
       - records_rare_phyla
       - prop_species_not_collected_since_1980
