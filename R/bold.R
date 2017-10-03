@@ -38,7 +38,8 @@ store_bold_specimens_per_species <- function(store_path = "data/bold_specimens_p
 ## the content of `col_nm` contains the species names to look up in
 ## BOLD. It returns a data frame.
 internal_add_bold <- function(res, col_nm, show_progress = TRUE) {
-    bold_rcrd <- bold_bin <- n_country <- n_coords <- numeric(nrow(res))
+    bold_rcrd <- bold_bin <- n_country <- n_coords <- n_within_eez <- numeric(nrow(res))
+    within_north_america <- logical(nrow(res))
 
     if (show_progress) {
         to_find <- !store_bold_specimens_per_species()$exists(tolower(res[[col_nm]]))
