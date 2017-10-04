@@ -15,22 +15,12 @@ fontsize: 12pt
 link-citations: yes
 csl: nature.csl
 bibliography: /home/francois/Library/dark-plankton.bib
+abstract: Museum collections have been recording our knowledge about species and their geographic ranges for about 250 years, but until recently, this information was fragmented across institutions and difficult to synthesize. The digitization of biodiversity information is now enabling the synthesis of this information, and can be used to highlight knowledge gaps. Here we use publicly accessible biodiversity data to assemble a list of `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species of marine invertebrates from the continental United States. Our knowledge about species richness and their geographic ranges is limited by sampling effort, as `r prop_10_specimens_species`% of the species are known from less than 10 occurrences. While recent developments in high-throughput sequencing promise to greatly speed up the documentation of marine biodiversity, anchoring results from such studies into existing DNA sequence data and associated vouchers would provide a richer biological context to interpret the insights provided by these datasets. However, with `r format_output(prop_spp_barcoded$p_barcoded * 100)`% of the marine invertebrate fauna that has sequences available for the most widely used DNA barcoding gene (cytochrome oxidase I, COI), and given that for many species these records have been sampled in biogeographic areas outside the USA, additional DNA barcoding efforts are needed to assemble a comprehensive library of reference sequences. More sampling, coordinated at the national scale, is needed to improve our knowledge of species and their geographic ranges. This data will allow the detection of the impact of climate change and other anthropogenic strains to marine biodiversity. Advances in computing, information systems, and sequencing technologies, have set the stage to inform where future efforts for documenting biodiversity should be applied.
 ---
 
 ```{r setup, echo=FALSE, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
-
-<!-- use Pimm+2014 intro as model on using short informative sentences to build -->
-<!-- 1st paragraph. -->
-
-
-<!-- * how do we conserve animal species that we can't see, we don't find pretty, don't have eyes -->
-<!-- * Most species are rare, especially in very diverse places,  and the degradation of habitats makes it even more difficult to find these rare species. -->
-
-## Abstract
-
-Museum collections have been recording our knowledge about species and their geographic ranges for about 250 years, but until recently, this information was fragmented across institutions and difficult to synthesize. The digitization of biodiversity information is now enabling the synthesis of this information and can be used to highlight knowledge gaps. Here we use publicly accessible biodiversity data to assemble a list of `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species of marine invertebrates from the continental United States. The extent of our knowledge about species richness is limited by sampling effort. While recent developments in high-throughput sequencing promise to greatly speed up the documentation of marine species and their ranges, its value will be improved by anchoring the results into existing DNA sequence data and associated vouchers. However, the best documented phyla have at most 25% of their species sequenced for even the most widely used DNA barcoding gene, cytochrome oxidase I (COI), but for many species these records have been sampled in other biogeographic areas. More sampling, coordinated at the national scale, is needed to improve our knowledge of species and their geographic ranges. This data is needed to detect the impact of climate change and other anthropogenic strains to the environment. Advances in computing, information systems, and sequencing technologies, have set the stage to inform where future efforts for documenting biodiversity should be applied.
 
 
 ## Introduction
