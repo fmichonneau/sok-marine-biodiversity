@@ -26,9 +26,9 @@ combined_regional_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
 
     list(
         gom = combine_species_list(checklist = gom_worms, idigbio = gom_idigbio, obis = gom_obis,
-                                   map_usa),
+                                   map_usa = map_usa),
         pnw = combine_species_list(checklist = pnw_worms, idigbio = pnw_idigbio, obis = pnw_obis,
-                                   map_usa)
+                                   map_usa = map_usa)
     ) %>%
         dplyr::bind_rows(.id = "region")
 }
@@ -485,4 +485,13 @@ get_not_really_in_database <- function(database_overlap, map_usa) {
         idig_gom_n_spp_within_usa = idig_gom_n_spp_within_usa,
         idig_gom_p_spp_within_usa = idig_gom_p_spp_within_usa
     )
+}
+
+
+calc_prop_missing_depth <- function(obis) {
+    list(p_missing = mean(is.na(obis$depth)  &
+                          is.na(obis$minimumdepthinmeters) &
+                          is.na(obis$maximumdepthinmeters)),
+         n_total = nrow(obis))
+
 }

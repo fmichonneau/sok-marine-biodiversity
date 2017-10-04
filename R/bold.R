@@ -125,8 +125,8 @@ make_stat_bold <- function(gom_bld, koz_bld, gom_wrm, koz_wrm) {
     p_multi_bin <- n_multi_bin/nrow(multi_bin)
 
     list(
-        p_no_country = 1 - (sum(res$n_country)/sum(res$n_bold_records)),
-        p_no_coords = 1 - (sum(res$n_coords)/sum(res$n_bold_records)),
+        p_no_country = 1 - (sum(res$n_bold_country)/sum(res$n_bold_records)),
+        p_no_coords = 1 - (sum(res$n_bold_coords)/sum(res$n_bold_records)),
         n_total_records = sum(res$n_bold_records),
         n_shared_bins = n_shared_bins,
         n_spp_multi_bin = n_multi_bin,
@@ -346,18 +346,14 @@ north_america_countries <- function() {
 ## calculate stats from BOLD geographic data
 bold_geo_stats <- function(bold_data) {
 
-
-    browser()
     list(
-        n = nrow(bold_data),
+        n_spp_with_records = sum(bold_data$n_bold_records > 0),
         ## proportion of species with no geographic info in BOLD
         p_no_geo_info = mean(
         (bold_data$n_bold_records > 0 &
-         (## no country info
-             bold_data$n_bold_country == 0L |
-             ## OR no coordinates
-             bold_data$n_bold_coods == 0L)
-        )),
+         ## no coordinates
+         bold_data$n_bold_coords == 0L)
+        ),
         ## proportion of species that have at least 1 record within the EEZ
         ## boundaries
         p_within_eez = mean(bold_data$n_bold_within_eez > 0, na.rm = TRUE),

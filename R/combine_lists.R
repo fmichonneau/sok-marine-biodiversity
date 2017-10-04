@@ -68,6 +68,7 @@ generate_species_list <- function(d) {
      d %>%
         dplyr::mutate(bold = as.integer(n_bold_records > 0)) %>%
         dplyr::select(-starts_with("n_")) %>%
+        dplyr::select(-starts_with("bold_within_north_")) %>%
         dplyr::mutate_if(is.integer, funs(if_else(is.na(.) | . == 0L, 0L, 1L))) %>%
         dplyr::arrange(worms_phylum)
 }
