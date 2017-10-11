@@ -10,8 +10,7 @@ get_n_records_in_db <- function(worm, db, field_name, region = c("gom", "pnw")) 
     is_in_region <- paste0("is_in_", region)
 
     db <- db %>%
-        dplyr::mutate(scientificname = tolower(scientificname)) %>%
-        dplyr::filter(is_marine)
+        dplyr::mutate(scientificname = tolower(scientificname))
 
     summary_db <- db %>%
         dplyr::group_by(scientificname) %>%
