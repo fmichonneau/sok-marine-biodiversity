@@ -169,15 +169,8 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
     db <- sok_db %>%
         dplyr::tbl(db_table)
 
-    arth_class_to_rm <- arthropod_classes_to_rm()
     chr_class_to_rm <- chordata_classes_to_rm()
     chr_fam_to_rm <- chordata_families_to_rm()
-
-    arth_family_to_rm <- db %>%
-        dplyr::filter(phylum == "arthropoda" & class %in% arth_class_to_rm) %>%
-        dplyr::select(phylum, family) %>%
-        dplyr::distinct(phylum, family) %>%
-        dplyr::filter(!is.na(family))
 
     chordata_family_to_rm <- db %>%
         dplyr::filter(phylum == "chordata" &
@@ -209,19 +202,18 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                    collapse = ", "))
 
     db %>%
-        ## First let's get the phylum names from the Gulf of Mexico list,
-        ## that will take care of plants, fungi, and records with no
-        ## specified phylum
+        ## First let's get the phylum names we need to keep, that will take care
+        ## of plants, fungi, and records with no specified phylum
         dplyr::filter(phylum %in% all_phyla_to_keep) %>%
-        ## only the obviously non-marine arthropods and the vertebrates
-        dplyr::anti_join(arth_family_to_rm, by = c("phylum", "family")) %>%
+        ## remove the obviously vertebrates
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "class")) %>%
         ## remove some vertebrates identified at higher level in the scientificname
         ## field
         dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
         dplyr::select(uuid, phylum, class, order, family, genus, scientificname,
-                      decimallatitude, decimallongitude, datecollected, institutioncode) %>%
+                      decimallatitude, decimallongitude, datecollected, institutioncode,
+                      dplyr::contains("depth", ignore.case = TRUE)) %>%
         dplyr::collect(n = Inf) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),

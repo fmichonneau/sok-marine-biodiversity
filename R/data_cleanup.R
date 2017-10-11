@@ -14,11 +14,3 @@ chordata_families_to_rm <- function()
       "eleotrididae", "fritillariidae", "gobioididae", "grammistidae",
       "icelidae", "idiacanthidae", "macrorhamphosidae", "pholididae",
       "zaniolepidae", "zaniolepididae")
-
-arthropod_classes_to_rm <- function()
-    c("arachnida", "myriapoda", "protura", "symphyla", "chilopoda",
-      "diplopoda", "hexapoda", "insecta", "trilobita", "unknown")
-
-list_gom_phyla <- function(gom_species) {
-    tolower(unique(gom_species$phylum))
-}
