@@ -126,6 +126,16 @@ rescue_store <- function(store) {
 }
 
 
+worms_is_marine <- function(sp) {
+    winfo <- store_worms_ids()$get(tolower(sp))
+    if (inherits(winfo, "data.frame")) {
+        if (is.na(winfo$isMarine) && is.na(winfo$isBrackish))
+            NA
+        else
+            identical(winfo$isMarine, 1L) | identical(winfo$isBrackish, 1L)
+    } else NA
+}
+
 add_worms <- function(sp_list) {
     stopifnot(inherits(sp_list, "data.frame"))
     stopifnot(all(c("is_binomial", "cleaned_scientificname") %in%
@@ -143,9 +153,10 @@ add_worms <- function(sp_list) {
         w_info <- store_worms_ids()$get(tolower(spp[i, 1]))
         if (inherits(w_info, "data.frame")) {
             wid[i] <- w_info$valid_AphiaID
-            marine[i] <- (identical(w_info$isMarine, 1L) | identical(w_info$isBrackish, 1L))
             valid_name[i] <- w_info$valid_name
             is_fuzzy[i] <- w_info$fuzzy
+            # use the valid name to infer marine or not, as it is not score
+            marine[i] <- worms_is_marine(w_info$valid_name)
         } else {
             wid[i] <- marine[i] <- valid_name[i] <- is_fuzzy[i] <- NA
         }
