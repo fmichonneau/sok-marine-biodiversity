@@ -49,11 +49,11 @@ validate_records <- function(recs, list_phyla) {
     ## check there aren't any fishes
     if (any(recs$worms_class %in% chordata_classes_to_rm()) ||
         any(recs$worms_family %in% chordata_families_to_rm()))
-        warning("This dataset smells fishy.")
+        stop("This dataset smells fishy.")
 
     ## check there aren't any insects
     if (any(recs$worms_class %in% arthropod_classes_to_rm()))
-        warning("There is a bug in this dataset.")
+        stop("There is a bug in this dataset.")
 
     ## records with dates outside range
     if (any(na.omit(recs$year) > 2017)  || any(na.omit(recs$year) < 1850))
