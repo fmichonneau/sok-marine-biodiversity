@@ -129,10 +129,10 @@ obis_data_types <- function() {
                 ## "typeStatus", "TEXT",
                 ## "vernacularName", "TEXT",
                 ## "waterBody", "TEXT",
-                "class", "TEXT"
-                ## "depth", "REAL",
-                ## "minimumDepthInMeters", "REAL",
-                ## "maximumDepthInMeters", "REAL"
+                "class", "TEXT",
+                "depth", "REAL",
+                "minimumDepthInMeters", "REAL",
+                "maximumDepthInMeters", "REAL"
             ) %>%
         dplyr::mutate(name = tolower(name))
 }

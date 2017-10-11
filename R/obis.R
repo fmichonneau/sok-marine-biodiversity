@@ -30,13 +30,17 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
     }
     res <- dplyr::bind_rows(res)
     names(res) <- tolower(names(res))
+
     res <- dplyr::rename(res, uuid = id) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
         dplyr::select_("uuid", "decimallatitude",
-                       "decimallongitude",
+                       "decimallongitude", "depth",
                        "phylum", "family",
                        "genus", "species",
-                       "scientificname", "yearcollected")
+                       "scientificname", "yearcollected",
+                       "depth", "minimumdepthinmeters",
+                       "maximumdepthinmeters")
+
     if (!is.null(feather_out)) {
         feather::write_feather(res, feather_out)
     } else
