@@ -73,21 +73,17 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
 
     region <- match.arg(region)
 
+    col_name <- paste0("n_idigbio_in_", region)
+
     idig_ <- idig_db %>%
         dplyr::group_by(phylum) %>%
-        dplyr::summarize_(
-                   .dots = setNames(
-                       list(
-                           "sum(!is.na(n_idigbio))",
-                           "sum(!is.na(n_idigbio_in_us))",
-                           lazyeval::interp("sum(!is.na(n_idigbio_in_region))",
-                                            n_idigbio_in_region = as.name(paste0("n_idigbio_in_", region)))
-                       ),
-                       c("n_idigbio", "n_idigbio_in_us",
-                         paste0("n_idigbio_in_", region)
-                         )
-                   )
+        dplyr::summarize(
+                   n_idigbio = sum(!is.na(n_idigbio)),
+                   n_idigbio_in_us = sum(!is.na(n_idigbio_in_us)),
+                   !!col_name := sum(is.na(!!sym(col_name)))
                )
+
+    browser()
     stopifnot(all(idig_[["n_idigbio"]] >= idig_[["n_idigbio_in_us"]]))
     stopifnot(all(idig_[["n_idigbio"]] >= idig_[[paste0("n_idigbio_in_", region)]]))
 
