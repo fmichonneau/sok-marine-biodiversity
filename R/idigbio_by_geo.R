@@ -171,6 +171,7 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
 
     chr_class_to_rm <- chordata_classes_to_rm()
     chr_fam_to_rm <- chordata_families_to_rm()
+    arth_class_to_rm <- arthropod_classes_to_rm()
 
     chordata_family_to_rm <- db %>%
         dplyr::filter(phylum == "chordata" &
@@ -178,6 +179,12 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                        family %in% chr_fam_to_rm)) %>%
         dplyr::select(phylum, class, family) %>%
         dplyr::distinct(phylum, class, family)
+
+    arth_family_to_rm <- db %>%
+        dplyr::filter(phylum == "arthropoda" & class %in% arth_class_to_rm) %>%
+        dplyr::select(phylum, family) %>%
+        dplyr::distinct(phylum, family) %>%
+        dplyr::filter(!is.na(family))
 
     phyla_to_keep_clean <- list_phyla %>%
         dplyr::filter(common_phylum != "to_drop") %>%
@@ -208,6 +215,8 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
         ## remove the obviously vertebrates
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "family")) %>%
         dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "class")) %>%
+        ## and the arthropods
+        dplyr::anti_join(arth_family_to_rm, by = c("phylum", "family")) %>%
         ## remove some vertebrates identified at higher level in the scientificname
         ## field
         dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
