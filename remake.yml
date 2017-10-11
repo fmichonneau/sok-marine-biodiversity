@@ -23,7 +23,7 @@ packages:
   - tidyr
   - lubridate
   - purrr
-  - lazyeval
+  - rlang
   ## data visualization
   - grid
   - ggplot2
@@ -413,7 +413,13 @@ targets:
   outputs/list_species_us.csv:
     command: export_species_list(combined_species, "outputs/list_species_us.csv")
 
+### ITIS list ------------------------------------------------------------------
 
+  itis_crustaceans_parsed:
+    command: crustacean_names()
+
+  itis_crustaceans:
+    command: crust_name_details(itis_crustaceans_parsed)
 
 ### summary tables
   # table_idigbio_species_sequenced:
