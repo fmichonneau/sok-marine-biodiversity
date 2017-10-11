@@ -244,14 +244,11 @@ filter_records_by_geo <- function(rec, map_area) {
     is_within_geo <- is_within_map_records(area)
 
     ## build the column name
-    if (area == "usa")
-        zone <- "eez"
-    else zone <- area
-
-    col_name <- paste0("is_in_", zone)
+    col_name <- paste0("is_in_", area)
 
     rec %>%
         is_within_geo(map_area) %>%
+        ## only keep records within map limits
         dplyr::filter(!!sym(col_name)) %>%
         add_worms() %>%
         parse_year()
