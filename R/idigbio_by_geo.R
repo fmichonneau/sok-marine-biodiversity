@@ -225,10 +225,25 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                       phylum = common_phylum)
 }
 
-filter_records_by_geo <- function(rec, map_usa) {
+filter_records_by_geo <- function(rec, map_area) {
+
+    ## extract name of area based on name of variable
+    area <- gsub(".+_(.+)", "\\1", deparse(substitute(map_area)))
+    stopifnot(area %in% c("usa", "gom", "pnw"))
+
+    ## reuse factory to get the correct function
+    is_within_geo <- is_within_map_records(area)
+
+    ## build the column name
+    if (area == "usa")
+        zone <- "eez"
+    else zone <- area
+
+    col_name <- paste0("is_in_", zone)
+
     rec %>%
-        is_within_eez_records(map_usa) %>%
-        dplyr::filter(is_in_eez == TRUE) %>%
+        is_within_geo(map_area) %>%
+        dplyr::filter(!!sym(col_name)) %>%
         add_worms() %>%
         parse_year()
 }
