@@ -1,3 +1,11 @@
+assert_all_marine <- function(d) {
+    if (any(is.na(d$is_marine)))
+        stop("Missing info about whether species is marine")
+    if (!all(d$is_marine))
+        stop("Non marine records are included")
+}
+
+
 validate_records <- function(recs, list_phyla) {
 
     recs_name <- deparse(substitute(recs))

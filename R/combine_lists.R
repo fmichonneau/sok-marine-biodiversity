@@ -11,10 +11,12 @@ deduplicate_records <- function(data) {
 combine_records <- function(..., map) {
     d <- list(...)
     d <- year_as_integer(d)
-    d %>%
+    d <- d %>%
         dplyr::bind_rows() %>%
         deduplicate_records() %>%
         add_geo(map = map)
+    assert_all_marine(d)
+    d
 }
 
 ## add info on whether a record is on the East coast, West coast, or the Gulf of
