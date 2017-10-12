@@ -27,6 +27,9 @@ is_within_map <- function(points, map) {
 
 is_within_map_records <- function(area) {
     function(filtered_data, map) {
+        if (nrow(filtered_data) < 1)
+            stop("something is wrong")
+
         res_lawn <- filtered_data %>%
             dplyr::mutate(
                        lat = round(decimallatitude, 1),
