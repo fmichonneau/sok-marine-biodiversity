@@ -16,8 +16,14 @@ worm_fail <- function(key, reason) {
 
 }
 
+assert_no_parenthesis <- function(x) {
+    if(grepl("\\(", x) | grepl("\\)", x))
+        stop(sQuote(x), " has parenthesis")
+}
+
 fetch_hook_worms_ids <- function(key, namespace) {
     is_lower_case(key)
+    assert_no_parenthesis(key)
     internal_worms <- function(key, fuzzy = FALSE) {
         wid <- try(worrms::wm_records_name(key, fuzzy = FALSE),
                    silent = TRUE)
@@ -70,6 +76,23 @@ find_nas <- function() {
     all_keys %>%
         map_if(function(x) is.na(store_worms_ids()$get(x)),
                function(x) x)
+}
+
+## Storr for WoRMS taxon info from WoRMS id
+fetch_hook_worms_info <- function(key, namespace) {
+    res <- try(worrms::wm_record(as.integer(key)),
+               silent = TRUE)
+    if (!inherits(res, "try-error") && length(res) > 0L) {
+        res
+    } else {
+        warning("AphiaID ", sQuote(key), " failed.")
+        NA
+    }
+}
+
+store_worms_info <- function(store_path = "data/worms_info") {
+    invisible(storr::storr_external(storr::driver_rds(store_path),
+                                    fetch_hook_worms_info))
 }
 
 ## Storr for the WoRMS synonyms: given a WoRMS id, what are the synonyms? ------
@@ -127,12 +150,12 @@ rescue_store <- function(store) {
 
 
 worms_is_marine <- function(sp) {
-    winfo <- store_worms_ids()$get(tolower(sp))
+    winfo <- store_worms_info()$get(sp)
     if (inherits(winfo, "data.frame")) {
         if (is.na(winfo$isMarine) && is.na(winfo$isBrackish))
             NA
         else
-            identical(winfo$isMarine, 1L) | identical(winfo$isBrackish, 1L)
+            identical(winfo$isMarine, "1") | identical(winfo$isBrackish, "1")
     } else NA
 }
 
@@ -156,7 +179,7 @@ add_worms <- function(sp_list) {
             valid_name[i] <- w_info$valid_name
             is_fuzzy[i] <- w_info$fuzzy
             # use the valid name to infer marine or not, as it is not score
-            marine[i] <- worms_is_marine(w_info$valid_name)
+            marine[i] <- worms_is_marine(as.character(w_info$valid_AphiaID))
         } else {
             wid[i] <- marine[i] <- valid_name[i] <- is_fuzzy[i] <- NA
         }
