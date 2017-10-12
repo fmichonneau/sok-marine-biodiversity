@@ -10,6 +10,7 @@ packages:
   - pool
   - storr
   - tibble
+  - xml2
   ## geospatial tools
   - raster
   - sp
@@ -420,6 +421,12 @@ targets:
 
   itis_crustaceans:
     command: crust_name_details(itis_crustaceans_parsed)
+
+  itis_molluscs_parsed:
+    command: molluscs_names()
+
+  itis_molluscs:
+    command: moll_name_details(itis_molluscs_parsed)
 
 ### summary tables
   # table_idigbio_species_sequenced:

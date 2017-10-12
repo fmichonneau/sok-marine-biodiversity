@@ -43,19 +43,21 @@ moll_name_details <- function(tbl) {
     tbl %>%
         dplyr::mutate(classification =
                           purrr:::pmap(., function(tsn_id, ...) store_itis_classification()$get(tsn_id)),
-                      comments =
-                          purrr::pmap(., function(tsn_id, ...) store_itis_comments()$get(tsn_id))
+                      geo =
+                          purrr::pmap(., function(tsn_id, ...) store_itis_geo()$get(tsn_id))
                       )
 }
 
 
 
 fetch_hook_itis_classif <- function(key, namespace) {
-    message("Getting classifcation for TSN: ", key,  appendLF = FALSE)
+    v3("Getting classifcation for TSN: ", key,  appendLF = FALSE)
     res <- ritis::hierarchy_full(key)
-    if (!(inherits(res, "data.frame") && nrow(res) > 0))
-        browser()
-    message(" done.")
+    if (!(inherits(res, "data.frame") && nrow(res) > 0)) {
+        warning("no result for: ", sQuote(key))
+        NA
+    }
+    v3(" done.")
     res
 }
 
@@ -65,16 +67,33 @@ store_itis_classification <- function(path = "data/storr_itis_classification") {
 }
 
 fetch_hook_itis_comments <- function(key, namespace) {
-    message("Getting comments for TSN: ", key, appendLF = FALSE)
+    v3("Getting comments for TSN: ", key, appendLF = FALSE)
     res <- ritis::comment_detail(key)
-    if (!(inherits(res, "data.frame") && nrow(res) > 0))
-        browser()
-    message(" done.")
+    if (!(inherits(res, "data.frame") && nrow(res) > 0)) {
+        warning("no result for: ", sQuote(key))
+        NA
+    }
+    v3(" done.")
     res
 }
-
 
 store_itis_comments <- function(path = "data/storr_itis_comments") {
     invisible(storr::storr_external(storr::driver_rds(path),
                                     fetch_hook_itis_comments))
+}
+
+fetch_hook_itis_geo <- function(key, namespace) {
+    v3("Getting geo information from: ", key, appendLF = FALSE)
+    res <- ritis::geographic_divisions(tsn = key)
+    if(!(inherits(res, "data.frame") && nrow(res) > 0)) {
+        warning("no result for: ", sQuote(key))
+        NA
+    }
+    v3(" done.")
+    res
+}
+
+store_itis_geo <- function(path = "data/storr_itis_geo") {
+    invisible(storr::storr_external(storr::driver_rds(path),
+                                    fetch_hook_itis_geo))
 }
