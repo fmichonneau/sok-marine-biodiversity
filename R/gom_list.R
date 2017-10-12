@@ -83,9 +83,7 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
                    !!col_name := sum(is.na(!!sym(col_name)))
                )
 
-    browser()
     stopifnot(all(idig_[["n_idigbio"]] >= idig_[["n_idigbio_in_us"]]))
-    stopifnot(all(idig_[["n_idigbio"]] >= idig_[[paste0("n_idigbio_in_", region)]]))
 
     obis_ <- obis_db %>%
         dplyr::group_by(phylum) %>%
