@@ -1,3 +1,67 @@
+extract_latitudinal_ranges <- function(d) {
+    extract_lat_range <- . %>%
+        dplyr::group_by(phylum, worms_valid_name) %>%
+        dplyr::summarize(
+                   min_latitude = min(decimallatitude),
+                   max_latitude = max(decimallatitude),
+                   diff_lat = max_latitude - min_latitude,
+                   n_records = n()
+               )
+
+    dplyr::bind_rows(
+               east = d %>%
+                   dplyr::filter(is_east_coast) %>%
+                   extract_lat_range,
+               west = d %>%
+                   dplyr::filter(is_west_coast) %>%
+                   extract_lat_range,
+               .id = "coast"
+           )
+}
+
+
+stats_latitude_extent <- function(lat_data) {
+    ## Proportion of species with more than 10 records that have latitudinal
+    ## range of more than 5°
+    lat_data %>%
+        dplyr::filter(n_records >= 10) %>%
+        dplyr::group_by(coast, phylum) %>%
+        dplyr::summarize(
+                   p_more_than_5 = mean(diff_lat > 5)
+               )
+}
+
+if (FALSE) {
+    ## show spread of geographic range for various phyla
+    ggplot(filter(tt, n_records >= 5,
+                  phylum %in% c("arthropoda", "mollusca",
+                                "echinodermata", "annelida",
+                                "cnidaria"))) +
+        geom_segment(aes(x = reorder(reorder(worms_valid_name, diff_lat),
+                                     min_latitude),
+                         xend = reorder(reorder(worms_valid_name, diff_lat),
+                                        min_latitude),
+                         color = phylum, y = min_latitude, yend = max_latitude)) +
+        facet_grid(phylum ~ coast)
+}
+
+n_spp_per_lat <- function(lat_data) {
+
+    ## number of species for each latitudinal slice based on inferred ranges
+
+    slice_size <- .2
+
+    res <- expand.grid(lat_coast = c("east", "west"),
+                lat_degrees = seq(22, 60, by = slice_size),
+                stringsAsFactors = FALSE)
+
+    res %>%
+        dplyr::mutate(n_spp = pmap_int(., function(lat_coast, lat_degrees, ...) {
+                          tmp_data <- dplyr::filter(lat_data, coast == lat_coast)
+                          sum(tmp_data$min_latitude >= lat_degrees &
+                              tmp_data$max_latitude < (lat_degrees + slice_size))
+                      }))
+}
 plot_gradient <- function(idig) {
     idig %>%
         dplyr::mutate(
