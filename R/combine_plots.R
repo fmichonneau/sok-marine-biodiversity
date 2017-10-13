@@ -35,3 +35,13 @@ simple_cowplot <- function(g1, g2) {
                    scale = .9)
     plot_grid(p, leg, ncol = 1, rel_heights = c(1, .2))
 }
+
+combine_cowplots_3 <- function(g1, g2, g3) {
+    g1 <- g1 + theme(legend.position = "none")
+    g2 <- g2 + theme(legend.position = "none")
+    g3 <- g3 + theme(legend.position = "none")
+    theme_set(theme_cowplot(font_size = 10))
+    plot_grid(g1, g2, g3, labels = "AUTO",
+              nrow = 3, align = "v")
+
+}

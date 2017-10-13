@@ -71,8 +71,8 @@ Spatial distribution of species richness with latitude differ markedly between t
 knitr::include_graphics("figures/combined_map_sampling.pdf")
 ```
 
-```{r latitudinal-gradient, fig.cap='Latitudinal gradient in species richness for the Pacific and Atlantic oceans (Gulf of Mexico records excluded). Trend lines are B-splines of the 3rd degree polynomial weighted by the square-root of the number of records. (\\#fig:latitudinal-gradient)'}
-knitr::include_graphics("figures/combined_gradient.pdf")
+```{r latitudinal-gradient, fig.cap='Latitudinal gradient in species richness for the Pacific and Atlantic oceans (Gulf of Mexico records excluded), based on inferred species richness (A) and recorded species richness (B). The patterns are strongly influenced by the sampling effort (C). Trend lines are rolling means with a window of size of 3. (\\#fig:latitudinal-gradient)'}
+knitr::include_graphics("figures/gradient.pdf")
 ```
 
 
@@ -241,7 +241,7 @@ All species names obtained from all sources were checked against the World Regis
 
 To generate the combined list of records from iDigBio and OBIS, we removed putative duplicate based on the following criteria: same phylum, same accepted species name from WoRMS, same geographic coordinates (rounded to the 4th decimal), and same date of collection. When the date is missing, a single record per species with identical coordinates is included.
 
-<!-- include results earlier? -->
+To infer the number of species along the latitudinal gradient (Fig. \@ref(fig:latitudinal-gradient)), we estimated the species ranges by using the southernmost and northernmost observations for each species on the Atlantic and Pacific coast separately. Records for the Gulf of Mexico were not included in this analysis.
 
 To estimate the proportion of the marine invertebrate diversity for which DNA barcodes are available, we queried BOLD (Barcode of Life Datasystem) for all species listed in the regional lists for the Gulf of Mexico, the Pacific Northwest, as well as all the records for marine invertebrates that occur in the EEZ of the US found in iDigBio.
 

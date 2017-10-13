@@ -25,6 +25,7 @@ packages:
   - lubridate
   - purrr
   - rlang
+  - RcppRoll
   ## data visualization
   - grid
   - ggplot2
@@ -528,17 +529,37 @@ targets:
   combined_map_diversity:
     command: make_heatmap(combined_data_map_diversity, I("Number of species"), base_map = map_usa)
 
-  figures/combined_gradient.pdf:
-    command: plot_gradient(combined_records)
-    plot:
-      width: 8.5
-      height: 3.5
-
   figures/combined_map_sampling.pdf:
     command: combine_cowplots(combined_map_samples, combined_map_diversity, nrow=I(2), common_legend=I(FALSE))
     plot:
       width: 6
       height: 7
+
+  ## Map of diversity and sampling gradients
+  combined_latitudinal_ranges:
+    command: extract_latitudinal_ranges(combined_records)
+
+  combined_species_per_latitude:
+    command: n_spp_per_lat(combined_latitudinal_ranges)
+
+  inferred_gradient:
+    command: plot_inferred_gradient(combined_species_per_latitude)
+
+  gradient_data:
+    command: make_gradient_data(combined_records)
+
+  species_gradient:
+    command: plot_gradient(gradient_data)
+
+  sampling_gradient:
+    command: plot_gradient_sampling(gradient_data)
+
+  figures/gradient.pdf:
+    command: combine_cowplots_3(inferred_gradient, species_gradient, sampling_gradient)
+    plot:
+      width: 5
+      height: 7
+
 
 
   ## Gulf of Mexico maps
@@ -857,7 +878,7 @@ targets:
       - bold_geography_stats
       ## figures
       - figures/combined_map_sampling.pdf
-      - figures/combined_gradient.pdf
+      - figures/gradient.pdf
       - figures/idigbio_map_sampling.pdf ## for supp mat
       - figures/obis_map_sampling.pdf    ## for supp mat
       - figures/plot_sampling_effort.pdf
