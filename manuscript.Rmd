@@ -239,6 +239,7 @@ For geographic searches in OBIS and iDigBio, we obtained the boundaries of the E
 
 All species names obtained from all sources were checked against the World Registry of Marine Species (WoRMS). Species that could not be matched in WoRMS, and species listed as non-marine in WoRMS were not included in subsequent analyses. For all names that were listed in WoRMS, the current accepted name was captured and used in all analyses. This ensured that the same species listed under different synonyms was only counted once. The R package worrms [@worrms-0.1.0] was used to query the WoRMS database.
 
+To generate the combined list of records from iDigBio and OBIS, we removed putative duplicate based on the following criteria: same phylum, same accepted species name from WoRMS, same geographic coordinates (rounded to the 4th decimal), and same date of collection. When the date is missing, a single record per species with identical coordinates is included.
 
 <!-- include results earlier? -->
 

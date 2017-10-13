@@ -2,10 +2,15 @@ deduplicate_records <- function(data) {
     data %>%
         dplyr::filter(!is.na(worms_valid_name),
                       is_marine == TRUE) %>%
-        dplyr::select(phylum, worms_valid_name, decimallatitude,
+        dplyr::mutate(approx_lat = round(decimallatitude, 4),
+                      approx_lon = round(decimallongitude, 4)) %>%
+        dplyr::distinct(worms_phylum, worms_class, worms_order,
+                        worms_valid_name, approx_lat, approx_lon,
+                        datecollected, .keep_all = TRUE) %>%
+        dplyr::select(worms_phylum, worms_class, worms_order, worms_family,
+                      worms_valid_name, decimallatitude,
                       decimallongitude, datecollected, year) %>%
-        dplyr::distinct(phylum, worms_valid_name, decimallatitude,
-                        decimallongitude, datecollected, .keep_all = TRUE)
+        dplyr::rename(phylum = worms_phylum)
 }
 
 combine_records <- function(..., map) {
