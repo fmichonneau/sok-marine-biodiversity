@@ -1,4 +1,6 @@
 assert_all_marine <- function(d) {
+    if (!exists("is_marine", d))
+        stop("columns `is_marine` missing from this dataset.")
     if (any(is.na(d$is_marine)))
         stop("Missing info about whether species is marine")
     if (!all(d$is_marine))
