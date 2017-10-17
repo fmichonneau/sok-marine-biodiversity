@@ -35,10 +35,15 @@ cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
 }
 
 
+remove_subspecies <- function(nm) {
+    gsub("([A-Z][a-z]+)\\s([a-z]+)\\s([a-z]+)", "\\1 \\2", nm)
+}
+
+
 ## This gets run everytime by init()
 test_cleanup <- function(rm_subgenus) {
     df <- tibble::tribble(
-        ~ input, ~rm_subgenus, ~no_rm_subgenus,
+        ~input, ~rm_subgenus, ~no_rm_subgenus,
         "enchytraeus sp. nov.",  "enchytraeus", "enchytraeus",
         "echytraeus sp.", "echytraeus", "echytraeus",
         "echytraeus sp, ", "echytraeus", "echytraeus",
@@ -51,7 +56,8 @@ test_cleanup <- function(rm_subgenus) {
         "clepsine ornata var. d.", "clepsine ornata", "clepsine ornata",
         "mereditha spinifera", "mereditha spinifera", "mereditha spinifera",
         "Genus Subgenus species", "Genus species", "Genus Subgenus species",
-        "[test]", "test", "test"
+        "[test]", "test", "test",
+        "Abra longicallus americana", "Abra longicallus americana", "Abra longicallus americana"
         )
     if (rm_subgenus)
         var <- "rm_subgenus"
