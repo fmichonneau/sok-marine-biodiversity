@@ -151,11 +151,13 @@ rescue_store <- function(store) {
 
 worms_is_marine <- function(sp) {
     winfo <- store_worms_info()$get(sp)
-    if (inherits(winfo, "data.frame")) {
-        if (is.na(winfo$isMarine) && is.na(winfo$isBrackish))
+    if (exists("isMarine", winfo)) {
+        if ((is.null(winfo$isMarine) && is.null(winfo$isBrackish)) ||
+            (is.na(winfo$isMarine) && is.na(winfo$isBrackish)))
             NA
         else
-            identical(winfo$isMarine, "1") | identical(winfo$isBrackish, "1")
+            identical(as.character(winfo$isMarine), "1") |
+                identical(as.character(winfo$isBrackish), "1")
     } else NA
 }
 
