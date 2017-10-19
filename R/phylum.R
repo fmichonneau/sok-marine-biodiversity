@@ -1,5 +1,5 @@
 get_phyla_from_db <- function(db_table) {
-    sok_db %>%
+    sok_db() %>%
         tbl(db_table) %>%
         dplyr::distinct(phylum) %>%
         dplyr::arrange(phylum) %>%

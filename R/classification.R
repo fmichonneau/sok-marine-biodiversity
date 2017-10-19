@@ -40,14 +40,14 @@ add_classification <- function(data) {
         .Names = c("worms_id", "worms_phylum", "worms_class",
                    "worms_order", "worms_family"))
 
-    if (!db_has_table(sok_db, wrms_tbl)) {
-        db_create_table(sok_db, wrms_tbl, types = wrms_types, temporary = FALSE)
-        dbExecute(sok_db,
+    if (!db_has_table(sok_db(), wrms_tbl)) {
+        db_create_table(sok_db(), wrms_tbl, types = wrms_types, temporary = FALSE)
+        dbExecute(sok_db(),
                   paste("CREATE UNIQUE INDEX wrms_idx ON", wrms_tbl, "(worms_id)"))
-        db_commit(sok_db)
+        db_commit(sok_db())
     }
 
-    wid_tbl <- tbl(sok_db, wrms_tbl)
+    wid_tbl <- tbl(sok_db(), wrms_tbl)
 
     wid_in_db <- wid_tbl %>%
         dplyr::distinct(worms_id) %>%
@@ -63,11 +63,11 @@ add_classification <- function(data) {
                                                get_classification_from_wid)) %>%
             tidyr::unnest(classif)
         to_add_to_db$worms_id <- as.integer(to_add_to_db$worms_id)
-        dbWriteTable(sok_db, wrms_tbl, to_add_to_db, append = TRUE,
+        dbWriteTable(sok_db(), wrms_tbl, to_add_to_db, append = TRUE,
                      field.types = wrms_types, row.names = FALSE)
     }
 
-    wid_tbl_mem <- tbl(sok_db, wrms_tbl) %>%
+    wid_tbl_mem <- tbl(sok_db(), wrms_tbl) %>%
         dplyr::filter(worms_id %in% wid_to_match) %>%
         dplyr::collect(n = Inf) %>%
         dplyr::mutate(worms_id = as.character(worms_id))
