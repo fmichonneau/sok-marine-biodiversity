@@ -75,3 +75,75 @@ validate_records <- function(recs, list_phyla) {
 
 
 }
+
+validate_store <- function(st, allowed = NULL) {
+    rendered_store <- sQuote(deparse(substitute(st)))
+
+    keys <- st$list()
+    if (length(keys) < 1) {
+        v1("The store ", rendered_store, " is empty as this time.")
+        return(NA)
+    }
+    classes <- purrr::map(keys, function(x) try(class(st$get(x)), silent = TRUE))
+    ## check there are no errors
+    test_broken <- purrr::map_lgl(unlist(classes), function(x) inherits("try-error", x))
+    if (any(test_broken)) {
+        broken_keys <- keys[test_broken]
+        stop("errors detected in store: ", rendered_store, " for keys: ",
+             paste(broken_key, collapse = ", "))
+    }
+    test_error <- grepl("error", unlist(classes), ignore.case = TRUE)
+    if (any(test_error)) {
+        error_keys <- keys[test_error]
+        stop("some keys seem broken in store: ", rendered_store, " for keys: ",
+             paste(error_key, collapse = ", "))
+    }
+    if (!is.null(allowed)) {
+        test_allowed <- all(unlist(classes) %in% allowed)
+        if (!test_allowed) {
+            stop("some keys are of different class than allowed values in store: ",
+                 rendered_store, " for keys: ",
+                 paste(keys[!test_allowed], collapse = ", "))
+        }
+    }
+    TRUE
+}
+
+## function to get all classes from an existing storr
+get_classes <- function(st) unique(unlist(map(st$list(), function(x) class(st$get(x)))))
+
+validate_stores <- function(store_path = "data/") {
+    all_stores <- list.files(path = store_path, pattern = "stor")
+    ## TODO: use all_stores to compare with data frame below to issue warning if
+    ## some stores are not being covered by the integrity tests. I'll need to
+    ## take into account that some stores are too big, and this test would eat
+    ## up all the memory, so adjustments might be needed.
+    tbl_df_classes <- c("tbl_df", "tbl", "data.frame")
+    ## data frame that contains: the name of the store function (`store_name`),
+    ## and the allowable classes for the objects contained in the store.
+    store_details <-
+        tibble::tribble(
+           ~ store_name, ~ allowed, ~use_arg,
+           "store_itis_geo", tbl_df_classes, FALSE,
+           "store_itis_comments", tbl_df_classes, FALSE,
+           "store_itis_classification", tbl_df_classes, FALSE,
+           "store_idigbio_by_geo", "data.frame", TRUE,
+           "store_idigbio_species_occurrences", "data.frame", FALSE,
+           "store_worms_classification", tbl_df_classes, FALSE,
+           "store_worms_ids", c("character", tbl_df_classes), FALSE,
+           ##"store_idigbio_uuid", , FALSE, ## too big
+           ##"store_obis_by_geo", , FALSE, ## to big
+           ## "store_red_list" currently not used
+           ## "gbif_occ_storr" currently not used
+           "store_obis_occurrences", c("NULL", "data.frame"), FALSE,
+           "store_worms_info", c("list", "data.frame"), FALSE,
+           "store_synonyms", c("logical", "character") , FALSE,
+           "store_bold_specimens_per_species", c("NULL", "character", "data.frame"), FALSE
+           )
+    purrr::pmap(store_details, function(store_name, allowed, use_arg) {
+               st <- get(store_name)
+               if (use_arg)
+                   validate_store(st(NULL), allowed)
+               else validate_store(st(), allowed)
+           })
+}
