@@ -16,14 +16,8 @@ worm_fail <- function(key, reason) {
 
 }
 
-assert_no_parenthesis <- function(x) {
-    if(grepl("\\(", x) | grepl("\\)", x))
-        stop(sQuote(x), " has parenthesis")
-}
-
 fetch_hook_worms_ids <- function(key, namespace) {
     is_lower_case(key)
-    assert_no_parenthesis(key)
     internal_worms <- function(key, fuzzy = FALSE) {
         wid <- try(worrms::wm_records_name(key, fuzzy = FALSE),
                    silent = TRUE)
