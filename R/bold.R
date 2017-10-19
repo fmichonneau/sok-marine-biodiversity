@@ -10,11 +10,11 @@ fetch_hook_bold_specimens_per_species <- function(key, namespace) {
             return("not in worms/multi match")
         } else {
             syn <- store_synonyms()$get(as.character(wid$valid_AphiaID))
-            if (inherits(syn, "data.frame")) {
+            if (inherits(syn, "character")) {
                 res <- try(bold_specimens(taxon = paste0("'", syn, "'", collapse = "|")),
                            silent = TRUE)
                 if (inherits(res, "try-error")) {
-                    v2("  No record for any of the synonyms ",
+                    v2("  No record for any of the synonyms: \n",
                             paste("   - ", syn, collapse = " \n"))
                     return(NULL)
                 }
