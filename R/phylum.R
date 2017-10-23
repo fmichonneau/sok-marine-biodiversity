@@ -8,5 +8,5 @@ get_phyla_from_db <- function(db_table) {
 
 
 get_phyla <- function(csv) {
-    readr::read_csv(csv, col_types = "cc")
+    readr::read_csv(csv, col_types = "ccc")
 }
