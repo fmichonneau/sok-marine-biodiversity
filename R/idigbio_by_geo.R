@@ -225,6 +225,58 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                       phylum = common_phylum)
 }
 
+insert_map_into_db <- function(db, name, map) {
+    sp_map <- geojsonio::geojson_sp(map)
+    rpostgis::pgInsert(db, name = c("public", name),
+                       data.obj = sp_map, overwrite = TRUE,
+                       row.names = FALSE)
+}
+
+idig_stats_by_kingdom <- function(db_table, list_phyla, map) {
+
+    db <- sok_db()
+    dplyr::copy_to(db, list_phyla, name = "list_phyla",
+                   overwrite = TRUE)
+
+    idig_tbl <- db %>%
+        dplyr::tbl(db_table)
+
+    idig_phy <- db %>%
+        dplyr::tbl("list_phyla")
+
+    check_phyla_in_db(idig_tbl, list_phyla)
+
+    ## select records within EEZ
+    ## 1. convert latitude and longitude into points
+    q <- c("CREATE TABLE small_idigbio AS SELECT * FROM us_idigbio LIMIT 200;",
+           "ALTER TABLE small_idigbio ADD COLUMN geom_point geometry DEFAULT NULL;",
+           "UPDATE small_idigbio SET geom_point = ST_SetSRID(ST_MakePoint(small_idigbio.decimallongitude, small_idigbio.decimallatitude), 4326);",
+           "ALTER TABLE small_idigbio ADD COLUMN pg_within_eez bool DEFAULT NULL;",
+           "UPDATE small_idigbio SET pg_within_eez = ST_Contains(one_layer.geom, small_idigbio.geom_point) FROM one_layer;")
+
+
+    q <- c("CREATE TABLE uniq_coords AS SELECT DISTINCT us_idigbio.decimallongitude, us_idigbio.decimallatitude FROM us_idigbio;",
+           "ALTER TABLE uniq_coords ADD COLUMN geom_point geometry DEFAULT NULL;",
+           "UPDATE uniq_coords SET geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326);",
+           "ALTER TABLE uniq_coords ADD COLUMN within_eez bool DEFAULT NULL",
+           "UPDATE uniq_coords SET within_eez = ST_Contains(one_layer.geom, uniq_coords.geom_point) FROM one_layer;")
+
+
+    res <- purrr::map(q, function(x) {
+                      r <- dbExecute(db, x)
+                      if (r < 0) stop("error") else message("OK: ", x)
+                      r
+                  })
+
+    ## dsn <- "PG:dbname='idigbio' host='localhost' user='marinediversity' password='password'"
+    ##   ogrListLayers(dsn)
+    idig_tbl %>%
+        dplyr::left_join(idig_phy, by = "phylum") %>%
+        dplyr::count(kingdom)
+
+
+}
+
 ## db: connection to table in postgres database
 ## list_phyla: csv file with phylum dictionary
 ## Check that all phyla in the database are in the dictionary so they can be
