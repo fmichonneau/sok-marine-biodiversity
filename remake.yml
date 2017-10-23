@@ -429,6 +429,11 @@ targets:
   itis_molluscs:
     command: moll_name_details(itis_molluscs_parsed)
 
+### iDigBio global stats -------------------------------------------------------
+
+  idigbio_stats:
+    command: get_idigbio_stats(map_usa)
+
 ### summary tables
   # table_idigbio_species_sequenced:
   #   command: make_table_bold_records_per_idigbio_species(global=global_idigbio_species_with_bold_info, east_coast=east_idigbio_species_with_bold_info, west_coast=west_idigbio_species_with_bold_info, florida=florida_idigbio_species_with_bold_info)
@@ -876,6 +881,7 @@ targets:
       - prop_spp_barcoded
       - rastercell_distribution
       - bold_geography_stats
+      - idigbio_stats
       ## figures
       - figures/combined_map_sampling.pdf
       - figures/gradient.pdf

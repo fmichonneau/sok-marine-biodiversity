@@ -53,6 +53,32 @@ fetch_spp_from_idigbio <- function(wrm) {
         dplyr::distinct(uuid, .keep_all = TRUE)
 }
 
+get_idigbio_stats <- function(map_usa) {
+    bbox_usa <- lawn::lawn_bbox(map_usa)
+    idig_non_fossil <- ridigbio::idig_count_records(list("basisofrecord" = "preservedspecimen"))
+    idig_non_fossil_usa <- ridigbio::idig_count_records(
+                                         list(
+                                             "basisofrecord" = "preservedspecimen",
+                                             "geopoint" = list(
+                                                 type = "geo_bounding_box",
+                                                 top_left = list(
+                                                     lon = bbox_usa[1],
+                                                     lat = bbox_usa[4]
+                                                 ),
+                                                 bottom_right = list(
+                                                     lon = bbox_usa[3],
+                                                     lat = bbox_usa[2]
+                                                 )
+                                             )
+                                         )
+                                     )
+    list(
+        total_no_fossil = idig_non_fossil,
+        usa_no_fossil = idig_non_fossil_usa
+    )
+}
+
+
 
 summarize_raw_idigbio <- function(idig, list_spp) {
     assertthat::assert_that(inherits(idig, "data.frame"))

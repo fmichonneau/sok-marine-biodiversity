@@ -40,7 +40,7 @@ We focus on the continental US because the marine biodiversity is extensively do
 ### What do we know about marine invertebrates in the US?
 
 We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species (`r n_distinct(na.omit(combined_species$worms_phylum))` phyla) of marine invertebrates in the continental US EEZ by combining  `r format(nrow(idigbio_records), big.mark=",")` museum records from iDigBio (`r format(n_distinct(idigbio_records$worms_valid_name), big.mark = ",")` species, `r n_distinct(na.omit(idigbio_records$worms_phylum))` phyla), and `r format(nrow(obis_records), big.mark=",")` records from OBIS (`r format(n_distinct(obis_records$worms_valid_name), big.mark=",")` species,
-`r n_distinct(na.omit(obis_records$worms_phylum))` phyla). Extant marine invertebrates occurring in the US represent less than 0.4% of the total number of iDigBio records (104+ million), and about 1% of the US records (33 million records). Marine invertebrates that occur in the US represent approximately 4% of the 48 million occurrence records in OBIS.
+`r n_distinct(na.omit(obis_records$worms_phylum))` phyla). Extant marine invertebrates occurring in the US represent less than `r format_output(nrow(idigbio_records)/idigbio_stats$total_no_fossil*100)`% of the total number of non-fossil iDigBio records (`r round(idigbio_stats$total_no_fossil/1e6, 1)` million), and `r format_output(nrow(idigbio_records)/idigbio_stats$usa_no_fossil*100)`% of the US records (`r round(idigbio_stats$usa_no_fossil/1e6, 1)` million). Marine invertebrates that occur in the US represent 4.1% of the 48 million occurrence records in OBIS.
 
 ```{r local-richness}
 count_spp <- . %>%
