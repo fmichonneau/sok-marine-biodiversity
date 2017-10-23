@@ -197,16 +197,7 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
         dplyr::distinct(phylum) %>%
         dplyr::pull(phylum)
 
-    phyla_in_db <- db %>%
-        dplyr::distinct(phylum) %>%
-        dplyr::collect(n = Inf) %>%
-        dplyr::pull(phylum)
-
-    ## make sure all phyla are in the dictionary
-    if (!all(phyla_in_db %in% list_phyla[["phylum"]]))
-        stop("Some phyla in the database are not in the dictionary: ",
-             paste(phyla_in_db[!phyla_in_db %in% list_phyla[["phylum"]]],
-                   collapse = ", "))
+    check_phyla_in_db(db, list_phyla)
 
     db %>%
         ## First let's get the phylum names we need to keep, that will take care
@@ -232,6 +223,24 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
         dplyr::left_join(list_phyla) %>%
         dplyr::select(-phylum,
                       phylum = common_phylum)
+}
+
+## db: connection to table in postgres database
+## list_phyla: csv file with phylum dictionary
+## Check that all phyla in the database are in the dictionary so they can be
+## translated to their standardized name (for invertebrates) or assigned the
+## correct kingdom
+check_phyla_in_db <- function(db, list_phyla) {
+   phyla_in_db <- db %>%
+        dplyr::distinct(phylum) %>%
+        dplyr::collect(n = Inf) %>%
+        dplyr::pull(phylum)
+
+    ## make sure all phyla are in the dictionary
+    if (!all(phyla_in_db %in% list_phyla[["phylum"]]))
+        stop("Some phyla in the database are not in the dictionary: ",
+             paste(phyla_in_db[!phyla_in_db %in% list_phyla[["phylum"]]],
+                   collapse = ", "))
 }
 
 filter_records_by_geo <- function(rec, map_area) {
