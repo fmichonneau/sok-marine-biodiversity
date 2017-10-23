@@ -423,11 +423,23 @@ targets:
   itis_crustaceans:
     command: crust_name_details(itis_crustaceans_parsed)
 
+  itis_crustaceans_geo:
+    command: crust_name_geo(itis_crustaceans)
+
+  itis_crustaceans_in_dbs:
+    command: crust_name_in_dbs(itis_crustaceans_geo, combined_species, map_usa)
+
   itis_molluscs_parsed:
     command: molluscs_names()
 
   itis_molluscs:
     command: moll_name_details(itis_molluscs_parsed)
+
+  itis_molluscs_geo:
+    command: moll_name_geo(itis_molluscs)
+
+  itis_molluscs_in_dbs:
+    command: molluscs_name_in_dbs(itis_molluscs_geo, combined_species, map_usa)
 
 ### iDigBio global stats -------------------------------------------------------
 
@@ -881,6 +893,8 @@ targets:
       - prop_spp_barcoded
       - rastercell_distribution
       - bold_geography_stats
+      - itis_molluscs_in_dbs
+      - itis_crustaceans_in_dbs
       - idigbio_stats
       ## figures
       - figures/combined_map_sampling.pdf
