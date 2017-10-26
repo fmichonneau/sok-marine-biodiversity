@@ -248,6 +248,56 @@ insert_map_into_db <- function(db, map) {
                          "FROM {name}));"))
 }
 
+## db: database connection
+## src_table: the table in the database that holds the coordinates that need to
+## be filtered for geography
+add_unique_coords_to_db <- function(db, src_table) {
+    if (!dbExistsTable(db, "unique_coords")) {
+        q_create <- c(
+            "CREATE TABLE unique_coords (",
+            "decimallatitude REAL NOT NULL,",
+            "decimallongitude REAL NOT NULL,",
+            "geom_point GEOMETRY DEFAULT NULL,",
+            "within_eez BOOL DEFAULT NULL,",
+            "within_gom BOOL DEFAULT NULL, ",
+            "within_pwn BOOL DEFAULT NULL, ",
+            "PRIMARY KEY (decimallatitude, decimallongitude)",
+            ");")
+        dbExecute(db, glue::collapse(q_create))
+    }
+
+    ## create temporary table with all coordinates
+    ## 1. extract the unique coordinates
+    dbExecute(db,
+              glue::glue("CREATE TEMPORARY TABLE tmp_coords ",
+                         "AS SELECT DISTINCT {src_table}.decimallatitude, {src_table}.decimallongitude ",
+                         "FROM {src_table}", src_table = src_table))
+    dbExecute(db, "ANALYZE tmp_coords")
+    ## 2. insert them into the database
+    dbExecute(db,
+              glue::glue("INSERT INTO unique_coords ",
+                         "SELECT * FROM tmp_coords ",
+                         "LEFT JOIN unique_coords USING (decimallatitude, decimallongitude) ",
+                         "WHERE within_eez IS NULL;"))
+    ## 3. convert new records with MakePoint
+    dbExecute(db,
+              glue::glue("UPDATE unique_coords ",
+                         "SET ",
+                         "  geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326) ",
+                         "WHERE geom_point IS NULL;"))
+    ## 4. compute whether the coordinates are in the polygon
+    dbExecute(db,
+              glue::glue("UPDATE unique_coords ",
+                         "SET ",
+                         "  within_eez = ST_Contains(map_usa, unique_coords.geom_point)  ",
+                        # "  within_gom = ST_Contains(map_gom, unique_coords.geom_point), ",
+                        # "  within_pnw = ST_Contains(map_pnw, unique_coords.geom_point)  ",
+              "FROM (SELECT maps.geom_polygon FROM maps WHERE area_id = 'map_usa' LIMIT 1) AS map_usa ", #", ",
+#              "      SELECT geom_polygon FROM maps WHERE area_id = 'map_gom' AS map_gom, ",
+#              "      SELECT geom_polygon FROM maps WHERE area_id = 'map_pnw' AS map_pnw)",
+              "WHERE within_eez IS NULL;"
+                         ))
+
 }
 
 idig_stats_by_kingdom <- function(db_table, list_phyla, map) {
