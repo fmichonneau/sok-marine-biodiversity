@@ -250,6 +250,9 @@ targets:
   map_usa:
     command: get_map_usa("data-raw/USA-EEZ/eez.shp")
 
+  map_usa_db:
+    command: insert_map_into_db(db=I(sok_db()), map_usa)
+
   usa_raster:
     command: raster_from_map(map_usa)
 
@@ -288,6 +291,9 @@ targets:
 
   map_gom:
     command: get_felder_map_gom("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
+
+  map_gom_db:
+    command: insert_map_into_db(db=I(sok_db()), map_gom)
 
   gom_raster:
     command: raster_from_map(map_gom)
@@ -333,6 +339,9 @@ targets:
 
   map_pnw:
     command: get_map_pnw()
+
+  map_pnw_db:
+    command: insert_map_into_db(db=I(sok_db()), map_pnw)
 
   pnw_raster:
     command: raster_from_map(map_pnw)

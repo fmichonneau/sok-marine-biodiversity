@@ -225,11 +225,29 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                       phylum = common_phylum)
 }
 
-insert_map_into_db <- function(db, name, map) {
+insert_map_into_db <- function(db, map) {
+    ## First we create a table that holds all the layers of the shape object.
+    ## This table is named like the `map` object.
+    name <- deparse(substitute(map))
     sp_map <- geojsonio::geojson_sp(map)
     rpostgis::pgInsert(db, name = c("public", name),
                        data.obj = sp_map, overwrite = TRUE,
                        row.names = FALSE)
+    ## Then we had the union of the layers of these objects into a master table
+    ## that holds all the polygons we use: map_usa, map_gom, map_pnw.
+    if (!dbExistsTable(db, "maps")) {
+        dbExecute(db,
+                  glue::glue("CREATE TABLE maps (",
+                             "area_id TEXT PRIMARY KEY, ",
+                             "geom_polygon GEOMETRY",
+                             ");"))
+    }
+    dbExecute(db,
+              glue::glue("INSERT INTO maps (area_id, geom_polygon)",
+                         "VALUES ('{name}', (SELECT ST_Union({name}.geom) ",
+                         "FROM {name}));"))
+}
+
 }
 
 idig_stats_by_kingdom <- function(db_table, list_phyla, map) {
