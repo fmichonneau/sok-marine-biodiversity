@@ -109,6 +109,20 @@ validate_store <- function(st, allowed = NULL) {
     TRUE
 }
 
+validate_idigbio_store <- function(coords) {
+    res <- vapply(names(coords), function(x)
+        inherits(store_idigbio_by_geo(coords)$get(x), "try-error"),
+        logical(1)
+        )
+    if (sum(res) > 0) {
+        stop("Coordinates at these positions are problematic: ",
+             paste(names(which(res)), collapse = ", "))
+    } else {
+        v3("the coordinates look good")
+    }
+}
+
+
 ## function to get all classes from an existing storr
 get_classes <- function(st) unique(unlist(map(st$list(), function(x) class(st$get(x)))))
 
