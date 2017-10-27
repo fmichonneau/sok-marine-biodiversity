@@ -213,6 +213,7 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
         dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
         dplyr::select(uuid, phylum, class, order, family, genus, scientificname,
                       decimallatitude, decimallongitude, datecollected, institutioncode,
+                      within_eez, within_gom, within_pnw,
                       dplyr::contains("depth", ignore.case = TRUE)) %>%
         dplyr::collect(n = Inf) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
@@ -220,7 +221,7 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                       is_binomial = is_binomial(cleaned_scientificname),
                       datecollected = as.Date(datecollected),
                       uuid = as.character(uuid)) %>%
-        dplyr::left_join(list_phyla) %>%
+        dplyr::left_join(list_phyla, by = "phylum") %>%
         dplyr::select(-phylum,
                       phylum = common_phylum)
 }
@@ -384,20 +385,15 @@ check_phyla_in_db <- function(db, list_phyla) {
                    collapse = ", "))
 }
 
-filter_records_by_geo <- function(rec, map_area) {
+filter_records_by_geo <- function(recs, area) {
 
     ## extract name of area based on name of variable
-    area <- gsub(".+_(.+)", "\\1", deparse(substitute(map_area)))
-    stopifnot(area %in% c("usa", "gom", "pnw"))
-
-    ## reuse factory to get the correct function
-    is_within_geo <- is_within_map_records(area)
+    area <- match.arg(area, c("eez", "gom", "pnw"))
 
     ## build the column name
-    col_name <- paste0("is_in_", area)
+    col_name <- paste0("within_", area)
 
-    rec %>%
-        is_within_geo(map_area) %>%
+    recs %>%
         ## only keep records within map limits
         dplyr::filter(!!sym(col_name)) %>%
         add_worms() %>%

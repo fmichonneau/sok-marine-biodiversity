@@ -272,7 +272,7 @@ targets:
     depends: idigbio_database_with_geo
 
   idigbio_records:
-    command: filter_records_by_geo(idigbio_records_all, map_usa)
+    command: filter_records_by_geo(idigbio_records_all, I("eez"))
 
   idigbio_iucn:
     command: add_iucn_status(idigbio_records)
@@ -293,7 +293,7 @@ targets:
     depends: obis_database_with_geo
 
   obis_records:
-    command: filter_records_by_geo(obis_records_all, map_usa)
+    command: filter_records_by_geo(obis_records_all, I("eez"))
 
   ## Gulf of Mexico ------------------------------------------------------------
 
@@ -321,7 +321,7 @@ targets:
     depends: idigbio_gom_database_with_geo
 
   idigbio_gom_records:
-    command: filter_records_by_geo(idigbio_gom_records_all, map_gom)
+    command: filter_records_by_geo(idigbio_gom_records_all, I("gom"))
 
   obis_gom_records_raw:
     command: fill_store_obis_by_geo(map_gom, list_phyla)
@@ -373,7 +373,7 @@ targets:
     depends: idigbio_pnw_database_with_geo
 
   idigbio_pnw_records:
-    command: filter_records_by_geo(idigbio_pnw_records_all, map_pnw)
+    command: filter_records_by_geo(idigbio_pnw_records_all, I("pnw"))
 
   obis_pnw_records_raw:
     command: fill_store_obis_by_geo(map_pnw, list_phyla)
@@ -694,7 +694,7 @@ targets:
 ### plot sampling effort (correlation between number of samples vs number species
 
   figures/plot_sampling_effort.pdf:
-    command: plot_sampling_effort(combined_data_map_standardized_diversity, map_gom)
+    command: plot_sampling_effort(combined_data_map_standardized_diversity)
     plot:
       height: 4.5
       width: 6.5
