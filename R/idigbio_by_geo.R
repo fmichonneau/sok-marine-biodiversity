@@ -273,6 +273,8 @@ add_unique_coords_to_db <- function(db, src_table) {
                          "AS SELECT DISTINCT {src_table}.decimallatitude, {src_table}.decimallongitude ",
                          "FROM {src_table}", src_table = src_table))
     dbExecute(db, "ANALYZE tmp_coords")
+    on.exit(dbExecute(db, "DISCARD TEMP;"))
+
     ## 2. insert them into the database
     dbExecute(db,
               glue::glue("INSERT INTO unique_coords ",
