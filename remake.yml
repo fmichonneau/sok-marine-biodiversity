@@ -263,9 +263,13 @@ targets:
   idigbio_database:
     command: create_records_db(coords_usa, db_table=I("us_idigbio"))
 
+  idigbio_database_with_geo:
+    command: add_within_polygon_to_db(I("us_idigbio"))
+    depends: idigbio_database
+
   idigbio_records_all:
     command: extract_inverts_from_db(db_table=I("us_idigbio"), list_phyla)
-    depends: idigbio_database
+    depends: idigbio_database_with_geo
 
   idigbio_records:
     command: filter_records_by_geo(idigbio_records_all, map_usa)
@@ -280,9 +284,13 @@ targets:
   obis_database:
     command: create_obis_db(coords_usa, db_table=I("us_obis"))
 
+  obis_database_with_geo:
+    command: add_within_polygon_to_db(I("us_obis"))
+    depends: obis_database
+
   obis_records_all:
     command: extract_inverts_from_db(db_table=I("us_obis"), list_phyla)
-    depends: obis_database
+    depends: obis_database_with_geo
 
   obis_records:
     command: filter_records_by_geo(obis_records_all, map_usa)
@@ -304,9 +312,13 @@ targets:
   idigbio_gom_database:
     command: create_records_db(coords_gom, db_table=I("gom_idigbio"))
 
+  idigbio_gom_database_with_geo:
+    command: add_within_polygon_to_db(I("gom_idigbio"))
+    depends: idigbio_gom_database
+
   idigbio_gom_records_all:
     command: extract_inverts_from_db(db_table=I("gom_idigbio"), list_phyla)
-    depends: idigbio_gom_database
+    depends: idigbio_gom_database_with_geo
 
   idigbio_gom_records:
     command: filter_records_by_geo(idigbio_gom_records_all, map_gom)
@@ -352,9 +364,13 @@ targets:
   idigbio_pnw_database:
     command: create_records_db(coords_pnw, db_table=I("kozloff_idigbio"))
 
+  idigbio_pnw_database_with_geo:
+    command: add_within_polygon_to_db(I("kozloff_idigbio"))
+    depends: idigbio_pnw_database
+
   idigbio_pnw_records_all:
     command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), list_phyla)
-    depends: idigbio_pnw_database
+    depends: idigbio_pnw_database_with_geo
 
   idigbio_pnw_records:
     command: filter_records_by_geo(idigbio_pnw_records_all, map_pnw)
