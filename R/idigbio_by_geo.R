@@ -49,7 +49,7 @@ make_hook_idigbio_by_geo <- function(coords_qry) {
 
 ## define the storr that contains the iDigBio record for each element
 ## of the grid.
-store_idigbio_by_geo <- function(coords, store_path = "data/idigbio_by_geo") {
+store_idigbio_by_geo <- function(coords, store_path = "data/storr_idigbio_by_geo") {
     fetch_hook_idigbio_by_geo <- make_hook_idigbio_by_geo(coords)
     storr::storr_external(storr::driver_rds(store_path),
                           fetch_hook_idigbio_by_geo)

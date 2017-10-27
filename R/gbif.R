@@ -7,7 +7,7 @@ fetch_hook_gbif_occ <- function(key, namespace) {
     return(occ)
 }
 
-store_gbif_occ <- function(store_path = "data/gbif_occ_storr") {
+store_gbif_occ <- function(store_path = "data/storr_gbif_occ") {
     invisible(storr::storr_external(driver_rds(store_path),
                                     fetch_hook_gbif_occ))
 }

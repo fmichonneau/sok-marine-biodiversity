@@ -13,7 +13,7 @@ fetch_hook_obis_occurrences <- function(key, namespace) {
     }
 }
 
-store_obis_occurrences <- function(store_path = "data/obis_occurrences_storr") {
+store_obis_occurrences <- function(store_path = "data/storr_obis_occurrences") {
     invisible(storr::storr_external(storr::driver_rds(store_path),
               fetch_hook_obis_occurrences))
 }

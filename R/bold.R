@@ -29,7 +29,7 @@ fetch_hook_bold_specimens_per_species <- function(key, namespace) {
     res
 }
 
-store_bold_specimens_per_species <- function(store_path = "data/bold_specimens_per_species") {
+store_bold_specimens_per_species <- function(store_path = "data/storr_bold_specimens_per_species") {
     storr_external(driver_rds(store_path),
                    fetch_hook_bold_specimens_per_species)
 }

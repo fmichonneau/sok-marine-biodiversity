@@ -7,7 +7,7 @@ fetch_hook_idigbio_by_uuid <- function(key, namespace) {
     ridigbio::idig_search_records(rq = list(uuid = key), fields = idigbio_fields())
 }
 
-store_idigbio_uuid <- function(coords, store_path = "data/idigbio_uuid") {
+store_idigbio_uuid <- function(coords, store_path = "data/storr_idigbio_uuid") {
     storr::storr_external(storr::driver_rds(store_path),
                           fetch_hook_idigbio_by_uuid)
 }

@@ -60,7 +60,7 @@ fetch_hook_worms_ids <- function(key, namespace) {
     internal_worms(key)
 }
 
-store_worms_ids <- function(store_path = "data/worms_ids_storr") {
+store_worms_ids <- function(store_path = "data/storr_worms_ids") {
     invisible(storr_external(driver_rds(store_path),
                              fetch_hook_worms_ids))
 }
@@ -84,7 +84,7 @@ fetch_hook_worms_info <- function(key, namespace) {
     }
 }
 
-store_worms_info <- function(store_path = "data/worms_info") {
+store_worms_info <- function(store_path = "data/storr_worms_info") {
     invisible(storr::storr_external(storr::driver_rds(store_path),
                                     fetch_hook_worms_info))
 }
@@ -98,7 +98,7 @@ fetch_hook_worms_synonyms <- function(key, namespace) {
     } else NA
 }
 
-store_synonyms <- function(store_path = "data/synonym_storr") {
+store_synonyms <- function(store_path = "data/storr_worms_synonyms") {
     invisible(storr_external(driver_rds(store_path),
                              fetch_hook_worms_synonyms))
 }
@@ -109,7 +109,7 @@ fetch_hook_worms_classification <- function(key, namespace) {
     worrms::wm_classification(as.integer(key))
 }
 
-store_worms_classification <- function(store_path = "data/worms_classification_storr") {
+store_worms_classification <- function(store_path = "data/storr_worms_classification") {
     invisible(storr_external(driver_rds(store_path),
                              fetch_hook_worms_classification))
 }

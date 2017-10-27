@@ -15,7 +15,7 @@ idigbio_fields <- function() {
       'geopoint')
 }
 
-store_idigbio_species_occurrences <- function(store_path = "data/idigbio_occurrences_storr") {
+store_idigbio_species_occurrences <- function(store_path = "data/storr_idigbio_occurrences") {
     invisible(storr_external(driver_rds(store_path),
                              fetch_hook_idigbio_by_sp))
 }

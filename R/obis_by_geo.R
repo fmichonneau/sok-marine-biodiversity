@@ -41,7 +41,7 @@ fetch_hook_obis_by_geo <- function(key, namespace) {
 }
 
 
-store_obis_by_geo <- function(coords, store_path = "data/obis_by_geo") {
+store_obis_by_geo <- function(coords, store_path = "data/storr_obis_by_geo") {
     storr::storr_external(storr::driver_rds(store_path, mangle_key = TRUE),
                           fetch_hook_obis_by_geo)
 }

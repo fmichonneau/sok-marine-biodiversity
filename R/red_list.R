@@ -17,7 +17,7 @@ fetch_hook_red_list <- function(key, namespace) {
 }
 
 
-store_red_list <- function(store_path = "data/store_red_list") {
+store_red_list <- function(store_path = "data/storr_red_list") {
     storr::storr_external(storr::driver_rds(store_path),
                           fetch_hook_red_list)
 }
