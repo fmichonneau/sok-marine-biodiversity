@@ -266,7 +266,11 @@ targets:
 
   idigbio_database_with_geo:
     command: add_within_polygon_to_db(I("us_idigbio"))
-    depends: idigbio_database
+    depends:
+      - idigbio_database
+      - map_usa_db
+      - map_gom_db
+      - map_pnw_db
 
   idigbio_records_all:
     command: extract_inverts_from_db(db_table=I("us_idigbio"), list_phyla)
@@ -287,7 +291,11 @@ targets:
 
   obis_database_with_geo:
     command: add_within_polygon_to_db(I("us_obis"))
-    depends: obis_database
+    depends:
+      - obis_database
+      - map_usa_db
+      - map_gom_db
+      - map_pnw_db
 
   obis_records_all:
     command: extract_inverts_from_db(db_table=I("us_obis"), list_phyla)
@@ -315,7 +323,11 @@ targets:
 
   idigbio_gom_database_with_geo:
     command: add_within_polygon_to_db(I("gom_idigbio"))
-    depends: idigbio_gom_database
+    depends:
+      - idigbio_gom_database
+      - map_usa_db
+      - map_gom_db
+      - map_pnw_db
 
   idigbio_gom_records_all:
     command: extract_inverts_from_db(db_table=I("gom_idigbio"), list_phyla)
@@ -367,7 +379,11 @@ targets:
 
   idigbio_pnw_database_with_geo:
     command: add_within_polygon_to_db(I("kozloff_idigbio"))
-    depends: idigbio_pnw_database
+    depends:
+      - idigbio_pnw_database
+      - map_usa_db
+      - map_gom_db
+      - map_pnw_db
 
   idigbio_pnw_records_all:
     command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), list_phyla)
