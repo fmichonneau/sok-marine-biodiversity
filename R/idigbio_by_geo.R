@@ -282,11 +282,13 @@ add_unique_coords_to_db <- function(db, src_table) {
     on.exit(dbExecute(db, "DISCARD TEMP;"))
 
     ## 2. insert them into the database
+    message("add coordinates to unique_coords table ...", appendLF = FALSE)
     dbExecute(db,
               glue::glue("INSERT INTO unique_coords ",
                          "SELECT * FROM tmp_coords ",
                          "LEFT JOIN unique_coords USING (decimallatitude, decimallongitude) ",
                          "WHERE within_eez IS NULL;"))
+    message(" DONE.")
 
     ## 3. convert new records with MakePoint
     dbExecute(db,
@@ -296,6 +298,7 @@ add_unique_coords_to_db <- function(db, src_table) {
                          "WHERE geom_point IS NULL;"))
 
     ## 4. compute whether the coordinates are in the polygon
+    message(glue::glue("figure out points within {maps}, ..."), appendLF = FALSE)
     contains_queries <- glue::glue(
         "UPDATE unique_coords ",
         "SET ",
@@ -303,6 +306,7 @@ add_unique_coords_to_db <- function(db, src_table) {
         "FROM (SELECT geom_polygon AS {maps} FROM maps WHERE area_id = '{maps}') AS foo ",
         "WHERE within_{col} IS NULL;", maps = maps, col = c("eez", "gom", "pnw")
         )
+    message(" DONE.")
 
     res <- purrr::map_int(contains_queries, function(x) {
         dbExecute(db, x)
@@ -329,6 +333,7 @@ add_within_polygon_to_db <- function(db_table) {
             dbExecute(db, glue::glue("ALTER TABLE {db_table} ADD COLUMN {x} BOOL DEFAULT NULL;"))
     })
 
+    message(glue::glue("Working on joining unique_coords and {db_table} ..."), appendLF = FALSE)
     dbExecute(db,
               glue::glue(
                         "UPDATE {db_table} ",
@@ -337,6 +342,7 @@ add_within_polygon_to_db <- function(db_table) {
                         "FROM unique_coords ",
                         "WHERE unique_coords.decimallatitude = {db_table}.decimallatitude AND ",
                         "      unique_coords.decimallongitude = {db_table}.decimallongitude );"))
+    message(" DONE.")
 
 }
 
