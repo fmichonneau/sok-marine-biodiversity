@@ -252,6 +252,15 @@ insert_map_into_db <- function(db, map) {
 ## src_table: the table in the database that holds the coordinates that need to
 ## be filtered for geography
 add_unique_coords_to_db <- function(db, src_table) {
+
+    maps <- c("map_usa", "map_gom", "map_pnw")
+
+    ## make sure maps table exists and it contains all the data we need
+    if (!dbExistsTable(db, "maps")) stop("'maps' table doesn't exist.")
+    q <- dbSendQuery(db, "SELECT maps.area_id FROM maps")
+    res <- dbFetch(q)
+    all(maps %in% dplyr::pull(res, area_id))
+
     if (!dbExistsTable(db, "unique_coords")) {
         q_create <- c(
             "CREATE TABLE unique_coords (",
@@ -281,24 +290,56 @@ add_unique_coords_to_db <- function(db, src_table) {
                          "SELECT * FROM tmp_coords ",
                          "LEFT JOIN unique_coords USING (decimallatitude, decimallongitude) ",
                          "WHERE within_eez IS NULL;"))
+
     ## 3. convert new records with MakePoint
     dbExecute(db,
               glue::glue("UPDATE unique_coords ",
                          "SET ",
                          "  geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326) ",
                          "WHERE geom_point IS NULL;"))
+
     ## 4. compute whether the coordinates are in the polygon
+    contains_queries <- glue::glue(
+        "UPDATE unique_coords ",
+        "SET ",
+        "  within_{col} = ST_Contains({maps}, unique_coords.geom_point) ",
+        "FROM (SELECT geom_polygon AS {maps} FROM maps WHERE area_id = '{maps}') AS foo ",
+        "WHERE within_{col} IS NULL;", maps = maps, col = c("eez", "gom", "pnw")
+        )
+
+    res <- purrr::map_int(contains_queries, function(x) {
+        dbExecute(db, x)
+        })
+    if (any(res < 0)) stop("something went wrong")
+}
+
+
+add_within_polygon_to_db <- function(db_table) {
+
+    db <- sok_db()
+
+    ## add coordinates from data table in unique_coords table
+    add_unique_coords_to_db(db, db_table)
+
+    ## make sure unique coords table exists
+    if (!dbExistsTable(db, "unique_coords"))
+        stop("something is very wrong: ", sQuote("unique_coords"),
+             " table doesn't exist.")
+
+    ## Create within_* fields if they don't exist
+    map(list("within_eez", "within_gom", "within_pnw"), function(x) {
+        if (! x %in% dbListFields(db, db_table))
+            dbExecute(db, glue::glue("ALTER TABLE {db_table} ADD COLUMN {x} BOOL DEFAULT NULL;"))
+    })
+
     dbExecute(db,
-              glue::glue("UPDATE unique_coords ",
-                         "SET ",
-                         "  within_eez = ST_Contains(map_usa, unique_coords.geom_point)  ",
-                        # "  within_gom = ST_Contains(map_gom, unique_coords.geom_point), ",
-                        # "  within_pnw = ST_Contains(map_pnw, unique_coords.geom_point)  ",
-              "FROM (SELECT maps.geom_polygon FROM maps WHERE area_id = 'map_usa' LIMIT 1) AS map_usa ", #", ",
-#              "      SELECT geom_polygon FROM maps WHERE area_id = 'map_gom' AS map_gom, ",
-#              "      SELECT geom_polygon FROM maps WHERE area_id = 'map_pnw' AS map_pnw)",
-              "WHERE within_eez IS NULL;"
-                         ))
+              glue::glue(
+                        "UPDATE {db_table} ",
+                        "SET (within_eez, within_gom, within_pnw) = ",
+                        "(SELECT unique_coords.within_eez, unique_coords.within_gom, unique_coords.within_pnw ",
+                        "FROM unique_coords ",
+                        "WHERE unique_coords.decimallatitude = {db_table}.decimallatitude AND ",
+                        "      unique_coords.decimallongitude = {db_table}.decimallongitude );"))
 
 }
 
@@ -315,28 +356,6 @@ idig_stats_by_kingdom <- function(db_table, list_phyla, map) {
         dplyr::tbl("list_phyla")
 
     check_phyla_in_db(idig_tbl, list_phyla)
-
-    ## select records within EEZ
-    ## 1. convert latitude and longitude into points
-    q <- c("CREATE TABLE small_idigbio AS SELECT * FROM us_idigbio LIMIT 200;",
-           "ALTER TABLE small_idigbio ADD COLUMN geom_point geometry DEFAULT NULL;",
-           "UPDATE small_idigbio SET geom_point = ST_SetSRID(ST_MakePoint(small_idigbio.decimallongitude, small_idigbio.decimallatitude), 4326);",
-           "ALTER TABLE small_idigbio ADD COLUMN pg_within_eez bool DEFAULT NULL;",
-           "UPDATE small_idigbio SET pg_within_eez = ST_Contains(one_layer.geom, small_idigbio.geom_point) FROM one_layer;")
-
-
-    q <- c("CREATE TABLE uniq_coords AS SELECT DISTINCT us_idigbio.decimallongitude, us_idigbio.decimallatitude FROM us_idigbio;",
-           "ALTER TABLE uniq_coords ADD COLUMN geom_point geometry DEFAULT NULL;",
-           "UPDATE uniq_coords SET geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326);",
-           "ALTER TABLE uniq_coords ADD COLUMN within_eez bool DEFAULT NULL",
-           "UPDATE uniq_coords SET within_eez = ST_Contains(one_layer.geom, uniq_coords.geom_point) FROM one_layer;")
-
-
-    res <- purrr::map(q, function(x) {
-                      r <- dbExecute(db, x)
-                      if (r < 0) stop("error") else message("OK: ", x)
-                      r
-                  })
 
     ## dsn <- "PG:dbname='idigbio' host='localhost' user='marinediversity' password='password'"
     ##   ogrListLayers(dsn)
