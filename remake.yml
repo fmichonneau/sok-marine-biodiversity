@@ -7,7 +7,7 @@ packages:
   - readr
   - feather
   - RPostgreSQL
-  - pool
+  - rpostgis
   - storr
   - tibble
   - xml2
@@ -53,6 +53,7 @@ packages:
   - bookdown
   - labmanager
   - progress
+  - glue
   - splines
 
 
