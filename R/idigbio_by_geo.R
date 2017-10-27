@@ -260,7 +260,7 @@ add_unique_coords_to_db <- function(db, src_table) {
             "geom_point GEOMETRY DEFAULT NULL,",
             "within_eez BOOL DEFAULT NULL,",
             "within_gom BOOL DEFAULT NULL, ",
-            "within_pwn BOOL DEFAULT NULL, ",
+            "within_pnw BOOL DEFAULT NULL, ",
             "PRIMARY KEY (decimallatitude, decimallongitude)",
             ");")
         dbExecute(db, glue::collapse(q_create))
