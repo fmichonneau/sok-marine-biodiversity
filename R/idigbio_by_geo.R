@@ -218,8 +218,11 @@ insert_map_into_db <- function(db, map) {
     rpostgis::pgInsert(db, name = c("public", name),
                        data.obj = sp_map, overwrite = TRUE,
                        row.names = FALSE)
+
     ## Then we had the union of the layers of these objects into a master table
-    ## that holds all the polygons we use: map_usa, map_gom, map_pnw.
+    ## that holds all the polygons we use: map_usa, map_gom, map_pnw.  But
+    ## first, we need to make sure that the `maps` table exists, and create it
+    ## otherwise.
     if (!dbExistsTable(db, "maps")) {
         dbExecute(db,
                   glue::glue("CREATE TABLE maps (",
@@ -227,6 +230,15 @@ insert_map_into_db <- function(db, map) {
                              "geom_polygon GEOMETRY",
                              ");"))
     }
+
+    ## If the row for the map already exists, we first delete it
+    q_exists <- dbSendQuery(db, glue::glue("SELECT * FROM maps WHERE area_id='{name}';"))
+    res_exists <- dbFetch(q_exists)
+    if (nrow(res_exists) > 0) {
+        dbExecute(db, glue::glue("DELETE FROM maps WHERE area_id='{name}';"))
+    }
+
+    ## that's where it all happens
     dbExecute(db,
               glue::glue("INSERT INTO maps (area_id, geom_polygon)",
                          "VALUES ('{name}', (SELECT ST_Union({name}.geom) ",
