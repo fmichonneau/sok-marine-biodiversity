@@ -51,7 +51,6 @@ model_sampling_effort <- function(id) {
 ## proportion of identified species known by `n_specimens`.
 calc_prop_nspecimens_species <- function(recs, n_specimens) {
     res <- recs %>%
-        dplyr::filter(!is.na(worms_valid_name)) %>%
         dplyr::count(phylum, worms_valid_name, sort = TRUE)
 
     pdf(file = paste0("figures/distribution_", n_specimens, "_specimens.pdf"))
@@ -66,7 +65,7 @@ calc_prop_nspecimens_species <- function(recs, n_specimens) {
 
 calc_prop_species_not_collected_since <- function(idig, max_year) {
     res <- idig %>%
-        dplyr::filter(is_marine == TRUE, !is.na(year)) %>%
+        dplyr::filter(!is.na(year)) %>%
         group_by(worms_valid_name) %>%
         summarize(
             last_collected = max(year, na.rm = TRUE)
@@ -80,7 +79,6 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
     ## this stage
 
     summary_db <- . %>%
-        dplyr::filter(is_marine == TRUE) %>%
         dplyr::group_by(phylum) %>%
         dplyr::summarize(
                    n_records = n(),
