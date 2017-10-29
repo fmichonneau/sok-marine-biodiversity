@@ -104,7 +104,7 @@ make_gradient_data <- function(lat_data) {
     max_lat <- ceiling(max(lat_data$decimallatitude))
 
     lat_data %>%
-        dplyr::filter(!is_in_gom) %>%
+        dplyr::filter(!within_gom) %>%
         dplyr::mutate(
                    lat_grad = ntile(decimallatitude, 100),
                    lat_cut = cut(decimallatitude, seq(min_lat, max_lat, slice_size)),

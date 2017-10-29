@@ -7,27 +7,27 @@ deduplicate_records <- function(data) {
                         datecollected, .keep_all = TRUE) %>%
         dplyr::select(worms_phylum, worms_class, worms_order, worms_family,
                       worms_valid_name, decimallatitude,
-                      decimallongitude, datecollected, year) %>%
+                      decimallongitude, datecollected, year,
+                      within_eez, within_gom, within_pnw) %>%
         dplyr::rename(phylum = worms_phylum)
 }
 
-combine_records <- function(..., map) {
+combine_records <- function(...) {
     d <- list(...)
     d <- year_as_integer(d)
     d %>%
         dplyr::bind_rows() %>%
         deduplicate_records() %>%
-        add_geo(map = map)
+        add_geo()
 }
 
 ## add info on whether a record is on the East coast, West coast, or the Gulf of
 ## Mexico.  In this function, if a record is in the GOM, it is not on the East
 ## coast
-add_geo <- function(d, map) {
+add_geo <- function(d) {
     d <- d %>%
-        is_within_gom_records(map = map) %>%
         dplyr::mutate(is_east_coast = if_else(decimallongitude > -100 &
-                                             !is_in_gom, TRUE, FALSE),
+                                             !within_gom, TRUE, FALSE),
                       is_west_coast = if_else(decimallongitude < -100,
                                              TRUE, FALSE))
 
