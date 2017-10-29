@@ -241,8 +241,7 @@ plot_change_trend_through_time <- function(knowledge_through_time) {
 
 plot_institutions_through_time <- function(idig_records) {
     idig <- idig_records %>%
-        dplyr::filter(is_marine == TRUE, is_binomial == TRUE, !is.na(worms_id),
-                      !is.na(year))
+        dplyr::filter(!is.na(year))
 
     inst_to_keep <- idig %>%
         dplyr::count(institutioncode, sort = TRUE) %>%

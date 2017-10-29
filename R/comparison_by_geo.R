@@ -1,6 +1,6 @@
 compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
+
     prepare <- . %>%
-            dplyr::filter(is_binomial == TRUE, is_marine == TRUE) %>%
             dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
             dplyr::select(worms_id, worms_valid_name,
                           worms_phylum) %>%
@@ -334,7 +334,7 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
                    is_binomial = is_binomial(cleaned_scientificname)
                ) %>%
         add_worms() %>%
-        filter(!is.na(worms_valid_name), !is.na(year))
+        filter(!is.na(year))
 
     .obis <- . %>%
         fetch_spp_from_obis(feather_out = NULL) %>%
@@ -344,8 +344,7 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
                    cleaned_scientificname = cleanup_species_names(scientificname),
                    is_binomial = is_binomial(cleaned_scientificname)
                ) %>%
-        add_worms() %>%
-        filter(!is.na(worms_valid_name))
+        add_worms()
 
     .gom <- . %>%
         is_within_gom_records(map_gom) %>%

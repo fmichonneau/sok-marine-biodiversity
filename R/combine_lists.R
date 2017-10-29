@@ -1,7 +1,5 @@
 deduplicate_records <- function(data) {
     data %>%
-        dplyr::filter(!is.na(worms_valid_name),
-                      is_marine == TRUE) %>%
         dplyr::mutate(approx_lat = round(decimallatitude, 4),
                       approx_lon = round(decimallongitude, 4)) %>%
         dplyr::distinct(worms_phylum, worms_class, worms_order,

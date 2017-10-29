@@ -252,7 +252,7 @@ targets:
     command: get_map_usa("data-raw/USA-EEZ/eez.shp")
 
   map_usa_db:
-    command: insert_map_into_db(db=I(sok_db()), map_usa)
+    command: insert_map_into_db(map_usa)
 
   usa_raster:
     command: raster_from_map(map_usa)
@@ -310,7 +310,7 @@ targets:
     command: get_felder_map_gom("data-raw/mregions_gulf_of_mexico_shp/iho.shp")
 
   map_gom_db:
-    command: insert_map_into_db(db=I(sok_db()), map_gom)
+    command: insert_map_into_db(map_gom)
 
   gom_raster:
     command: raster_from_map(map_gom)
@@ -343,13 +343,13 @@ targets:
     command: add_worms(obis_gom_records_raw)
 
   combined_gom_records:
-    command: combine_records(idigbio = idigbio_gom_records, obis = obis_gom_records, map = map_gom)
+    command: combine_records(idigbio = idigbio_gom_records, obis = obis_gom_records)
 
   total_gom_species:
     command: combine_species_list(idigbio = idigbio_gom_records, obis = obis_gom_records, checklist = gom_worms, map_usa = map_usa)
 
   total_gom_records:
-    command: combine_records(idigbio=idigbio_gom_records, obis=obis_gom_records, checklist=gom_worms, map=map_gom)
+    command: combine_records(idigbio=idigbio_gom_records, obis=obis_gom_records, checklist=gom_worms)
 
   outputs/list_species_gom.csv:
     command: export_species_list(total_gom_species, file="outputs/list_species_gom.csv")
@@ -366,7 +366,7 @@ targets:
     command: get_map_pnw()
 
   map_pnw_db:
-    command: insert_map_into_db(db=I(sok_db()), map_pnw)
+    command: insert_map_into_db(map_pnw)
 
   pnw_raster:
     command: raster_from_map(map_pnw)
@@ -399,13 +399,13 @@ targets:
     command: add_worms(obis_pnw_records_raw)
 
   combined_pnw_records:
-    command: combine_records(idigbio_pnw_records, obis_pnw_records, map = map_gom) # note: map_gom isn't a mistake, we use it to assign records to GOM as a region, but probably not in use here.
+    command: combine_records(idigbio_pnw_records, obis_pnw_records)
 
   total_pnw_species:
     command: combine_species_list(idigbio = idigbio_pnw_records, obis = obis_pnw_records, checklist = kozloff_worms, map_usa = map_usa)
 
   total_pnw_records:
-      command: combine_records(idigbio=idigbio_pnw_records, obis=obis_pnw_records, checklist=kozloff_worms, map = map_gom)
+      command: combine_records(idigbio=idigbio_pnw_records, obis=obis_pnw_records, checklist=kozloff_worms)
 
   outputs/list_species_pnw.csv:
     command: export_species_list(total_pnw_species, file = "outputs/list_species_pnw.csv")
@@ -565,7 +565,7 @@ targets:
 
   ## Combined OBIS + iDigBio
   combined_records:
-    command: combine_records(idigbio_records, obis_records, map = map_gom)
+    command: combine_records(idigbio_records, obis_records)
 
   combined_species:
     command: combine_species_list(idigbio = idigbio_records, obis = obis_records, map_usa=map_usa)
@@ -711,7 +711,7 @@ targets:
 ### plot sampling effort (correlation between number of samples vs number species
 
   figures/plot_sampling_effort.pdf:
-    command: plot_sampling_effort(combined_data_map_standardized_diversity)
+    command: plot_sampling_effort(combined_data_map_standardized_diversity, map_gom)
     plot:
       height: 4.5
       width: 6.5

@@ -202,8 +202,7 @@ crust_name_in_dbs <- function(tbl, combined_species, map) {
     select_crust <- tbl %>%
         filter(is.na(arctic) & is.na(hawaii) &
                (!is.na(atlantic) | !is.na(pacific) | !is.na(gulf_mexico) | !is.na(cosmopolitan)) &
-               is.na(terrestrial) & is.na(inland) &
-               !is.na(worms_id) & is_marine)
+               is.na(terrestrial) & is.na(inland))
 
     ## check species that are in the combined US list
     res <- select_crust %>%
@@ -253,9 +252,31 @@ moll_name_geo <- function(tbl) {
 
 molluscs_name_in_dbs <- function(tbl, combined_species, map) {
     select_moll <- tbl %>%
-        dplyr::filter((north_america | us_atlantic | us_pacific) &
-                      !is.na(worms_id) & is_marine) %>%
+        dplyr::filter((north_america | us_atlantic | us_pacific)) %>%
         add_dbs_info(combined_species, map)
+}
+
+itis_in_idigbio <- function() {
+
+}
+
+itis_in_obis <- function() {
+
+}
+
+itis_in_bold <- function() {
+
+}
+
+itis_molluscs_stats <- function(moll_geo) {
+    list(
+        n_spp = sum(moll_geo$is_marine)
+    )
+
+}
+
+itis_crustaceans_stats <- function() {
+
 }
 
 

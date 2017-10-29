@@ -145,12 +145,11 @@ add_worms <- function(sp_list) {
                   names(sp_list)))
 
     spp <- sp_list %>%
-        dplyr::filter(is_binomial == TRUE) %>%
-        dplyr::select(cleaned_scientificname) %>%
-        unique
+        dplyr::distinct(cleaned_scientificname) %>%
+        dplyr::filter(nchar(cleaned_scientificname) > 3)
 
-    wid <- valid_name <- is_fuzzy <- vector("character", nrow(spp))
-    marine <- vector("logical", nrow(spp))
+    wid <- valid_name <- rank <- is_fuzzy <- character(nrow(spp))
+    marine <- logical(nrow(spp))
 
     for (i in seq_len(nrow(spp))) {
         w_info <- store_worms_ids()$get(tolower(spp[i, 1]))
@@ -158,10 +157,11 @@ add_worms <- function(sp_list) {
             wid[i] <- w_info$valid_AphiaID
             valid_name[i] <- w_info$valid_name
             is_fuzzy[i] <- w_info$fuzzy
+            rank[i] <- w_info$rank
             # use the valid name to infer marine or not, as it is not score
             marine[i] <- worms_is_marine(as.character(w_info$valid_AphiaID))
         } else {
-            wid[i] <- marine[i] <- valid_name[i] <- is_fuzzy[i] <- NA
+            wid[i] <- marine[i] <- valid_name[i] <- is_fuzzy[i] <- rank[i] <- NA
         }
     }
     to_add <- data_frame(
@@ -169,10 +169,14 @@ add_worms <- function(sp_list) {
         worms_id = wid,
         is_marine = marine,
         worms_valid_name = valid_name,
+        rank = rank,
         is_fuzzy = is_fuzzy
     )
 
     dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname") %>%
         add_classification() %>%
-        dplyr::filter(!worms_class %in% chordata_classes_to_rm())
+        dplyr::filter(!worms_class %in% chordata_classes_to_rm()) %>%
+        dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
+        dplyr::filter(is_marine) %>%
+        dplyr::filter(!is.na(worms_id))
 }

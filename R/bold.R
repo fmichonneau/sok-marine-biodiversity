@@ -139,7 +139,6 @@ make_stat_bold <- function(gom_bld, koz_bld, gom_wrm, koz_wrm) {
 
 get_bold_bins <- function(gom, koz) {
     spp <- dplyr::bind_rows(gom, koz) %>%
-        dplyr::filter(is_marine == TRUE, !is.na(worms_id)) %>%
         dplyr::distinct(worms_valid_name)
 
     res <- lapply(spp$worms_valid_name, function(x) {
