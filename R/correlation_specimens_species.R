@@ -42,12 +42,6 @@ calc_stat_sampling_effort <- function(id, map_gom) {
         )
 }
 
-model_sampling_effort <- function(id) {
-    id <- prepare_sampling_effort_data(id)
-    mdl <- glm(log(n_species) ~ log(n_specimen) * latitude * east_west - log(n_specimen):latitude:east_west, data = id)
-
-}
-
 ## proportion of identified species known by `n_specimens`.
 calc_prop_nspecimens_species <- function(recs, n_specimens) {
     res <- recs %>%
