@@ -1,11 +1,20 @@
-assert_all_marine <- function(d) {
-    if (!exists("is_marine", d))
-        stop("columns `is_marine` missing from this dataset.")
-    if (any(is.na(d$is_marine)))
-        stop("Missing info about whether species is marine")
-    if (!all(d$is_marine))
-        stop("Non marine records are included")
+assert_column <- function(col_name, check_all_true) {
+    function(d) {
+        if (!exists(col_name, d))
+            stop("column ", sQuote(col_name), " missing from this dataset.")
+        if (any(is.na(d[[col_name]]))) {
+            stop(sQuote(col_name), " has NAs")
+        }
+        if (check_all_true) {
+            if (!all(d[[col_name]])) {
+                stop("Not all values in ", sQuote(col_name), " are TRUE")
+            }
+        }
+    }
 }
+
+assert_all_marine <- assert_column("is_marine", check_all_true = TRUE)
+assert_all_in_worms <- assert_column("worms_id", check_all_true = FALSE)
 
 
 validate_records <- function(recs, list_phyla) {
