@@ -1,5 +1,5 @@
 chordata_classes_to_rm <- function()
-    c("actinopteri", "actinopterygii",
+    c("actinopteri", "actinopteri", "actinopterygii",
       "cephalaspidomorphi", "agnatha",
       "amphibia", "aves", "chondrichthyes",
       "chondrichthys", "elasmobranchii",

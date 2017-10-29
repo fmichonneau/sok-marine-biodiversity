@@ -157,23 +157,16 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
     chr_fam_to_rm <- chordata_families_to_rm()
     arth_class_to_rm <- arthropod_classes_to_rm()
 
-    chordata_family_to_rm <- db %>%
-        dplyr::filter(phylum == "chordata" &
-                      (class %in% chr_class_to_rm |
-                       family %in% chr_fam_to_rm)) %>%
+    taxa_to_rm <- db %>%
+        dplyr::filter(
+               (phylum == "chordata" &
+                (class %in% chr_class_to_rm |
+                 family %in% chr_fam_to_rm)) |
+               (phylum == "arthropoda" & class %in% arth_class_to_rm)
+               ) %>%
         dplyr::select(phylum, class, family) %>%
-        dplyr::distinct(phylum, class, family)
-
-    arth_family_to_rm <- db %>%
-        dplyr::filter(phylum == "arthropoda" & class %in% arth_class_to_rm) %>%
-        dplyr::select(phylum, family) %>%
-        dplyr::distinct(phylum, family) %>%
+        dplyr::distinct(phylum, class, family) %>%
         dplyr::filter(!is.na(family))
-
-    phyla_to_keep_clean <- list_phyla %>%
-        dplyr::filter(common_phylum != "to_drop") %>%
-        dplyr::distinct(common_phylum) %>%
-        dplyr::pull(common_phylum)
 
     all_phyla_to_keep <- list_phyla %>%
         dplyr::filter(common_phylum != "to_drop",
@@ -184,17 +177,18 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
     check_phyla_in_db(db, list_phyla)
 
     db %>%
-        ## First let's get the phylum names we need to keep, that will take care
+        ## First let's keep only the within_eez records
+        dplyr::filter(within_eez) %>%
+        ## let's get the phylum names we need to keep, that will take care
         ## of plants, fungi, and records with no specified phylum
         dplyr::filter(phylum %in% all_phyla_to_keep) %>%
-        ## remove the obviously vertebrates
-        dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "family")) %>%
-        dplyr::anti_join(chordata_family_to_rm, by = c("phylum", "class")) %>%
-        ## and the arthropods
-        dplyr::anti_join(arth_family_to_rm, by = c("phylum", "family")) %>%
+        ## remove the obviously vertebrates and terrestrial arthropods
+        dplyr::anti_join(taxa_to_rm, by = c("phylum", "family")) %>%
+        dplyr::anti_join(taxa_to_rm, by = c("phylum", "class")) %>%
         ## remove some vertebrates identified at higher level in the scientificname
         ## field
         dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
+        ## select needed columns
         dplyr::select(uuid, phylum, class, order, family, genus, scientificname,
                       decimallatitude, decimallongitude, datecollected, institutioncode,
                       within_eez, within_gom, within_pnw,
@@ -210,7 +204,7 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                       phylum = common_phylum)
 }
 
-insert_map_into_db <- function(db, map) {
+insert_map_into_db <- function(map) {
     ## First we create a table that holds all the layers of the shape object.
     ## This table is named like the `map` object.
     name <- deparse(substitute(map))
@@ -218,6 +212,8 @@ insert_map_into_db <- function(db, map) {
     rpostgis::pgInsert(db, name = c("public", name),
                        data.obj = sp_map, overwrite = TRUE,
                        row.names = FALSE)
+
+    db <- sok_db()
 
     ## Then we had the union of the layers of these objects into a master table
     ## that holds all the polygons we use: map_usa, map_gom, map_pnw.  But
@@ -272,6 +268,8 @@ add_unique_coords_to_db <- function(db, src_table) {
         dbExecute(db, glue::collapse(q_create))
     }
 
+    ## TODO -- the join takes a long time, it might be better to calculate directly st_contains
+    ## on the table directly, instead of on only the unique coordinates.
     ## create temporary table with all coordinates
     ## 1. extract the unique coordinates
     dbExecute(db,
@@ -346,25 +344,65 @@ add_within_polygon_to_db <- function(db_table) {
 
 }
 
+add_worms_to_idigbio_db <- function(db_table) {
+
+    temp_file <- tempfile(fileext = glue::glue("_{db_table}.csv"))
+
+    sok_db() %>%
+        dplyr::tbl(db_table) %>%
+        dplyr::filter(within_eez) %>%
+        dplyr::distinct(scientificname) %>%
+        dplyr::collect(100) %>%
+        dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
+                      is_binomial = is_binomial(cleaned_scientificname)) %>%
+        dplyr::filter(is_binomial) %>%
+        dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
+        add_worms() %>%
+        write_csv(temp_file)
+
+
+}
+
+
 idig_stats_by_kingdom <- function(db_table, list_phyla, map) {
 
     db <- sok_db()
     dplyr::copy_to(db, list_phyla, name = "list_phyla",
-                   overwrite = TRUE)
+                   overwrite = TRUE, temporary = TRUE)
 
+    ## clean up
+    chordata_classes <- chordata_classes_to_rm()[-match("unknown", chordata_classes_to_rm())]
+    chordata_classes <- glue("(", collapse(paste0("'", chordata_classes, "'"), sep=", "), ")")
+    chordata_families <- glue("(", collapse(paste0("'", chordata_families_to_rm(), "'"), sep = ", "), ")")
+
+    dbExecute(db, glue::glue("CREATE TABLE {db_table}_clean AS ",
+                             "SELECT * FROM {db_table} ",
+                             "WHERE within_eez IS TRUE;"))
+    dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
+                             "SET phylum = 'chordata' ",
+                             "WHERE phylum IS NULL AND (",
+                             "class IN {chordata_classes} OR ",
+                             "family IN {chordata_families})"))
+
+    db_table_clean <- glue::glue("{db_table}_clean")
     idig_tbl <- db %>%
-        dplyr::tbl(db_table)
+        dplyr::tbl(db_table_clean)
 
     idig_phy <- db %>%
         dplyr::tbl("list_phyla")
 
     check_phyla_in_db(idig_tbl, list_phyla)
 
-    ## dsn <- "PG:dbname='idigbio' host='localhost' user='marinediversity' password='password'"
-    ##   ogrListLayers(dsn)
-    idig_tbl %>%
+     idig_tbl %>%
+        dplyr::filter(within_eez) %>%
         dplyr::left_join(idig_phy, by = "phylum") %>%
-        dplyr::count(kingdom)
+        dplyr::filter(is.na(kingdom)) %>%
+        dplyr::group_by(phylum, order, class, family) %>%
+        dplyr::summarize(
+                   n = n_distinct(scientificname)
+               ) %>%
+        collect(Inf) %>%
+        write_csv("/tmp/no_phylum.csv")
 
 
 }
@@ -405,9 +443,6 @@ filter_records_by_geo <- function(recs, area) {
 
 n_spp_from_idigbio <- function(idigbio_records) {
     idigbio_records %>%
-        dplyr::filter(!is.na(is_marine),
-                      is_marine == TRUE,
-                      worms_valid_name != "not in worms") %>%
         mutate(phylum = tolower(`data.dwc:phylum`)) %>%
         group_by(phylum) %>%
         summarize(
@@ -435,7 +470,7 @@ plot_idigbio_invert_summary <- function(idigbio_records, idigbio_bold) {
 
 make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata", "Annelida", "Arthropoda", "Mollusca", "Porifera")) {
     idig %>%
-        filter(is_marine == TRUE, !is.na(year)) %>%
+        filter(!is.na(year)) %>%
         mutate(`phylum` = capitalize(`phylum`, strict = TRUE)) %>%
         filter(year >=  1900,
                `phylum` %in% to_keep) %>%
