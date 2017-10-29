@@ -1,4 +1,6 @@
 cleanup_species_names <- function(nm, rm_subgenus = FALSE) {
+    ## remove /
+    nm <- gsub("/", " ", nm)
     ## remove author/year
     nm <- vapply(nm, function(x) {
         if (grepl("[0-9]{4}", x))
