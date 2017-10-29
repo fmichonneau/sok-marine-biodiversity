@@ -26,7 +26,7 @@ init <- function() {
         dir.create("../data-validation")
     ## for some reasons these 2 keys in the OBIS fail consistently
     ## so we are removing them everytime to force fetching them
-    store_obis_occurrences("../data/obis_occurrences_storr")$del(c("391707","220659"))
+    store_obis_occurrences("../data/storr_obis_occurrences")$del(c("391707","220659"))
 }
 
 ## control output level based on verbosity level
