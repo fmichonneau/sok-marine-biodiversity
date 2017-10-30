@@ -422,18 +422,17 @@ prepare_idig_stats_by_kingdom <- function(db_table) {
         dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname)) %>%
         dplyr::group_by(cleaned_scientificname) %>%
         add_worms(remove_vertebrates = FALSE)  %>%
-        dplyr::mutate(kingdom = add_kingdom(worms_id)) %>%
+        dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
         dplyr::ungroup() %>%
-        dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = TRUE,
+        dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
                        overwrite = TRUE, indexes = list("scientificname"))
 
     ## worms info to idigbio records
     map(list("worms_kingdom", "worms_phylum", "worms_class",
-             "worms_order", "worms_family", "worms_valid_name"),
+             "worms_order", "worms_family", "worms_valid_name", "worms_id"),
         function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN {x} TEXT DEFAULT NULL;"))
         )
-    dbExecute(db, "ALTER TABLE {db_table}_clean ADD COLUMN worms_id INT DEFAULT NULL;")
-    dbExecute(db, "ALTER TABLE {db_table}_clean ADD COLUMN is_marine BOOL DEFAULT NULL;")
+    dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN is_marine BOOL DEFAULT NULL;"))
     dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
                              "SET (worms_valid_name, worms_id, is_marine, worms_kingdom, worms_phylum,",
                              "     worms_class, worms_order, worms_family) = ",
@@ -443,6 +442,41 @@ prepare_idig_stats_by_kingdom <- function(db_table) {
                              "  WHERE {db_table}_clean.scientificname = {db_table}_species.scientificname);"))
 
 }
+
+idigbio_kingdom_stats <- function(db_table) {
+    db <- sok_db()
+
+    tbl <- tbl(db, db_table)
+
+    ## number of species and records per kingdom
+    tbl %>%
+        dplyr::filter(is_marine) %>%
+        dplyr::filter(!is.na(worms_id)) %>%
+        dplyr::mutate(sub_kingdom = case_when(
+                          worms_phylum == "chordata" &
+                          worms_class %in% c("appendicularia",
+                                             "ascidiacea",
+                                             "holocephali",
+                                             "leptocardii",
+                                             "thaliacea") ~ "animalia",
+                          worms_phylum == "chordata" &
+                          worms_class %in% c("actinopterygii",
+                                             "aves",
+                                             "elasmobranchii",
+                                             "mammalia",
+                                             "myxini",
+                                             "petromyzonti",
+                                             "reptilia") ~ "animalia - vertebrates",
+                          TRUE ~ worms_kingdom
+                      )) %>%
+        dplyr::group_by(sub_kingdom, worms_phylum) %>%
+        dplyr::summarize(
+                   n_samples = n(),
+                   n_spp = n_distinct(worms_valid_name)
+               )
+
+}
+
 
 ## db: connection to table in postgres database
 ## list_phyla: csv file with phylum dictionary

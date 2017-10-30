@@ -279,6 +279,10 @@ targets:
   idigbio_records:
     command: filter_records_by_geo(idigbio_records_all, I("eez"))
 
+  idigbio_records_higher_classification:
+    command: prepare_idig_stats_by_kingdom(I("us_idigbio"))
+    depends: idigbio_records_all
+
   idigbio_iucn:
     command: add_iucn_status(idigbio_records)
 
