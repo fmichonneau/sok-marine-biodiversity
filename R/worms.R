@@ -141,7 +141,7 @@ worms_is_marine <- function(sp) {
 
 add_worms <- function(sp_list) {
     stopifnot(inherits(sp_list, "data.frame"))
-    stopifnot(all(c("is_binomial", "cleaned_scientificname") %in%
+    stopifnot(all(c("cleaned_scientificname") %in%
                   names(sp_list)))
 
     spp <- sp_list %>%
