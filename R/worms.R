@@ -139,7 +139,7 @@ worms_is_marine <- function(sp) {
     } else NA
 }
 
-add_worms <- function(sp_list) {
+add_worms <- function(sp_list, remove_vertebrates = TRUE) {
     stopifnot(inherits(sp_list, "data.frame"))
     stopifnot(all(c("cleaned_scientificname") %in%
                   names(sp_list)))
@@ -173,9 +173,15 @@ add_worms <- function(sp_list) {
         is_fuzzy = is_fuzzy
     )
 
-    dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname") %>%
-        add_classification() %>%
-        dplyr::filter(!worms_class %in% chordata_classes_to_rm()) %>%
+    res <- dplyr::left_join(sp_list, to_add, by = "cleaned_scientificname") %>%
+        add_classification()
+
+    if (remove_vertebrates) {
+        res <- res %>%
+            dplyr::filter(!worms_class %in% chordata_classes_to_rm())
+    }
+
+    res %>%
         dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
         dplyr::filter(is_marine) %>%
         dplyr::filter(!is.na(worms_id))
