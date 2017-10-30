@@ -364,7 +364,7 @@ add_worms_to_idigbio_db <- function(db_table) {
 }
 
 
-idig_stats_by_kingdom <- function(db_table, list_phyla, map) {
+idig_stats_by_kingdom <- function(db_table, list_phyla) {
 
     db <- sok_db()
     dplyr::copy_to(db, list_phyla, name = "list_phyla",
@@ -376,13 +376,47 @@ idig_stats_by_kingdom <- function(db_table, list_phyla, map) {
     chordata_families <- glue("(", collapse(paste0("'", chordata_families_to_rm(), "'"), sep = ", "), ")")
 
     dbExecute(db, glue::glue("CREATE TABLE {db_table}_clean AS ",
-                             "SELECT * FROM {db_table} ",
+                             "SELECT DISTINCT ON (uuid) * FROM {db_table} ",
                              "WHERE within_eez IS TRUE;"))
+    dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ",
+                             "ADD PRIMARY KEY (uuid);"))
+    dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_clean (scientificname)"))
     dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
                              "SET phylum = 'chordata' ",
                              "WHERE phylum IS NULL AND (",
                              "class IN {chordata_classes} OR ",
                              "family IN {chordata_families})"))
+
+    ## get all species names, clean them up, and get worms info
+    q <- dbSendQuery(db, glue::glue("SELECT DISTINCT scientificname FROM {db_table}_clean"))
+    all_nm <- dbFetch(q) %>%
+        ## remove non-ascii characters
+        dplyr::mutate(cleaned_scientificname = iconv(scientificname, "latin1", "ASCII", sub = "")) %>%
+        ## remove subsp. foo
+        dplyr::mutate(cleaned_scientificname = gsub("\\ssubsp\\.? .+$", "", cleaned_scientificname)) %>%
+        dplyr::mutate(cleaned_scientificname = cleanup_species_names(cleaned_scientificname)) %>%
+        ## remove quotes
+        dplyr::mutate(cleaned_scientificname = gsub("\"|\'", "", cleaned_scientificname)) %>%
+        ## remove ex. foo bar
+        dplyr::mutate(cleaned_scientificname = gsub("\\sex\\.? .+$", "", cleaned_scientificname)) %>%
+        ## remove author names in botanical names
+        ## in the form l. or (l.) or (c. l.)
+        dplyr::mutate(cleaned_scientificname = gsub("\\s\\(?([a-z]+\\.)+\\s?([a-z]+\\.)?\\)?", "", cleaned_scientificname)) %>%
+        ## remove authors with & e.g. (bartram & smith)
+        dplyr::mutate(cleaned_scientificname = gsub("\\s\\(?[a-z]+\\.?\\s&\\s[a-z]+\\.?\\)?", "", cleaned_scientificname)) %>%
+        ## remove synonyms e.g. solariella (=margarita) infundibulum
+        dplyr::mutate(cleaned_scientificname =  gsub("\\s\\(=[a-z]+\\)", "", cleaned_scientificname))  %>%
+        ## remove names that end with variations of (something)
+        dplyr::mutate(cleaned_scientificname = gsub("(\\s\\(\\s?[a-z]+$)|(\\s[a-z]+\\s?\\)$)|(\\s\\(\\s?[a-z]+\\s?\\)$)", "", cleaned_scientificname)) %>%
+        ## remove blend, dronen and armstrong OR dronen and armtrong
+        dplyr::mutate(cleaned_scientificname = gsub("([a-z]+,\\s)?[a-z]+\\sand\\s[a-z]+", "", cleaned_scientificname)) %>%
+        ## remove blend, dronen
+        dplyr::mutate(cleaned_scientificname = gsub("\\s[a-z]+,\\s[a-z]+", "", cleaned_scientificname)) %>%
+        dplyr::distinct(cleaned_scientificname) %>%
+        dplyr::filter(grepl("\\s", cleaned_scientificname)) %>%
+        dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname)) %>%
+        add_worms()  %>% write_csv("tmp/{db_table}_clean.csv")
+
 
     db_table_clean <- glue::glue("{db_table}_clean")
     idig_tbl <- db %>%
