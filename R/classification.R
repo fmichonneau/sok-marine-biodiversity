@@ -83,3 +83,8 @@ add_classification <- function(data) {
             dplyr::mutate(phylum = worms_phylum)
     res
 }
+
+add_kingdom <- function(x) {
+    res <- store_worms_classification()$mget(x)
+    vapply(res, function(x) dplyr::pull(x, scientificname)[1] %>% tolower(), character(1))
+}
