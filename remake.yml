@@ -87,7 +87,7 @@ targets:
 ### WoRMS stats ----------------------------------------------------------------
 
   worms_stats:
-    command: read_worms_stats("data-raw/20170808_worms_stats.csv")
+    command: read_worms_stats("data-raw/20171031_worms_stats.csv")
 
 ### List phyla -----------------------------------------------------------------
 

@@ -325,7 +325,9 @@ get_bold_global_coverage <- function(bold_stats_raw, wrms_stats) {
         dplyr::summarize(n_records = sum(n_records),
                          n_bins = sum(n_bins),
                          n_spp = sum(n_spp)) %>%
-        dplyr::left_join(wrms_stats, by = "phylum") %>%
+        dplyr::left_join(dplyr::filter(wrms_stats,
+                                       kingdom == "Animalia"),
+                         by = "phylum") %>%
         dplyr::mutate(prop_barcoded = n_spp/accepted_species_marine_non_fossil) ## %>%
         ## dplyr::filter(prop_barcoded < 1) %>%
         ## ggplot(aes(x = phylum, y = prop_barcoded, fill = phylum)) +

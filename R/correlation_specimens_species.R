@@ -90,6 +90,7 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
         dplyr::pull(phylum)
 
     worms_data <- wrms_stats %>%
+        dplyr::filter(kingdom ==  "Animalia") %>%
         dplyr::mutate(phylum = tolower(phylum),
                       phylum = replace(phylum,
                                        phylum %in% c("dicyemida", "orthonectida"),
