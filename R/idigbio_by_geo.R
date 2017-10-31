@@ -344,25 +344,6 @@ add_within_polygon_to_db <- function(db_table) {
 
 }
 
-add_worms_to_idigbio_db <- function(db_table) {
-
-    temp_file <- tempfile(fileext = glue::glue("_{db_table}.csv"))
-
-    sok_db() %>%
-        dplyr::tbl(db_table) %>%
-        dplyr::filter(within_eez) %>%
-        dplyr::distinct(scientificname) %>%
-        dplyr::collect(100) %>%
-        dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
-                      is_binomial = is_binomial(cleaned_scientificname)) %>%
-        dplyr::filter(is_binomial) %>%
-        dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
-        add_worms() %>%
-        write_csv(temp_file)
-
-
-}
-
 all_idigbio_species_name_cleanup <- . %>%
     ## remove non-ascii characters
     dplyr::mutate(cleaned_scientificname = iconv(scientificname, "latin1", "ASCII", sub = "")) %>%
