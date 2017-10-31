@@ -861,15 +861,15 @@ targets:
     command: validate_records(obis_records, list_phyla)
 
   validate_idigbio_coords_usa:
-    command: validate_idigbio_storr(coords_usa)
+    command: validate_idigbio_store(coords_usa)
     depends: idigbio_database
 
   validate_idigbio_coords_gom:
-    command: validate_idigbio_storr(coords_gom)
+    command: validate_idigbio_store(coords_gom)
     depends: idigbio_gom_database
 
   validate_idigbio_coords_pnw:
-    command: validate_idigbio_storr(coords_pnw)
+    command: validate_idigbio_store(coords_pnw)
     depends: idigbio_pnw_database
 
   ## FIXME
