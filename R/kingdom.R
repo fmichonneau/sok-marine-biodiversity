@@ -95,13 +95,14 @@ prepare_obis_stats_by_kingdom <- function(db_table) {
 
     ## get worms info from aphiaid
     v3(glue::glue("Create {db_table}_species ... "), appendLF = FALSE)
-    q <- dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_clean;"))
-    dbFetch(q) %>%
+    dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_clean;")) %>%
+        dbFetch() %>%
         dplyr::filter(!is.na(aphiaid)) %>%
         add_worms_by_id(remove_vertebrates = FALSE) %>%
-        dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
+        dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
+        dplyr::mutate(worms_kingdom = add_kingdom(worms_id))  %>%
         dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
-                       overwrite = TRUE, indexes = list("worms_id"))
+                       overwrite = TRUE, indexes = list("aphiaid"))
     v3("DONE.")
 
     ## worms info to idigbio records
@@ -150,7 +151,7 @@ kingdom_stats <- function(db_table) {
 
 }
 
-plot_kingdom_diversity <- function() {
+plot_kingdom_diversity <- function(worms_stats) {
     get_n_spp <- . %>%
         dplyr::group_by(worms_kingdom, sub_kingdom) %>%
         dplyr::summarize(
@@ -158,14 +159,34 @@ plot_kingdom_diversity <- function() {
         ) %>%
         dplyr::collect()
 
+    wrm <- worms_stats %>%
+        dplyr::mutate(worms_kingdom = tolower(kingdom),
+                      sub_kingdom = worms_kingdom) %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom) %>%
+        dplyr::summarize(
+                   n_spp = sum(all_species_marine_non_fossil)
+               ) %>%
+        bind_rows(
+            data_frame(
+                worms_kingdom =  "animalia",
+                sub_kingdom =  "animalia - vertebrates",
+                ## use number from Appeltans et al. 2012
+                n_spp = 17619)
+        )
+    wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - 17619
+
+
     ## diversity comparison
     bind_rows(
         idigbio = kingdom_stats("us_idigbio_clean") %>%
             get_n_spp(),
         obis =  kingdom_stats("us_obis_clean") %>%
             get_n_spp(),
+        worms = wrm,
         .id = "database") %>%
-        ggplot(aes(x = database, y = n_spp, fill = interaction(worms_kingdom, sub_kingdom))) +
+        dplyr::group_by(database) %>%
+        dplyr::mutate(prop_spp = n_spp/sum(n_spp)) %>%
+        ggplot(aes(x = database, y  = prop_spp, fill = interaction(worms_kingdom, sub_kingdom))) +
         geom_bar(stat = "identity") + coord_flip() +
         scale_fill_hc()
 }
