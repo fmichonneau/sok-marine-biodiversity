@@ -467,7 +467,7 @@ prepare_obis_stats_by_kingdom <- function(db_table) {
 
 }
 
-idigbio_kingdom_stats <- function(db_table) {
+kingdom_stats <- function(db_table) {
     db <- sok_db()
 
     tbl <- tbl(db, db_table)
