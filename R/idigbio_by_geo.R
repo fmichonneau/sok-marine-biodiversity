@@ -472,7 +472,6 @@ kingdom_stats <- function(db_table) {
 
     tbl <- tbl(db, db_table)
 
-    ## number of species and records per kingdom
     tbl %>%
         dplyr::filter(is_marine) %>%
         dplyr::filter(!is.na(worms_id)) %>%
@@ -516,14 +515,75 @@ plot_kingdom_diversity <- function() {
         scale_fill_hc()
 }
 
+if (FALSE) {
+    ## number of species and records per (sub)kingdom
+    idigbio_kingdom_stats("us_idigbio_clean")  %>%
         dplyr::group_by(sub_kingdom, worms_phylum) %>%
         dplyr::summarize(
                    n_samples = n(),
                    n_spp = n_distinct(worms_valid_name)
-               )
+               ) %>%
+        collect() %>%
+        ggplot(aes(x=n_samples, y=n_spp, colour=sub_kingdom)) +
+        geom_point() +
+        geom_label_repel(aes(label=worms_phylum)) +
+        scale_x_log10() + scale_y_log10()
+
+     ## comparison of number of samples per species across phyla
+      idigbio_kingdom_stats("us_idigbio_clean") %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom, worms_phylum, worms_valid_name) %>%
+        dplyr::summarize(
+                   n_samples= n()
+               ) %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom, worms_phylum) %>%
+        dplyr::mutate(
+                   rank = row_number(desc(n_samples))
+               ) %>%
+        collect() %>%
+        dplyr::filter(worms_phylum %in% c("chordata", "mollusca", "arthropoda", "annelida",
+                                          "cnidaria", "echinodermata")) %>%
+        dplyr::mutate(n_samp_log = log10(n_samples)) %>%
+        ggplot(aes(x = rank, height = n_samples, y= interaction(sub_kingdom, worms_phylum), fill = sub_kingdom)) +
+        geom_density_ridges(stat = "identity") + xlim(c(0, 100)) #position = "dodge") #+ ylim(c(0, 750)) + #scale_y_log10() +
+
+
+    ## violin plot
+    idigbio_kingdom_stats("us_idigbio_clean") %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom, worms_phylum, worms_valid_name) %>%
+        dplyr::summarize(
+                   n_samples= n()
+               ) %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom, worms_phylum) %>%
+        dplyr::mutate(
+                   rank = row_number(desc(n_samples))
+               ) %>%
+        collect() %>%
+        dplyr::filter(worms_phylum %in% c("chordata", "mollusca", "arthropoda", "annelida",
+                                          "cnidaria", "echinodermata")) %>%
+        ggplot(aes(x = interaction(sub_kingdom, worms_phylum), fill = worms_phylum, y = n_samples)) +
+        geom_point(position = "jitter", alpha = .2) +
+        scale_y_log10() + coord_flip() #+ facet_wrap(~ worms_kingdom, scales = "free")
+
+    ## median
+     idigbio_kingdom_stats("us_idigbio_clean") %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom, worms_phylum, worms_valid_name) %>%
+        dplyr::summarize(
+                   n_samples= n()
+               ) %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom, worms_phylum) %>%
+        dplyr::mutate(
+                   rank = row_number(desc(n_samples))
+               ) %>%
+        collect() %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom, worms_phylum) %>%
+        dplyr::summarize(
+                   median_n_samp = median(n_samples),
+                   mean_n_samp = mean(n_samples)
+               ) %>% write_csv("/tmp/summ_samples.csv")
+
+
 
 }
-
 
 ## db: connection to table in postgres database
 ## list_phyla: csv file with phylum dictionary
