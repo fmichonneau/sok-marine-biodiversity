@@ -187,3 +187,43 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
         dplyr::filter(is_marine) %>%
         dplyr::filter(!is.na(worms_id))
 }
+
+add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE) {
+    stopifnot(inherits(tbl, "data.frame"))
+    stopifnot(exists(colname, tbl))
+
+    colnm <- rlang::sym(colname)
+
+     tbl %>%
+         dplyr::mutate(wrm_info = map(!!colnm, function(.id) {
+                           message("aphia id: ", .id)
+                          .info <- store_worms_info()$get(as.character(.id))
+                          if (inherits(.info, "logical")) {
+                              r <- tibble::data_frame(
+                                          worms_id = NA_character_,
+                                          is_marine = NA_character_,
+                                          worms_valid_name = NA_character_,
+                                          rank = NA_character_,
+                                          is_fuzzy = NA_character_
+                                      )
+                          } else {
+                              r <- tibble::data_frame(
+                                          worms_id = as.character(.info$valid_AphiaID) %||% NA,
+                                          is_marine =
+                                              if (is.null(.info$valid_AphiaID)) NA
+                                              else
+                                                  worms_is_marine(as.character(.info$valid_AphiaID)),
+                                          worms_valid_name = .info$valid_name %||% NA,
+                                          rank = .info$rank %||% NA,
+                                          is_fuzzy = .info$match_type %||% NA
+                                      )
+                          }
+                          r
+                      })) %>%
+        tidyr::unnest() %>%
+        dplyr::filter(rank == "Species" |  rank == "Subspecies") %>%
+        dplyr::filter(is_marine) %>%
+        dplyr::filter(!is.na(worms_id))
+
+
+}
