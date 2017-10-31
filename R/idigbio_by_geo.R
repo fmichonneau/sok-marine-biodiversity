@@ -492,7 +492,30 @@ kingdom_stats <- function(db_table) {
                                              "petromyzonti",
                                              "reptilia") ~ "animalia - vertebrates",
                           TRUE ~ worms_kingdom
-                      )) %>%
+                      ))
+
+}
+
+plot_kingdom_diversity <- function() {
+    get_n_spp <- . %>%
+        dplyr::group_by(worms_kingdom, sub_kingdom) %>%
+        dplyr::summarize(
+            n_spp = n_distinct(worms_valid_name)
+        ) %>%
+        dplyr::collect()
+
+    ## diversity comparison
+    bind_rows(
+        idigbio = kingdom_stats("us_idigbio_clean") %>%
+            get_n_spp(),
+        obis =  kingdom_stats("us_obis_clean") %>%
+            get_n_spp(),
+        .id = "database") %>%
+        ggplot(aes(x = database, y = n_spp, fill = interaction(worms_kingdom, sub_kingdom))) +
+        geom_bar(stat = "identity") + coord_flip() +
+        scale_fill_hc()
+}
+
         dplyr::group_by(sub_kingdom, worms_phylum) %>%
         dplyr::summarize(
                    n_samples = n(),
