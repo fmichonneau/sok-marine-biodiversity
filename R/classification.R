@@ -85,6 +85,7 @@ add_classification <- function(data) {
 }
 
 add_kingdom <- function(x) {
+    x <- as.character(x)
     res <- store_worms_classification()$mget(x)
     vapply(res, function(x) dplyr::pull(x, scientificname)[1] %>% tolower(), character(1))
 }
