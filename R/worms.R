@@ -129,6 +129,7 @@ worms_phylum_by_wid <- function(wid) {
 
 worms_is_marine <- function(sp) {
     winfo <- store_worms_info()$get(sp)
+    if (is.na(winfo)) return(NA)
     if (exists("isMarine", winfo)) {
         if ((is.null(winfo$isMarine) && is.null(winfo$isBrackish)) ||
             (is.na(winfo$isMarine) && is.na(winfo$isBrackish)))
