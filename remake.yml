@@ -308,6 +308,10 @@ targets:
   obis_records:
     command: filter_records_by_geo(obis_records_all, I("eez"))
 
+  obis_records_higher_classification:
+    command: prepare_obis_stats_by_kingdom(I("us_obis"))
+    depends: obis_records_all
+
   ## Gulf of Mexico ------------------------------------------------------------
 
   map_gom:
