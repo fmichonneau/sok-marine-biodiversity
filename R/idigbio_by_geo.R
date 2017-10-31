@@ -421,6 +421,49 @@ prepare_idig_stats_by_kingdom <- function(db_table) {
                              "        worms_phylum, worms_class, worms_order, worms_family ",
                              " FROM {db_table}_species ",
                              "  WHERE {db_table}_clean.scientificname = {db_table}_species.scientificname);"))
+}
+
+prepare_obis_stats_by_kingdom <- function(db_table) {
+    db <- sok_db()
+
+    if (db_has_table(db, glue::glue("{db_table}_clean")))
+        db_drop_table(db, glue::glue("{db_table}_clean"))
+
+    ## obis data is cleaner than iDigBio and already has worms_id (aphiaid) as a
+    ## column. This aphiaID may not be the one for the accepted name though.
+    v3(glue::glue("Create {db_table}_clean ... "),  appendLF = FALSE)
+    dbExecute(db, glue::glue("CREATE TABLE {db_table}_clean AS ",
+                             "SELECT DISTINCT ON (uuid) * FROM {db_table} ",
+                             "WHERE within_eez IS TRUE;"))
+    dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_clean (aphiaid); "))
+    v3("DONE.")
+
+    ## get worms info from aphiaid
+    v3(glue::glue("Create {db_table}_species ... "), appendLF = FALSE)
+    q <- dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_clean;"))
+    dbFetch(q) %>%
+        dplyr::filter(!is.na(aphiaid)) %>%
+        add_worms_by_id(remove_vertebrates = FALSE) %>%
+        dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
+        dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
+                       overwrite = TRUE, indexes = list("worms_id"))
+    v3("DONE.")
+
+    ## worms info to idigbio records
+    v3(glue::glue("Adding worms info to {db_table}_clean ..."), appendLF = FALSE)
+    map(list("worms_kingdom", "worms_phylum", "worms_class",
+             "worms_order", "worms_family", "worms_valid_name", "worms_id"),
+        function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN {x} TEXT DEFAULT NULL;"))
+        )
+    dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN is_marine BOOL DEFAULT NULL;"))
+    dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
+                             "SET (worms_valid_name, worms_id, is_marine, worms_kingdom, worms_phylum,",
+                             "     worms_class, worms_order, worms_family) = ",
+                             "(SELECT worms_valid_name, worms_id, is_marine, worms_kingdom, ",
+                             "        worms_phylum, worms_class, worms_order, worms_family ",
+                             " FROM {db_table}_species ",
+                             "  WHERE {db_table}_clean.aphiaid = {db_table}_species.aphiaid);"))
+    v3("DONE.")
 
 }
 
