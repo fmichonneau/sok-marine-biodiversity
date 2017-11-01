@@ -55,6 +55,7 @@ packages:
   - progress
   - glue
   - splines
+  - xtable
 
 
 targets:
@@ -312,7 +313,8 @@ targets:
     command: prepare_obis_stats_by_kingdom(I("us_obis"))
     depends: obis_records_all
 
-  ## Kingdom statistics
+  ## Kingdom statistics --------------------------------------------------------
+
   kingdom_diversity:
     command: calc_kingdom_diversity(worms_stats)
     depends:
@@ -330,6 +332,11 @@ targets:
     plot:
       height: 4.5
       width: 10
+
+  ## Contributions by institution ----------------------------------------------
+
+  institution_contributions:
+    command: calc_institutions(idigbio_records, obis_records)
 
   ## Gulf of Mexico ------------------------------------------------------------
 
@@ -928,7 +935,7 @@ targets:
       - idigbio_records
       - obis_records
       - kingdom_diversity
-      - kingdom_statssking
+      - kingdom_stats
       - idigbio_gom_records
       - obis_gom_records
       - idigbio_pnw_records
@@ -967,6 +974,7 @@ targets:
       - itis_molluscs_in_dbs
       - itis_crustaceans_in_dbs
       - idigbio_stats
+      - institution_contributions
       ## figures
       - figures/plot_kingdom_diversity.pdf
       - figures/combined_map_sampling.pdf
