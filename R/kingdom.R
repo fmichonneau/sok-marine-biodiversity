@@ -146,35 +146,40 @@ kingdom_stats <- function(db_table) {
                                              "myxini",
                                              "petromyzonti",
                                              "reptilia") ~ "animalia - vertebrates",
-                          TRUE ~ worms_kingdom
+                          worms_kingdom == "animalia" ~ "animalia",
+                          worms_kingdom == "chromista" ~ "chromista",
+                          worms_kingdom == "plantae" ~ "plantae",
+                          TRUE ~ "others"
                       ))
 
 }
 
-plot_kingdom_diversity <- function(worms_stats) {
+calc_kingdom_diversity <- function(worms_stats) {
     get_n_spp <- . %>%
-        dplyr::group_by(worms_kingdom, sub_kingdom) %>%
+        dplyr::group_by(sub_kingdom) %>%
         dplyr::summarize(
-            n_spp = n_distinct(worms_valid_name)
+                   n_samples = n(),
+                   n_spp = n_distinct(worms_valid_name)
         ) %>%
         dplyr::collect()
 
     wrm <- worms_stats %>%
-        dplyr::mutate(worms_kingdom = tolower(kingdom),
-                      sub_kingdom = worms_kingdom) %>%
-        dplyr::group_by(worms_kingdom, sub_kingdom) %>%
+        dplyr::mutate(sub_kingdom = case_when(
+                          tolower(kingdom) %in% c("fungi", "protozoa", "bacteria",
+                                                  "archaea", "viruses", "biota incertae sedis") ~ "others",
+                          TRUE ~ tolower(kingdom)
+                      )) %>%
+        dplyr::group_by(sub_kingdom) %>%
         dplyr::summarize(
                    n_spp = sum(all_species_marine_non_fossil)
                ) %>%
         bind_rows(
             data_frame(
-                worms_kingdom =  "animalia",
                 sub_kingdom =  "animalia - vertebrates",
                 ## use number from Appeltans et al. 2012
                 n_spp = 17619)
         )
     wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - 17619
-
 
     ## diversity comparison
     bind_rows(
@@ -185,12 +190,37 @@ plot_kingdom_diversity <- function(worms_stats) {
         worms = wrm,
         .id = "database") %>%
         dplyr::group_by(database) %>%
-        dplyr::mutate(prop_spp = n_spp/sum(n_spp)) %>%
-        ggplot(aes(x = database, y  = prop_spp, fill = interaction(worms_kingdom, sub_kingdom))) +
-        geom_bar(stat = "identity") + coord_flip() +
-        scale_fill_hc()
+        dplyr::mutate(prop_spp = n_spp/sum(n_spp),
+                      prop_samp = n_samples/sum(n_samples)) %>%
+        dplyr::mutate(sub_kingdom = capitalize(sub_kingdom))
 }
 
+plot_kingdom_diversity <- function(kng) {
+    kng %>%
+        ## option 1 -- compare bar heights
+        ## ggplot(aes(x = database, y  = prop_spp,
+        ##            fill = reorder(sub_kingdom,
+        ##                           prop_spp))) +
+        ## geom_bar(stat = "identity") + coord_flip() +
+        ## option 2 -- compare by sub kingdom
+        ggplot(aes(x = reorder(sub_kingdom, prop_spp), y = prop_spp, fill = database)) +
+        geom_col(position = "dodge") + coord_flip() +
+        geom_text(aes(y = prop_spp + .01, label = n_spp), position = position_dodge(.9),
+                      hjust = .1,  family = "Ubuntu Condensed") +
+        scale_fill_hc(name = "Source", labels = c("iDigBio", "OBIS", "Global diversity (WoRMS)")) +
+        xlab(NULL) + ylab("Proportion of total diversity (per source)") +
+        theme_ipsum(base_family = "Ubuntu Condensed")
+
+}
+
+plot_kingdom_samples <- function(kng) {
+    kng %>%
+        dplyr::mutate(prop_samp = replace(prop_samp, is.na(prop_samp), prop_spp)) %>%
+    ggplot(aes(x = reorder(sub_kingdom, prop_samp), y = prop_samp, fill = database)) +
+    geom_col(position = "dodge") + coord_flip() +
+    scale_fill_hc(name = "Source", labels = c("iDigBio", "OBIS", "Global diversity (WoRMS)")) +
+    xlab(NULL) + ylab("Proportion of total diversity (per source)")
+}
 if (FALSE) {
     ## number of species and records per (sub)kingdom
     idigbio_kingdom_stats("us_idigbio_clean")  %>%

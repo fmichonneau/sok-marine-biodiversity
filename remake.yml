@@ -312,6 +312,19 @@ targets:
     command: prepare_obis_stats_by_kingdom(I("us_obis"))
     depends: obis_records_all
 
+  ## Kingdom statistics
+  kingdom_diversity:
+    command: calc_kingdom_diversity(worms_stats)
+    depends:
+      - idigbio_records_higher_classification
+      - obis_records_higher_classification
+
+  figures/plot_kingdom_diversity.pdf:
+    command: plot_kingdom_diversity(kingdom_diversity)
+    plot:
+      height: 4
+      width: 10
+
   ## Gulf of Mexico ------------------------------------------------------------
 
   map_gom:
@@ -908,6 +921,7 @@ targets:
     depends:
       - idigbio_records
       - obis_records
+      - kingdom_diversity
       - idigbio_gom_records
       - obis_gom_records
       - idigbio_pnw_records
@@ -947,6 +961,7 @@ targets:
       - itis_crustaceans_in_dbs
       - idigbio_stats
       ## figures
+      - figures/plot_kingdom_diversity.pdf
       - figures/combined_map_sampling.pdf
       - figures/gradient.pdf
       - figures/idigbio_map_sampling.pdf ## for supp mat
