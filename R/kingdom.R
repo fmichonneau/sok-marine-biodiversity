@@ -123,7 +123,7 @@ prepare_obis_stats_by_kingdom <- function(db_table) {
 
 }
 
-kingdom_stats <- function(db_table) {
+add_sub_kingdom <- function(db_table) {
     db <- sok_db()
 
     tbl <- tbl(db, db_table)
@@ -183,9 +183,9 @@ calc_kingdom_diversity <- function(worms_stats) {
 
     ## diversity comparison
     bind_rows(
-        idigbio = kingdom_stats("us_idigbio_clean") %>%
+        idigbio = add_sub_kingdom("us_idigbio_clean") %>%
             get_n_spp(),
-        obis =  kingdom_stats("us_obis_clean") %>%
+        obis =  add_sub_kingdom("us_obis_clean") %>%
             get_n_spp(),
         worms = wrm,
         .id = "database") %>%
@@ -238,9 +238,9 @@ calc_kingdom_stats <- function() {
         )
 
     dplyr::bind_rows(
-        idigbio = kingdom_stats("us_idigbio_clean") %>%
+        idigbio = add_sub_kingdom("us_idigbio_clean") %>%
             get_median(),
-        obis =  kingdom_stats("us_obis_clean") %>%
+        obis =  add_sub_kingdom("us_obis_clean") %>%
             get_median(),
         .id = "database")
 }
