@@ -44,15 +44,27 @@ We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark =
 
 ```{r kingdom-stats}
 get_vert_prop <- function(db) {
-    format_output(kingdom_diversity[kingdom_diversity$database == db & kingdom_diversity$sub_kingdom == "Animalia - Vertebrates", "prop_spp"] * 100)
+    format_output(kingdom_diversity[kingdom_diversity$database == db &
+                                    kingdom_diversity$sub_kingdom == "Animalia - Vertebrates", "prop_spp"] * 100)
 }
 
 total_vert_prop <- get_vert_prop("worms")
 idigbio_vert_prop <- get_vert_prop("idigbio")
 obis_vert_prop <- get_vert_prop("obis")
+
+kng_medians <- kingdom_stats %>%
+    dplyr::filter(database == "idigbio") %>% 
+    dplyr::group_by(sub_kingdom) %>%
+    dplyr::summarize(
+               rg = if_else(
+                   Reduce("==", range(median_sample)),
+                   as.character(range(median_sample)[1]), 
+                   paste(range(median_sample), collapse = " and "))
+           )
+
 ```
 
-Marine invertebrates are underrepresented in iDigBio and OBIS. We compared the total number of species represented in iDigBio and OBIS for each kingdom to the total described diversity based on the numbers published by WoRMS. Records in thedatabases are biased towards vertebrates: while vertebrates represent  `r total_vert_prop`% of the global diversity, they represent `r idigbio_vert_prop`% and `r obis_vert_prop`% of the records identified at the species level in iDigBio and OBIS respectively (Fig. \@ref(fig:kingdom-diversity-plot)). Additionally, the median number of specimen per species 
+Marine invertebrates are underrepresented in iDigBio and OBIS given their diversity. We compared the total number of species represented in iDigBio and OBIS for each kingdom to the total described diversity based on the WoRMS estimates[@WorMS-stats]. Records in the databases are biased towards vertebrates: while vertebrates represent  `r total_vert_prop`% of the global diversity, they represent `r idigbio_vert_prop`% and `r obis_vert_prop`% of the species in iDigBio and OBIS respectively (Fig. \@ref(fig:kingdom-diversity-plot)). Additionally, the median number of specimens in iDigBio per species ranges between `r kng_medians %>% filter(sub_kingdom=="animalia") %>% pull(rg)` for invertebrate phyla, but is `r kng_medians %>% filter(sub_kingdom=="animalia - vertebrates") %>% pull(rg)` for vertebrates.
 
 
 ```{r kingdom-diversity-plot, fig.cap='Comparison of the proportions of the diversity represented in iDigBio and OBIS  with the global diversity (as reported by WoRMS) for each kingdom. Vertebrates are overrepresented, while other animal groups are underpresented. Total number of species are indicated next to the bars.(\\#fig:kingdom-diversity-plot)'}

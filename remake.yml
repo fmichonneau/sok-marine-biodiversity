@@ -319,10 +319,16 @@ targets:
       - idigbio_records_higher_classification
       - obis_records_higher_classification
 
+  kingdom_stats:
+    command: calc_kingdom_stats()
+    depends:
+      - idigbio_records_higher_classification
+      - obis_records_higher_classification
+
   figures/plot_kingdom_diversity.pdf:
     command: plot_kingdom_diversity(kingdom_diversity)
     plot:
-      height: 4
+      height: 4.5
       width: 10
 
   ## Gulf of Mexico ------------------------------------------------------------
@@ -922,6 +928,7 @@ targets:
       - idigbio_records
       - obis_records
       - kingdom_diversity
+      - kingdom_statssking
       - idigbio_gom_records
       - obis_gom_records
       - idigbio_pnw_records

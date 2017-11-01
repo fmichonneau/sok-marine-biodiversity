@@ -208,6 +208,7 @@ plot_kingdom_diversity <- function(kng) {
         geom_text(aes(y = prop_spp + .01, label = n_spp), position = position_dodge(.9),
                       hjust = .1,  family = "Ubuntu Condensed") +
         scale_fill_hc(name = "Source", labels = c("iDigBio", "OBIS", "Global diversity (WoRMS)")) +
+        ylim(c(0, .85)) +
         xlab(NULL) + ylab("Proportion of total diversity (per source)") +
         theme_ipsum(base_family = "Ubuntu Condensed")
 
@@ -221,6 +222,31 @@ plot_kingdom_samples <- function(kng) {
     scale_fill_hc(name = "Source", labels = c("iDigBio", "OBIS", "Global diversity (WoRMS)")) +
     xlab(NULL) + ylab("Proportion of total diversity (per source)")
 }
+
+calc_kingdom_stats <- function() {
+
+    get_median <- . %>%
+        group_by(sub_kingdom, worms_phylum, worms_valid_name) %>%
+        summarize(
+            n_samples = n()
+        ) %>%
+        collect() %>%
+        group_by(sub_kingdom, worms_phylum) %>%
+        summarize(
+            median_sample = median(n_samples),
+            mean_sample = mean(n_samples)
+        )
+
+    dplyr::bind_rows(
+        idigbio = kingdom_stats("us_idigbio_clean") %>%
+            get_median(),
+        obis =  kingdom_stats("us_obis_clean") %>%
+            get_median(),
+        .id = "database")
+}
+
+
+
 if (FALSE) {
     ## number of species and records per (sub)kingdom
     idigbio_kingdom_stats("us_idigbio_clean")  %>%
