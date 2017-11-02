@@ -65,7 +65,18 @@ calc_institutions <- function(idig_records, obis_records) {
           "the Center for Coastal Environmental Health and Biomolecular Research, ",
           "the National Marine Fisheries Service, and ",
           "the Deep Sea Coral Research and Technology Program.")), width = 100)
-    x_list_tbl <- xtable::xtableList(list_tbl, align = c("lp{12cm}R{3cm}"),
-          caption = "Top 10 institutions that contribute to the records used in this study to iDigBio (A) and OBIS (B).")
+    capt <- as.character(
+        glue::glue(
+                  "Top 10 institutions that contribute to the ",
+                  "records used in this study to iDigBio (A) and OBIS (B). ",
+                  "Federal and States agencies are important contributors to ",
+                  "marine biodiversity data. Differences in numbers for the ",
+                  "same data sources across databases are due to data filtering ",
+                  "operated by OBIS.")
+    )
+    x_list_tbl <- xtable::xtableList(
+                              list_tbl, align = c("lp{12cm}R{3cm}"),
+                              caption = capt
+                              )
     x_list_tbl
 }
