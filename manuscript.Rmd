@@ -66,8 +66,12 @@ kng_medians <- kingdom_stats %>%
 
 
 ```{r records-table, results='asis'}
+xtbl_small <- function(x) {
+    glue::glue("{{\\footnotesize {x} }}")
+}
 print.xtableList(institution_contributions, colnames.format = "multiple",
                  booktabs = TRUE, include.rownames = FALSE,
+                 sanitize.message.function = xtbl_small, 
                  table.placement = "!ht")
 ```
 

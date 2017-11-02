@@ -35,7 +35,7 @@ calc_institutions <- function(idig_records, obis_records) {
         dplyr::mutate(Institution = case_when(
                           institutioncode_simple == "noaa" ~ "National Oceanographic and Atmostpheric Association",
                           institutioncode_simple == "usnm" ~  "Smithsonian Institution National Museum of Natural History",
-                          institutioncode_simple == "tpwd" ~ "",
+                          institutioncode_simple == "tpwd" ~ "Texas Parks and Wildlife Department",
                           institutioncode_simple == "boemre" ~ "Bureau of Ocean Energy Management, Regulation, and Enforcement",
                           institutioncode_simple == "emap_nca" ~ "U.S. Environmental Protection Agency through its Environmental Monitoring and Assessment Program (EMAP)",
                           institutioncode_simple == "usgs" ~ "U.S. Geological Services",
@@ -52,14 +52,19 @@ calc_institutions <- function(idig_records, obis_records) {
         dplyr::select(Institution,
                       "Number of records" = n)
 
-
-
-
     list_tbl <- list(
                res_idig,
                res_obis
     )
     attr(list_tbl, "subheadings") <- c("A. iDigBio", "B. OBIS")
+    attr(list_tbl, "message") <- strwrap(glue::collapse(
+        c("NOAA records include data from the Hollings Marine Laboratory, ",
+          "the Northeast Fisheries Science Center, ",
+          "the Southwest Fisheries Science Center, ",
+          "the National Centers for Coastal Ocean Science, ",
+          "the Center for Coastal Environmental Health and Biomolecular Research, ",
+          "the National Marine Fisheries Service, and ",
+          "the Deep Sea Coral Research and Technology Program.")), width = 100)
     x_list_tbl <- xtable::xtableList(list_tbl, align = c("lp{12cm}R{3cm}"),
           caption = "Top 10 institutions that contribute to the records used in this study to iDigBio (A) and OBIS (B).")
     x_list_tbl
