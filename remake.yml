@@ -273,22 +273,22 @@ targets:
       - map_gom_db
       - map_pnw_db
 
-  idigbio_records_all:
-    command: extract_inverts_from_db(db_table=I("us_idigbio"), list_phyla)
+  idigbio_us_inverts_records_all:
+    command: extract_inverts_from_db(db_table=I("us_idigbio"), list_phyla, geo=I("within_eez"))
     depends: idigbio_database_with_geo
 
-  idigbio_records:
-    command: filter_records_by_geo(idigbio_records_all, I("eez"))
+  idigbio_us_inverts_records_species:
+    command: keep_marine_species_only(idigbio_us_inverts_records_all)
 
   idigbio_records_higher_classification:
     command: prepare_idig_stats_by_kingdom(I("us_idigbio"))
-    depends: idigbio_records_all
+    depends: idigbio_us_inverts_records_all
 
   idigbio_iucn:
-    command: add_iucn_status(idigbio_records)
+    command: add_iucn_status(idigbio_us_inverts_records_species)
 
   idigbio_bold:
-    command: find_bold_records(idigbio_records, I("worms_valid_name"), map_usa)
+    command: find_bold_records(idigbio_us_inverts_records_species, I("worms_valid_name"), map_usa)
 
   ## OBIS ----------------------------------------------------------------------
   obis_database:
@@ -302,16 +302,16 @@ targets:
       - map_gom_db
       - map_pnw_db
 
-  obis_records_all:
+  obis_us_inverts_records_all:
     command: extract_inverts_from_db(db_table=I("us_obis"), list_phyla)
     depends: obis_database_with_geo
 
-  obis_records:
-    command: filter_records_by_geo(obis_records_all, I("eez"))
+  obis_us_inverts_records_species:
+    command: keep_marine_species_only(obis_us_inverts_records_all, I("eez"))
 
   obis_records_higher_classification:
     command: prepare_obis_stats_by_kingdom(I("us_obis"))
-    depends: obis_records_all
+    depends: obis_us_inverts_records_all
 
   ## Kingdom statistics --------------------------------------------------------
 
@@ -336,7 +336,7 @@ targets:
   ## Contributions by institution ----------------------------------------------
 
   institution_contributions:
-    command: calc_institutions(idigbio_records, obis_records)
+    command: calc_institutions(idigbio_us_inverts_records_all, obis_us_inverts_records_all)
 
   ## Gulf of Mexico ------------------------------------------------------------
 
@@ -477,10 +477,10 @@ targets:
       height: 3.7
 
   idigbio_invert_summary:
-    command: plot_idigbio_invert_summary(idigbio_records, idigbio_bold)
+    command: plot_idigbio_invert_summary(idigbio_us_inverts_records_species, idigbio_bold)
 
   idigbio_identification_level_through_time:
-    command: data_identification_level_through_time(idigbio_records)
+    command: data_identification_level_through_time(idigbio_us_inverts_records_all)
 
   figures/idigbio_identification_level_through_time.pdf:
     command: plot_identification_level_through_time(idigbio_identification_level_through_time)
@@ -555,7 +555,7 @@ targets:
 
   ## iDigBio
   idigbio_data_map:
-    command: data_map(idigbio_records, raster=usa_raster)
+    command: data_map(idigbio_us_inverts_records_all, raster=usa_raster)
 
   idigbio_data_map_samples:
     command: data_map_samples(idigbio_data_map)
@@ -577,7 +577,7 @@ targets:
 
   ## OBIS
   obis_map_data:
-    command: data_map(obis_records, raster = usa_raster)
+    command: data_map(obis_us_inverts_records_all, raster = usa_raster)
 
   obis_map_samples_data:
     command: data_map_samples(obis_map_data)
@@ -599,10 +599,10 @@ targets:
 
   ## Combined OBIS + iDigBio
   combined_records:
-    command: combine_records(idigbio_records, obis_records)
+    command: combine_records(idigbio_us_inverts_records_all, obis_us_inverts_records_all)
 
   combined_species:
-    command: combine_species_list(idigbio = idigbio_records, obis = obis_records, map_usa=map_usa)
+    command: combine_species_list(idigbio = idigbio_us_inverts_records_species, obis = obis_us_inverts_records_all, map_usa=map_usa)
 
   combined_data_map:
     command: data_map(combined_records, raster=usa_raster)
@@ -785,16 +785,16 @@ targets:
     command: calc_prop_nspecimens_species(combined_records, n_specimens=I(30))
 
   prop_missing_depth:
-    command: calc_prop_missing_depth(obis_records)
+    command: calc_prop_missing_depth(obis_us_inverts_records_all)
 
   records_rare_phyla:
-    command: calc_records_rare_phyla(idigbio_records, obis_records, worms_stats)
+    command: calc_records_rare_phyla(idigbio_us_inverts_records_all, obis_us_inverts_records_all, worms_stats)
 
   n_idigbio_phyla:
-    command: calc_n_idigbio_phyla(idigbio_records)
+    command: calc_n_idigbio_phyla(idigbio_us_inverts_records_all)
 
   prop_species_not_collected_since_1980:
-    command: calc_prop_species_not_collected_since(idigbio_records, I(1980))
+    command: calc_prop_species_not_collected_since(idigbio_us_inverts_records_species, I(1980))
 
   n_spp_comparison:
     command: calc_n_spp_comparison(idigbio_samples_through_time_data)
@@ -811,7 +811,7 @@ targets:
 ### Attributions ---------------------------------------------------------------
 
   # idigbio_records_attributions:
-  #   command: idigbio_attribution(idigbio_records)
+  #   command: idigbio_attribution(idigbio_us_inverts_records_all)
 
   # idigbio_gom_records_attributions:
   #   command: idigbio_attribution(idigbio_gom_records)
@@ -823,7 +823,7 @@ targets:
 
   ## iDigBio
   idigbio_samples_through_time_data:
-    command: make_knowledge_through_time(idigbio_records)
+    command: make_knowledge_through_time(idigbio_us_inverts_records_species)
 
   idigbio_samples_through_time:
     command: plot_cum_samples_through_time(idigbio_samples_through_time_data, facet=I(FALSE))
@@ -842,7 +842,7 @@ targets:
 
   ## OBIS
   obis_samples_through_time_data:
-    command: make_knowledge_through_time(obis_records)
+    command: make_knowledge_through_time(obis_us_inverts_records_species)
 
   obis_samples_through_time:
     command: plot_cum_samples_through_time(obis_samples_through_time_data, facet=I(FALSE))
@@ -881,10 +881,10 @@ targets:
 ### Data validation ------------------------------------------------------------
 
   validate_idigbio_records:
-    command: validate_records(idigbio_records, list_phyla)
+    command: validate_records(idigbio_us_inverts_records_species, list_phyla)
 
   validate_obis_records:
-    command: validate_records(obis_records, list_phyla)
+    command: validate_records(obis_us_inverts_records_species, list_phyla)
 
   validate_idigbio_coords_usa:
     command: validate_idigbio_store(coords_usa)
@@ -932,8 +932,10 @@ targets:
 
   manuscript.md:
     depends:
-      - idigbio_records
-      - obis_records
+      - idigbio_us_inverts_records_species
+      - idigbio_us_inverts_records_all
+      - obis_us_inverts_records_species
+      - obis_us_inverts_records_all
       - kingdom_diversity
       - kingdom_stats
       - idigbio_gom_records
