@@ -131,12 +131,15 @@ worms_is_marine <- function(sp) {
     winfo <- store_worms_info()$get(sp)
     if (inherits(winfo, "logical")) return(NA)
     if (exists("isMarine", winfo)) {
-        if ((is.null(winfo$isMarine) && is.null(winfo$isBrackish)) ||
-            (is.na(winfo$isMarine) && is.na(winfo$isBrackish)))
-            NA
-        else
-            identical(as.character(winfo$isMarine), "1") |
-                identical(as.character(winfo$isBrackish), "1")
+        if (is.null(winfo$isMarine) || is.na(winfo$isMarine))
+            is_marine <- "0"
+        else is_marine <- winfo$isMarine
+        if (is.null(winfo$isBrackish) || is.na(winfo$isBrackish))
+            is_brackish <- "0"
+        else is_brackish <- winfo$isBrackish
+
+        identical(as.character(is_marine), "1") |
+            identical(as.character(is_brackish), "1")
     } else NA
 }
 
