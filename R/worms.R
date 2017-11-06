@@ -186,6 +186,12 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
 
 }
 
+keep_marine_species_only <- function(wrm_tbl) {
+    stopifnot(exists("rank", wrm_tbl) &&
+              exists("is_marine", wrm_tbl) &&
+              exists("worms_id", wrm_tbl))
+
+    wrm_tbl %>%
         dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
         dplyr::filter(is_marine) %>%
         dplyr::filter(!is.na(worms_id))
