@@ -142,7 +142,10 @@ make_heatmap <- function(gg_r, title, base_map) {
                                    max(gg_r$value, na.rm = TRUE),
                                    by = 1), .02))
 
+    geo_limits <- fortify(geojsonio::geojson_sp(base_map), id = "id")
+
     ggplot() +
+        geom_map(map = geo_limits, data = geo_limits, aes(map_id = id), fill = "gray80") +
         geom_raster(data = gg_r, aes(x = x, y = y, fill = value), na.rm = TRUE) +
         scale_fill_gradient2(low = "#5E98AE", mid = "#E3C94A", high = "#D5331E",
                              midpoint = mid_point,
@@ -159,10 +162,8 @@ make_heatmap <- function(gg_r, title, base_map) {
         theme(legend.title = element_blank()) +
         ggtitle(title) +
         xlab("Longitude") + ylab("Latitude")
+
 }
-
-
-
 
 
 make_heatmap_by_phylum <- function(recs, file, raster, base_map) {

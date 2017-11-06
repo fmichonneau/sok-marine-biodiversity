@@ -113,7 +113,7 @@ Most samples have been collected on the continental shelf (Fig. \@ref(fig:map-di
 Spatial distribution of species richness with latitude differ markedly between the Pacific and the Atlantic coasts. On the Pacific coast, richness is lowest around 40° of latitude, whereas on the Atlantic coast, it is highest at the same latitude (Fig. \@ref(fig:map-diversity-sampling)B, Fig. \@ref(fig:latitudinal-gradient)).
 
 
-```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS within the limits of the Exclusive Economic Zone for the continental USA. (\\#fig:map-diversity-sampling)'}
+```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS within the limits of the Exclusive Economic Zone for the continental USA (represented in light gray). (\\#fig:map-diversity-sampling)'}
 knitr::include_graphics("figures/combined_map_sampling.pdf")
 ```
 
@@ -128,7 +128,7 @@ knitr::include_graphics("figures/plot_sampling_effort.pdf")
 
 <!-- The median number of cells occupied by species is `r median(rastercell_distribution$n_cell)`. -->
 
-Spatial patterns of species richness are however strongly confounded by sampling effort. There is a tight correlation between the number of samples and number of species per cell used in Fig. \@ref(fig:map-diversity-sampling), and `r format_output(stat_sampling_effort$p * 100)`% (n = `r stat_sampling_effort$n`) of the cells with $\leq$ 500 records have a number of species within 10% of the number of records (Fig. \@ref(fig:correlation-sampling)). 
+Spatial patterns of species richness are however strongly confounded by sampling effort. There is a tight correlation between the number of samples and number of species per cell used in Fig. \@ref(fig:map-diversity-sampling), and `r format_output(stat_sampling_effort$p * 100)`% (n = `r stat_sampling_effort$n`) of the cells with $\leq$ 500 records have a number of species within 10% of the number of records (Fig. \@ref(fig:correlation-sampling)).
 
 Environmental conditions are among the primary determinants of species distributions and can thus be used to estimate the response of organisms to climate change. Predictive ecological models forecasting changes in distributions are trained on environmental conditions encountered by species in their current distributions. To obtain reliable results, models require at least 10, but ideally 30 or more occurrence records per species [@Wisz2008]. Yet at present, `r prop_10_specimens_species`% of species are represented by $\leq$ 10 records, and `r prop_30_specimens_species`%  by $\leq$ 30 records based on the combined records in iDigBio and OBIS. Underscoring the inadequacy of the sampling effort, `r prop_singleton_species`% of the species are known from a single record.
 
@@ -316,19 +316,19 @@ We thank WoRMS, BOLD, iDigBio, OBIS, MarineRegions, NCBI, and all other data pro
 \setcounter{figure}{0}
 
 
-```{r gom-maps, fig.cap="Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS for the Gulf of Mexico."}
+```{r gom-maps, fig.cap="Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS for the Gulf of Mexico. Geographic extent represented in light gray."}
 knitr::include_graphics("figures/combined_gom_sampling.pdf")
 ```
 
-```{r pnw-maps, fig.cap="Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS for the Pacific Northwest."}
+```{r pnw-maps, fig.cap="Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS for the Pacific Northwest. Geographic extent represented in light gray."}
 knitr::include_graphics("figures/combined_pnw_sampling.pdf")
 ```
 
-```{r idigbio-usa-maps, fig.cap="Spatial distribution of the number of samples (A), and species richness (B) for marine invertebrates based on records retrieved from iDigBio within the limits of the Exclusive Economic Zone for the contiental USA."}
+```{r idigbio-usa-maps, fig.cap="Spatial distribution of the number of samples (A), and species richness (B) for marine invertebrates based on records retrieved from iDigBio within the limits of the Exclusive Economic Zone for the contiental USA. Geographic extent represented in light gray."}
 knitr::include_graphics("figures/idigbio_map_sampling.pdf")
 ```
 
-```{r obis-usa-maps, fig.cap="Spatial distribution of the number of samples (A), and species richness (B) for marine invertebrates based on records retrieved from OBIS within the limits of the Exclusive Economic Zone for the contiental USA."}
+```{r obis-usa-maps, fig.cap="Spatial distribution of the number of samples (A), and species richness (B) for marine invertebrates based on records retrieved from OBIS within the limits of the Exclusive Economic Zone for the contiental USA. Geographic extent represented in light gray."}
 knitr::include_graphics("figures/obis_map_sampling.pdf")
 ```
 
