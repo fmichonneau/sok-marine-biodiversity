@@ -143,12 +143,10 @@ create_records_db <- function(coords, db_table) {
 }
 
 
-extract_inverts_from_db <- function(db_table, list_phyla) {
+extract_inverts_from_db <- function(db_table, list_phyla, geo) {
 
-    ## We only want:
-    ## - unique records
-    ## - invertebrates
-    ## - marine
+    geo <- match.arg(geo, c("within_eez", "within_gom", "within_pnw"))
+    geo <- rlang::sym(geo)
 
     db <- sok_db() %>%
         dplyr::tbl(db_table)
@@ -177,8 +175,8 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
     check_phyla_in_db(db, list_phyla)
 
     db %>%
-        ## First let's keep only the within_eez records
-        dplyr::filter(within_eez) %>%
+        ## First let's keep only the geographic zone of interest
+        dplyr::filter(!!geo) %>%
         ## let's get the phylum names we need to keep, that will take care
         ## of plants, fungi, and records with no specified phylum
         dplyr::filter(phylum %in% all_phyla_to_keep) %>%
@@ -200,8 +198,9 @@ extract_inverts_from_db <- function(db_table, list_phyla) {
                       datecollected = as.Date(datecollected),
                       uuid = as.character(uuid)) %>%
         dplyr::left_join(list_phyla, by = "phylum") %>%
-        dplyr::select(-phylum,
-                      phylum = common_phylum)
+        dplyr::select(-phylum, phylum = common_phylum) %>%
+        add_worms() %>%
+        parse_year()
 }
 
 insert_map_into_db <- function(map) {
@@ -299,22 +298,6 @@ check_phyla_in_db <- function(db, list_phyla) {
              paste(phyla_in_db[!phyla_in_db %in% list_phyla[["phylum"]]],
                    collapse = ", "))
 }
-
-filter_records_by_geo <- function(recs, area) {
-
-    ## extract name of area based on name of variable
-    area <- match.arg(area, c("eez", "gom", "pnw"))
-
-    ## build the column name
-    col_name <- paste0("within_", area)
-
-    recs %>%
-        ## only keep records within map limits
-        dplyr::filter(!!sym(col_name)) %>%
-        add_worms() %>%
-        parse_year()
-}
-
 
 n_spp_from_idigbio <- function(idigbio_records) {
     idigbio_records %>%
