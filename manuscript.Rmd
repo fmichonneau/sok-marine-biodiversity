@@ -79,7 +79,22 @@ print.xtableList(institution_contributions, colnames.format = "multiple",
                  table.placement = "!ht", comment = FALSE)
 ```
 
-Marine invertebrates are underrepresented in iDigBio and OBIS given their diversity. We compared the total number of species represented in iDigBio and OBIS for each kingdom to the total described diversity based on the WoRMS estimates[@worms-stats]. While marine vertebrates represent  `r total_vert_prop`% of the global diversity, they represent `r idigbio_vert_prop`% and `r obis_vert_prop`% of the species in iDigBio and OBIS respectively (Fig. \@ref(fig:kingdom-diversity-plot)). Additionally, the median number of specimens in iDigBio per species ranges between `r kng_medians %>% filter(sub_kingdom=="animalia") %>% pull(rg)` for invertebrate phyla, but is `r kng_medians %>% filter(sub_kingdom=="animalia - vertebrates") %>% pull(rg)` for vertebrates.
+Marine invertebrates are underrepresented in iDigBio and OBIS given their diversity. We compared the total number of species represented in iDigBio and OBIS for each major division of life to the total described diversity based on the WoRMS estimates[@worms-stats]. While marine vertebrates represent  `r total_vert_prop`% of the global diversity, they represent `r idigbio_vert_prop`% and `r obis_vert_prop`% of the species in iDigBio and OBIS respectively (Fig. \@ref(fig:kingdom-diversity-plot)). This underrepresentation is also apparent in the collecting effort: the median number of specimens in iDigBio per species ranges between `r kng_medians %>% filter(sub_kingdom=="animalia") %>% pull(rg)` for invertebrate phyla, but is `r kng_medians %>% filter(sub_kingdom=="animalia - vertebrates") %>% pull(rg)` for vertebrates.
+
+```{r itis-stats}
+prop_molluscs <- itis_molluscs_in_dbs %>%
+    dplyr::summarize(
+               prop_idigbio_us = format_output(mean(n_idigbio_geo_us > 0,
+                                                    na.rm = TRUE)),
+               prop_obis_us = format_output(mean(n_obis_geo_us > 0,
+                                                 na.rm = TRUE))
+           )
+
+
+```
+
+To assess the fraction of digitization of the fauna, we compared the species included in iDigBio and OBIS with the comprehensive checklists for molluscs [@turgean1998] and crustaceans[@mclaughlin2005] that are available for the United States. For molluscs, of the `r nrow(itis_molluscs_in_dbs)` species included in the checklist, 
+
 
 <!-- find checklists for fish, birds, mammals to compare with -->
 
