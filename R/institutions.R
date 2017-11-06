@@ -33,7 +33,7 @@ calc_institutions <- function(idig_records, obis_records) {
         ## regroup all noaa records
         dplyr::top_n(10, n) %>%
         dplyr::mutate(Institution = case_when(
-                          institutioncode_simple == "noaa" ~ "National Oceanographic and Atmostpheric Association",
+                          institutioncode_simple == "noaa" ~ "National Oceanographic and Atmostpheric Association¹",
                           institutioncode_simple == "usnm" ~  "Smithsonian Institution National Museum of Natural History",
                           institutioncode_simple == "tpwd" ~ "Texas Parks and Wildlife Department",
                           institutioncode_simple == "boemre" ~ "Bureau of Ocean Energy Management, Regulation, and Enforcement",
@@ -58,7 +58,7 @@ calc_institutions <- function(idig_records, obis_records) {
     )
     attr(list_tbl, "subheadings") <- c("A. iDigBio", "B. OBIS")
     attr(list_tbl, "message") <- strwrap(glue::collapse(
-        c("NOAA records include data from the Hollings Marine Laboratory, ",
+        c("¹NOAA records include data from the Hollings Marine Laboratory, ",
           "the Northeast Fisheries Science Center, ",
           "the Southwest Fisheries Science Center, ",
           "the National Centers for Coastal Ocean Science, ",
