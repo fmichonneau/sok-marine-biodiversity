@@ -152,7 +152,7 @@ make_heatmap <- function(gg_r, title, base_map) {
                  aes(map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
-                     colour = "gray80", binwidth = 500, size = .1) +
+                     colour = "gray30", binwidth = 500, size = .1) +
         coord_quickmap(xlim = c(limits$lon1, limits$lon2),
                        ylim = c(limits$lat1, limits$lat2)) +
         theme_bw(base_family = "Ubuntu Condensed") +
@@ -229,7 +229,7 @@ animated_map <- function(recrds, file = "/tmp/sampling_map.mp4")  {
                  aes(map_id=id),
                  fill="gray20", colour = "gray20", size = .05) +
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
-                     colour = "gray80", binwidth = 500, size = .1) +
+                     colour = "gray30", binwidth = 500, size = .1) +
         coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
         theme_bw(base_family = "Ubuntu Condensed") +
         theme(legend.title = element_blank()) +
@@ -307,7 +307,7 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
         geom_text(aes(x = x_year, y = y_year, label = year_frame),
                   colour = "white", size = 13) +
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
-                     colour = "gray80", binwidth = 500, size = .1,
+                     colour = "gray30", binwidth = 500, size = .1,
                      inherit.aes = FALSE) +
         geom_point(aes(x, y, color = color, size = size, alpha = alpha)) +
         scale_size(range = c(3, 25), guide = FALSE) +
