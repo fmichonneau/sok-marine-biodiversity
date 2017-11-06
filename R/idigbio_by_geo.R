@@ -241,106 +241,44 @@ insert_map_into_db <- function(map) {
                          "FROM {name}));"))
 }
 
-## db: database connection
-## src_table: the table in the database that holds the coordinates that need to
-## be filtered for geography
-add_unique_coords_to_db <- function(db, src_table) {
-
-    maps <- c("map_usa", "map_gom", "map_pnw")
-
-    ## make sure maps table exists and it contains all the data we need
-    if (!dbExistsTable(db, "maps")) stop("'maps' table doesn't exist.")
-    q <- dbSendQuery(db, "SELECT maps.area_id FROM maps")
-    res <- dbFetch(q)
-    all(maps %in% dplyr::pull(res, area_id))
-
-    if (!dbExistsTable(db, "unique_coords")) {
-        q_create <- c(
-            "CREATE TABLE unique_coords (",
-            "decimallatitude REAL NOT NULL,",
-            "decimallongitude REAL NOT NULL,",
-            "geom_point GEOMETRY DEFAULT NULL,",
-            "within_eez BOOL DEFAULT NULL,",
-            "within_gom BOOL DEFAULT NULL, ",
-            "within_pnw BOOL DEFAULT NULL, ",
-            "PRIMARY KEY (decimallatitude, decimallongitude)",
-            ");")
-        dbExecute(db, glue::collapse(q_create))
-    }
-
-    ## TODO -- the join takes a long time, it might be better to calculate directly st_contains
-    ## on the table directly, instead of on only the unique coordinates.
-    ## create temporary table with all coordinates
-    ## 1. extract the unique coordinates
-    dbExecute(db,
-              glue::glue("CREATE TEMPORARY TABLE tmp_coords ",
-                         "AS SELECT DISTINCT {src_table}.decimallatitude, {src_table}.decimallongitude ",
-                         "FROM {src_table}", src_table = src_table))
-    dbExecute(db, "ANALYZE tmp_coords")
-    on.exit(dbExecute(db, "DISCARD TEMP;"))
-
-    ## 2. insert them into the database
-    message("add coordinates to unique_coords table ...", appendLF = FALSE)
-    dbExecute(db,
-              glue::glue("INSERT INTO unique_coords ",
-                         "SELECT * FROM tmp_coords ",
-                         "LEFT JOIN unique_coords USING (decimallatitude, decimallongitude) ",
-                         "WHERE within_eez IS NULL;"))
-    message(" DONE.")
-
-    ## 3. convert new records with MakePoint
-    dbExecute(db,
-              glue::glue("UPDATE unique_coords ",
-                         "SET ",
-                         "  geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326) ",
-                         "WHERE geom_point IS NULL;"))
-
-    ## 4. compute whether the coordinates are in the polygon
-    message(glue::glue("figure out points within {maps}, ..."), appendLF = FALSE)
-    contains_queries <- glue::glue(
-        "UPDATE unique_coords ",
-        "SET ",
-        "  within_{col} = ST_Contains({maps}, unique_coords.geom_point) ",
-        "FROM (SELECT geom_polygon AS {maps} FROM maps WHERE area_id = '{maps}') AS foo ",
-        "WHERE within_{col} IS NULL;", maps = maps, col = c("eez", "gom", "pnw")
-        )
-    message(" DONE.")
-
-    res <- purrr::map_int(contains_queries, function(x) {
-        dbExecute(db, x)
-        })
-    if (any(res < 0)) stop("something went wrong")
-}
-
 
 add_within_polygon_to_db <- function(db_table) {
 
     db <- sok_db()
 
-    ## add coordinates from data table in unique_coords table
-    add_unique_coords_to_db(db, db_table)
+    if (!"geom_point" %in% dbListFields(db, db_table)) {
+        dbExecute(db,
+                  glue::glue("ALTER TABLE {db_table} ADD COLUMN geom_point geometry DEFAULT NULL;"))
+    }
 
-    ## make sure unique coords table exists
-    if (!dbExistsTable(db, "unique_coords"))
-        stop("something is very wrong: ", sQuote("unique_coords"),
-             " table doesn't exist.")
+    message("Converting lat/long into geometry ...", appendLF = FALSE)
+    dbExecute(db,
+              glue::glue("UPDATE {db_table} ",
+                         "SET ",
+                         "  geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326) ",
+                         "WHERE geom_point IS NULL;"))
+    message(" DONE.")
 
     ## Create within_* fields if they don't exist
-    map(list("within_eez", "within_gom", "within_pnw"), function(x) {
+    purrr::map(list("within_eez", "within_gom", "within_pnw"), function(x) {
         if (! x %in% dbListFields(db, db_table))
             dbExecute(db, glue::glue("ALTER TABLE {db_table} ADD COLUMN {x} BOOL DEFAULT NULL;"))
-    })
+        })
 
-    message(glue::glue("Working on joining unique_coords and {db_table} ..."), appendLF = FALSE)
-    dbExecute(db,
-              glue::glue(
-                        "UPDATE {db_table} ",
-                        "SET (within_eez, within_gom, within_pnw) = ",
-                        "(SELECT unique_coords.within_eez, unique_coords.within_gom, unique_coords.within_pnw ",
-                        "FROM unique_coords ",
-                        "WHERE unique_coords.decimallatitude = {db_table}.decimallatitude AND ",
-                        "      unique_coords.decimallongitude = {db_table}.decimallongitude );"))
-    message(" DONE.")
+    contains_queries <- glue::glue(
+        "UPDATE {db_table} ",
+        "SET ",
+        "  within_{col} = ST_Contains({maps}, {db_table}.geom_point) ",
+        "FROM (SELECT geom_polygon AS {maps} FROM maps WHERE area_id = '{maps}') AS foo ",
+        "WHERE within_{col} IS NULL;", maps = c("map_usa", "map_gom", "map_pnw"),
+        col = c("eez", "gom", "pnw")
+        )
+
+    message("Figuring out whether the points fall within the polygons ... ", appendLF = FALSE)
+    res <- purrr::map_int(contains_queries, function(x) {
+                      dbExecute(db, x)
+                  })
+    message("DONE.")
 
 }
 
