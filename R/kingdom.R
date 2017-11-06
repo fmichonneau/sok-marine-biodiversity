@@ -155,6 +155,9 @@ add_sub_kingdom <- function(db_table) {
 }
 
 calc_kingdom_diversity <- function(worms_stats) {
+
+    ## retrieved from http://www.marinespecies.org/aphia.php?p=browser&id=1821#ct
+    n_vertebrates <- 19741
     get_n_spp <- . %>%
         dplyr::group_by(sub_kingdom) %>%
         dplyr::summarize(
@@ -176,10 +179,9 @@ calc_kingdom_diversity <- function(worms_stats) {
         bind_rows(
             data_frame(
                 sub_kingdom =  "animalia - vertebrates",
-                ## use number from Appeltans et al. 2012
-                n_spp = 17619)
+                n_spp = n_vertebrates)
         )
-    wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - 17619
+    wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - n_vertebrates
 
     ## diversity comparison
     bind_rows(
