@@ -116,11 +116,22 @@ data_map_standardized_diversity <- function(sampling, diversity) {
     res
 }
 
+limits_from_map <- function(map) {
+    limits <- round(lawn_bbox(map), 0) + c(-.5, -.5, .5, .5)
+    names(limits) <- c("lon1", "lat1", "lon2", "lat2")
+    as.list(limits)
+}
+
+bathy_from_map <- function(map) {
+    limits <- limits_from_map(map)
+    suppressMessages(getNOAA.bathy(lon1 = limits$lon1, lon2 = limits$lon2,
+                                   lat1 = limits$lat1, lat2 = limits$lat2,
+                                   keep = TRUE))
+}
+
 
 make_heatmap <- function(gg_r, title, base_map) {
-    limits <- round(lawn_bbox(base_map), 0) + c(-.5, -.5, .5, .5)
-    names(limits) <- c("lon1", "lat1", "lon2", "lat2")
-    limits <- as.list(limits)
+    limits <- limits_from_map(base_map)
 
     ## we use the world map to get Canada, Mexico and Caribbean islands
     state <- maps::map("world", fill = TRUE, plot = FALSE)
@@ -129,9 +140,7 @@ make_heatmap <- function(gg_r, title, base_map) {
     state <- map2SpatialPolygons(state, IDs = IDs,
                                  proj4string = CRS("+proj=longlat +datum=WGS84"))
 
-    us_bathy <- suppressMessages(getNOAA.bathy(lon1 = limits$lon1, lon2 = limits$lon2,
-                                               lat1 = limits$lat1, lat2 = limits$lat2,
-                                               keep = TRUE)) %>%
+    us_bathy <- bathy_from_map(base_map) %>%
         fortify() %>%
         filter(z < 0 & z > -1500)
 
