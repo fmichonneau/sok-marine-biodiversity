@@ -174,10 +174,10 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
         dplyr::filter(nchar(cleaned_scientificname) > 3) %>%
         dplyr::mutate(worms = purrr::pmap(., get_worms)) %>%
         tidyr::unnest(worms) %>%
-        dplyr::mutate(worms_id = as.character(worms_id))
-
-    res <- dplyr::left_join(sp_list, spp, by = "cleaned_scientificname") %>%
+        dplyr::mutate(worms_id = as.character(worms_id)) %>%
         add_classification()
+
+    res <- dplyr::left_join(sp_list, spp, by = "cleaned_scientificname")
 
     if (remove_vertebrates) {
         res <- res %>%
