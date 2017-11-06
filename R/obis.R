@@ -21,7 +21,8 @@ store_obis_occurrences <- function(store_path = "data/storr_obis_occurrences") {
 fetch_spp_from_obis <- function(wrm, feather_out) {
     stopifnot(inherits(wrm, "data.frame"))
     stopifnot("worms_id" %in% names(wrm))
-    w_id <- na.omit(wrm$worms_id)
+    w_id <- dplyr::pull(wrm, worms_id)
+
     res <- vector("list", length(w_id))
     for (i in seq_along(w_id)) {
         v2("getting obis for ", w_id[i], appendLF = FALSE)
@@ -33,13 +34,9 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
 
     res <- dplyr::rename(res, uuid = id) %>%
         dplyr::distinct(uuid, .keep_all = TRUE) %>%
-        dplyr::select_("uuid", "decimallatitude",
-                       "decimallongitude", "depth",
-                       "phylum", "family",
-                       "genus", "species",
-                       "scientificname", "yearcollected",
-                       "depth", "minimumdepthinmeters",
-                       "maximumdepthinmeters")
+        dplyr::select(uuid, decimallatitude, decimallongitude, depth, phylum,
+                      family, genus, species, scientificname, yearcollected,
+                      depth, minimumdepthinmeters, maximumdepthinmeters)
 
     if (!is.null(feather_out)) {
         feather::write_feather(res, feather_out)
