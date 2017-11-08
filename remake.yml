@@ -312,14 +312,14 @@ targets:
       - map_pnw_db
 
   obis_us_inverts_records_all:
-    command: extract_inverts_from_db(db_table=I("us_obis"), list_phyla)
+    command: extract_inverts_from_db(db_table=I("us_obis"), list_phyla, I("within_eez"))
     depends: obis_database_with_geo
 
   obis_us_inverts_records_all_with_depth:
     command: add_depth(obis_us_inverts_records_all)
 
   obis_us_inverts_records_species:
-    command: keep_marine_species_only(obis_us_inverts_records_all, I("eez"))
+    command: keep_marine_species_only(obis_us_inverts_records_all)
 
   obis_records_higher_classification:
     command: prepare_obis_stats_by_kingdom(I("us_obis"))
@@ -376,17 +376,20 @@ targets:
       - map_pnw_db
 
   idigbio_gom_records_all:
-    command: extract_inverts_from_db(db_table=I("gom_idigbio"), list_phyla)
+    command: extract_inverts_from_db(db_table=I("gom_idigbio"), list_phyla, geo=I("within_gom"))
     depends: idigbio_gom_database_with_geo
 
   idigbio_gom_records:
-    command: filter_records_by_geo(idigbio_gom_records_all, I("gom"))
+    command: keep_marine_species_only(idigbio_gom_records_all)
 
   obis_gom_records_raw:
     command: fill_store_obis_by_geo(map_gom, list_phyla)
 
-  obis_gom_records:
+  obis_gom_records_all:
     command: add_worms(obis_gom_records_raw)
+
+  obis_gom_records:
+    command: keep_marine_species_only(obis_gom_records_all)
 
   combined_gom_records:
     command: combine_records(idigbio = idigbio_gom_records, obis = obis_gom_records)
@@ -432,17 +435,20 @@ targets:
       - map_pnw_db
 
   idigbio_pnw_records_all:
-    command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), list_phyla)
+    command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), list_phyla, I("within_pnw"))
     depends: idigbio_pnw_database_with_geo
 
   idigbio_pnw_records:
-    command: filter_records_by_geo(idigbio_pnw_records_all, I("pnw"))
+    command: keep_marine_species_only(idigbio_pnw_records_all)
 
   obis_pnw_records_raw:
     command: fill_store_obis_by_geo(map_pnw, list_phyla)
 
-  obis_pnw_records:
+  obis_pnw_records_all:
     command: add_worms(obis_pnw_records_raw)
+
+  obis_pnw_records:
+    command: keep_marine_species_only(obis_pnw_records_all)
 
   combined_pnw_records:
     command: combine_records(idigbio_pnw_records, obis_pnw_records)
@@ -614,7 +620,7 @@ targets:
     command: combine_records(idigbio_us_inverts_records_all, obis_us_inverts_records_all)
 
   combined_species:
-    command: combine_species_list(idigbio = idigbio_us_inverts_records_species, obis = obis_us_inverts_records_all, map_usa=map_usa)
+    command: combine_species_list(idigbio = idigbio_us_inverts_records_species, obis = obis_us_inverts_records_species, map_usa=map_usa)
 
   combined_data_map:
     command: data_map(combined_records, raster=usa_raster)
