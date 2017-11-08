@@ -62,8 +62,9 @@ add_unique_coords_to_db <- function(db, src_table) {
         dbExecute(db, glue::collapse(q_create))
     }
 
-    ## TODO -- the join takes a long time, it might be better to calculate directly st_contains
+    ## The join takes a long time, but it is way slower to calculate st_contains
     ## on the table directly, instead of on only the unique coordinates.
+
     ## create temporary table with all coordinates
     ## 1. extract the unique coordinates
     dbExecute(db,
@@ -90,7 +91,6 @@ add_unique_coords_to_db <- function(db, src_table) {
                          "WHERE geom_point IS NULL;"))
 
     ## 4. compute whether the coordinates are in the polygon
-    message(glue::glue("figure out points within {maps}, ..."), appendLF = FALSE)
     contains_queries <- glue::glue(
         "UPDATE unique_coords ",
         "SET ",
@@ -98,11 +98,12 @@ add_unique_coords_to_db <- function(db, src_table) {
         "FROM (SELECT geom_polygon AS {maps} FROM maps WHERE area_id = '{maps}') AS foo ",
         "WHERE within_{col} IS NULL;", maps = maps, col = c("eez", "gom", "pnw")
         )
-    message(" DONE.")
 
     res <- purrr::map_int(contains_queries, function(x) {
+        message(glue::glue("figure out points within map, ..."), appendLF = FALSE)
         dbExecute(db, x)
         })
+    message(" DONE.")
     if (any(res < 0)) stop("something went wrong")
 }
 
