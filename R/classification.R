@@ -1,4 +1,5 @@
 get_classification_from_wid <- function(wid) {
+    wid <- as.character(wid)
     if (is.na(wid) || identical(wid, "0") || identical(wid, "1")) {
         return(
             data_frame(worms_phylum = NA_character_,
