@@ -128,7 +128,7 @@ worms_phylum_by_wid <- function(wid) {
 }
 
 worms_is_marine <- function(sp) {
-    winfo <- store_worms_info()$get(sp)
+    winfo <- store_worms_info()$get(as.character(sp))
     if (inherits(winfo, "logical")) return(NA)
     if (exists("isMarine", winfo)) {
         if (is.null(winfo$isMarine) || is.na(winfo$isMarine))
@@ -148,36 +148,30 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
     stopifnot(all(c("cleaned_scientificname") %in%
                   names(sp_list)))
 
-    get_worms <-  function(cleaned_scientificname) {
-        w_info <- store_worms_ids()$get(tolower(cleaned_scientificname))
-        if (inherits(w_info, "data.frame")) {
-            tibble::tibble(
-                        worms_id = w_info$valid_AphiaID,
-                        worms_valid_name = w_info$valid_name,
-                        is_fuzzy = w_info$fuzzy,
-                        rank = w_info$rank,
-                        is_marine = worms_is_marine(as.character(w_info$valid_AphiaID))
-                    )
-        } else {
-            tibble::tibble(
-                        worms_id = NA,
-                        worms_valid_name = NA,
-                        is_fuzzy = NA,
-                        rank = NA,
-                        is_marine = NA
-                    )
-        }
-    }
+    wrm_names <- names(store_worms_ids()$get("holothuria"))
+    default_wrms <- set_names(rep(NA, length(wrm_names)), wrm_names)
+    default_wrms <- tibble::tibble(!!! default_wrms)
 
     spp <- sp_list %>%
         dplyr::distinct(cleaned_scientificname) %>%
-        dplyr::filter(nchar(cleaned_scientificname) > 3) %>%
-        dplyr::mutate(worms = purrr::pmap(., get_worms)) %>%
-        tidyr::unnest(worms) %>%
+        dplyr::filter(nchar(cleaned_scientificname) > 3)
+
+    wrms <- store_worms_ids()$mget(tolower(spp$cleaned_scientificname)) %>%
+                            purrr::map_if(is.character, ~ default_wrms) %>%
+                            dplyr::bind_rows() %>%
+                            dplyr::select(worms_id = AphiaID,
+                                          worms_valid_name = valid_name,
+                                          is_fuzzy = fuzzy,
+                                          rank = rank
+                                          )
+
+    wrms <- dplyr::bind_cols(spp, wrms) %>%
         dplyr::mutate(worms_id = as.character(worms_id)) %>%
+        dplyr::mutate(is_marine = map_lgl(worms_id, worms_is_marine)) %>%
+        dplyr::filter(!is.na(worms_id)) %>%
         add_classification()
 
-    res <- dplyr::left_join(sp_list, spp, by = "cleaned_scientificname")
+    res <- dplyr::left_join(sp_list, wrms, by = "cleaned_scientificname")
 
     if (remove_vertebrates) {
         res <- res %>%
