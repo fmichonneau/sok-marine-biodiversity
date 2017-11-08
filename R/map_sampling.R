@@ -32,7 +32,7 @@ data_map <- function(recs, raster) {
 
     ## not in use
     h_index <- recs %>%
-        dplyr::select(phylum, worms_valid_name, rastercell) %>%
+        dplyr::select(worms_phylum, worms_valid_name, rastercell) %>%
         dplyr::group_by(rastercell, worms_valid_name) %>%
         dplyr::summarize(n_records_per_spp = n()) %>%
         dplyr::group_by(rastercell) %>%
@@ -62,7 +62,7 @@ data_map_samples <- function(dm) {
 n_rastercell_per_species <- function(recs, raster) {
     recs <- add_rastercell(recs, raster)
     recs %>%
-        dplyr::group_by(phylum, worms_valid_name) %>%
+        dplyr::group_by(worms_phylum, worms_valid_name) %>%
         dplyr::summarize(
             n_cell = n_distinct(rastercell)
             ) %>%
@@ -71,14 +71,14 @@ n_rastercell_per_species <- function(recs, raster) {
 
 abundance_sample_species <- function(recs) {
     recs %>%
-        dplyr::count(phylum, worms_valid_name) %>%
-        dplyr::filter(phylum %in% c("arthropoda", "annelida", "mollusca",
+        dplyr::count(worms_phylum, worms_valid_name) %>%
+        dplyr::filter(worms_phylum %in% c("arthropoda", "annelida", "mollusca",
                                     "echinodermata", "cnidaria", "porifera")) %>%
-        dplyr::group_by(phylum) %>%
+        dplyr::group_by(worms_phylum) %>%
         dplyr::mutate(rank_n = max(dplyr::min_rank(n)) - dplyr::min_rank(n)) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(phylum = capitalize(phylum)) %>%
-        ggplot(aes(x = rank_n, y = n, colour = phylum)) +
+        dplyr::mutate(worms_phylum = capitalize(worms_phylum)) %>%
+        ggplot(aes(x = rank_n, y = n, colour = worms_phylum)) +
         geom_line() +
         geom_point(size = .2) +
         scale_y_log10() +
@@ -88,13 +88,13 @@ abundance_sample_species <- function(recs) {
 
 plot_rank_abundance <- function(recs) {
     recs %>%
-        dplyr::filter(phylum %in% c("arthropoda", "annelida", "mollusca",
+        dplyr::filter(worms_phylum %in% c("arthropoda", "annelida", "mollusca",
                                     "echinodermata", "cnidaria", "porifera")) %>%
-        dplyr::group_by(phylum) %>%
+        dplyr::group_by(worms_phylum) %>%
         dplyr::mutate(rank_n = max(dplyr::min_rank(n_cell)) - dplyr::min_rank(n_cell)) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(phylum = capitalize(phylum)) %>%
-        ggplot(aes(x=rank_n, y=n_cell, colour=phylum)) +
+        dplyr::mutate(worms_phylum = capitalize(worms_phylum)) %>%
+        ggplot(aes(x=rank_n, y=n_cell, colour=worms_phylum)) +
         geom_line() +
         geom_point(size = .2) +
         scale_y_log10() +
@@ -176,10 +176,10 @@ make_heatmap <- function(gg_r, title, base_map) {
 
 
 make_heatmap_by_phylum <- function(recs, file, raster, base_map) {
-    uniq_phyla <- unique(recs$phylum)
+    uniq_phyla <- unique(recs$worms_phylum)
 
     res <- parallel::mclapply(uniq_phyla, function(p) {
-                         recs_sub <- recs[recs$phylum == p, ]
+                         recs_sub <- recs[recs$worms_phylum == p, ]
                          if (nrow(recs_sub) < 10) return(NULL)
                          ggr <- data_map(recs_sub, raster) %>% data_map_diversity()
                          ggr
