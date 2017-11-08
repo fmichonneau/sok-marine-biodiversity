@@ -17,7 +17,7 @@ calc_institutions <- function(idig_records, obis_records) {
                           TRUE ~ "problem"
                       )) %>%
         purrr::pwalk(function(Institution, ...) {
-                   if(any(grepl("problem", Institution))) stop("unknown collection")
+                   if(any(grepl("problem", Institution))) stop("unknown collection in idigbio")
                }) %>%
         dplyr::mutate(n = format(n, big.mark = ",")) %>%
         dplyr::select(Institution,
@@ -42,11 +42,13 @@ calc_institutions <- function(idig_records, obis_records) {
                           institutioncode_simple == "mbari" ~ "Monterey Bay Aquarium Research Institute",
                           institutioncode_simple == "seamap" ~ " Southeast Area Monitoring and Assessment Program",
                           institutioncode_simple == "hri" ~ "Harte Research Institute for Gulf of Mexico Studies",
+                          institutioncode_simple == "sahfos" ~ "Sir Alister Hardy Foundation for Ocean Science",
                           institutioncode_simple == "uf" ~ "Florida Museum of Natural History, University of Florida",
+                          institutioncode_simple == "tamu" ~ "The Texas A&M Biodiversity Research and Teaching Collections",
                           TRUE ~ "problem"
                       ))%>%
         purrr::pwalk(function(Institution, ...) {
-                   if(any(grepl("problem", Institution))) stop("unknown collection")
+                   if(any(grepl("problem", Institution))) stop("unknown collection in obis")
                }) %>%
         dplyr::mutate(n = format(n, big.mark = ",")) %>%
         dplyr::select(Institution,
