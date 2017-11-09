@@ -104,12 +104,13 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 create_records_db <- function(coords, db_table) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
-                              "TEXT", "REAL", "REAL"),
+                              "TEXT", "REAL", "REAL", "TEXT", "TEXT"),
                             .Names = c("uuid", "catalognumber",
                                   "datecollected", "institutioncode",
                                   "phylum", "class", "order", "family", "genus",
                                   "scientificname", "country",
-                                  "decimallatitude", "decimallongitude"
+                                  "decimallatitude", "decimallongitude",
+                                  "data.dwc:fieldNumber", "data.dwc:recordedBy"
                                   ))
     db_begin(sok_db())
     on.exit(db_rollback(sok_db(), db_table))
