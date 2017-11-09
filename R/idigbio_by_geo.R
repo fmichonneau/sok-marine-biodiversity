@@ -200,7 +200,12 @@ extract_inverts_from_db <- function(db_table, list_phyla, geo) {
         dplyr::left_join(list_phyla, by = "phylum") %>%
         dplyr::select(-phylum, phylum = common_phylum) %>%
         add_worms() %>%
-        parse_year()
+        parse_year() %>%
+        ## redo a filtering to deal with possible name
+        ## collision across kingdoms:
+        dplyr::filter(worms_phylum %in% all_phyla_to_keep)
+
+
 }
 
 
