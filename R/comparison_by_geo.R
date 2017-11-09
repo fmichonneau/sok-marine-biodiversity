@@ -349,13 +349,13 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
     .gom <- . %>%
         is_within_gom_records(map_gom) %>%
         dplyr::filter(is_in_gom == TRUE) %>%
-        dplyr::group_by(phylum, worms_valid_name) %>%
+        dplyr::group_by(worms_phylum, worms_valid_name) %>%
         dplyr::summarize(min_year = min(year))
 
     .pnw <- . %>%
         is_within_pnw_records(map_pnw) %>%
         dplyr::filter(is_in_pnw == TRUE) %>%
-        dplyr::group_by(phylum, worms_valid_name) %>%
+        dplyr::group_by(worms_phylum, worms_valid_name) %>%
         dplyr::summarize(min_year = min(year))
 
     .keep_min <- . %>%

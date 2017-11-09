@@ -75,8 +75,9 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
 
     col_name <- paste0("n_idigbio_in_", region)
 
+
     idig_ <- idig_db %>%
-        dplyr::group_by(phylum) %>%
+        dplyr::group_by(worms_phylum) %>%
         dplyr::summarize(
                    n_idigbio = sum(!is.na(n_idigbio)),
                    n_idigbio_in_us = sum(!is.na(n_idigbio_in_us)),
@@ -86,7 +87,7 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
     stopifnot(all(idig_[["n_idigbio"]] >= idig_[["n_idigbio_in_us"]]))
 
     obis_ <- obis_db %>%
-        dplyr::group_by(phylum) %>%
+        dplyr::group_by(worms_phylum) %>%
        dplyr::summarize_(
                    .dots = setNames(
                        list(
@@ -104,7 +105,7 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
     stopifnot(all(idig_[["n_obis"]] >= idig_[[paste0("n_obis_in_", region)]]))
 
     gbif_ <- gbif_db %>%
-        group_by(phylum) %>%
+        group_by(worms_phylum) %>%
         dplyr::summarize_(
                    .dots = setNames(
                        list(
@@ -123,15 +124,15 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
 
 
     bold_db %>%
-        dplyr::group_by(phylum) %>%
+        dplyr::group_by(worms_phylum) %>%
         dplyr::summarize(
             n_barcoded = sum(n_bold_records > 0),
             n_total = n()
         ) %>%
-        dplyr::left_join(idig_, by = "phylum") %>%
-        dplyr::left_join(obis_, by = "phylum") %>%
-        dplyr::left_join(gbif_, by = "phylum") %>%
-        dplyr::filter(phylum %in% c("arthropoda", "mollusca", "annelida",
+        dplyr::left_join(idig_, by = "worms_phylum") %>%
+        dplyr::left_join(obis_, by = "worms_phylum") %>%
+        dplyr::left_join(gbif_, by = "worms_phylum") %>%
+        dplyr::filter(worms_phylum %in% c("arthropoda", "mollusca", "annelida",
                                     "cnidaria", "echinodermata", "platyhelminthes",
                                     "porifera", "bryozoa", "nematoda", "chordata"
                                     )) %>%
@@ -158,7 +159,8 @@ summarize_richness_per_db <- function(bold_db, idig_db, obis_db, gbif_db, region
                          paste0("prop_gbif_in_", region),
                          "prop_gbif_in_us",
                          "prop_gbif"))
-                       )
+                       ) %>%
+        rename(phylum = worms_phylum)
 
 }
 

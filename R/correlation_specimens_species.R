@@ -73,7 +73,7 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
     ## this stage
 
     summary_db <- . %>%
-        dplyr::group_by(phylum) %>%
+        dplyr::group_by(worms_phylum) %>%
         dplyr::summarize(
                    n_records = n(),
                    n_spp = n_distinct(worms_valid_name)
@@ -87,7 +87,7 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
     res <- dplyr::bind_rows(idigbio = idig_res, obis = obis_res, .id = "database")
 
     idig_rare_phyla <- dplyr::filter(idig_res, is_rare == TRUE) %>%
-        dplyr::pull(phylum)
+        dplyr::pull(worms_phylum)
 
     worms_data <- wrms_stats %>%
         dplyr::filter(kingdom ==  "Animalia") %>%
@@ -97,14 +97,14 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
                                        "mesozoa"))
 
     idig_worms <- idig_res %>%
-        dplyr::mutate(phylum = replace(phylum,
-                                       phylum %in% c("kinorhyncha", "loricifera",
+        dplyr::mutate(worms_phylum = replace(worms_phylum,
+                                       worms_phylum %in% c("kinorhyncha", "loricifera",
                                                      "nematomorpha", "priapulida"),
                                        "cephalorhyncha"),
-                      phylum = replace(phylum, phylum == "echiura", "annelida")) %>%
-        dplyr::group_by(phylum) %>%
+                      worms_phylum = replace(worms_phylum, worms_phylum == "echiura", "annelida")) %>%
+        dplyr::group_by(worms_phylum) %>%
         dplyr::summarize_if(is.integer, sum) %>%
-        dplyr::left_join(worms_data, by = "phylum") %>%
+        dplyr::left_join(worms_data, by = c("worms_phylum" = "phylum")) %>%
         dplyr::mutate(is_rare = if_else(n_records < 500,  TRUE, FALSE))
 
     if (any(is.na(idig_worms$all_taxa_marine_non_fossil)))
@@ -140,5 +140,5 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
 }
 
 calc_n_idigbio_phyla <- function(idig) {
-    n_distinct(idig$phylum)
+    n_distinct(idig$worms_phylum)
 }

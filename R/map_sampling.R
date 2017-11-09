@@ -30,9 +30,14 @@ data_map <- function(recs, raster) {
             n_samples =  n()
             )
 
+    if (exists("worms_phylum", recs)) {
+        phy_var <- rlang::sym("worms_phylum")
+    } else if (exists("phylum", recs))
+        phy_var <- rlang::sym("phylum")
+
     ## not in use
     h_index <- recs %>%
-        dplyr::select(worms_phylum, worms_valid_name, rastercell) %>%
+        dplyr::select(!!phy_var, worms_valid_name, rastercell) %>%
         dplyr::group_by(rastercell, worms_valid_name) %>%
         dplyr::summarize(n_records_per_spp = n()) %>%
         dplyr::group_by(rastercell) %>%
@@ -61,8 +66,9 @@ data_map_samples <- function(dm) {
 
 n_rastercell_per_species <- function(recs, raster) {
     recs <- add_rastercell(recs, raster)
+
     recs %>%
-        dplyr::group_by(worms_phylum, worms_valid_name) %>%
+        dplyr::group_by(phylum, worms_valid_name) %>%
         dplyr::summarize(
             n_cell = n_distinct(rastercell)
             ) %>%
@@ -176,10 +182,17 @@ make_heatmap <- function(gg_r, title, base_map) {
 
 
 make_heatmap_by_phylum <- function(recs, file, raster, base_map) {
-    uniq_phyla <- unique(recs$worms_phylum)
+
+    if (exists("worms_phylum", recs))
+        phy_var <- "worms_phylum"
+    else if (exists("phylum", recs))
+        phy_var <- "phylum"
+    else stop("can't find phylum nor worms_phylum")
+
+    uniq_phyla <- unique(recs[[phy_var]])
 
     res <- parallel::mclapply(uniq_phyla, function(p) {
-                         recs_sub <- recs[recs$worms_phylum == p, ]
+                         recs_sub <- recs[recs[[phy_var]] == p, ]
                          if (nrow(recs_sub) < 10) return(NULL)
                          ggr <- data_map(recs_sub, raster) %>% data_map_diversity()
                          ggr
