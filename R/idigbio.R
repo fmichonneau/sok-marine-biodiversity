@@ -9,6 +9,8 @@ idigbio_fields <- function() {
       'data.dwc:order',
       'data.dwc:family',
       'data.dwc:genus',
+      'data.dwc:fieldNumber',
+      'data.dwc:recordedBy',
       'scientificname',
       'datecollected',
       'country',
