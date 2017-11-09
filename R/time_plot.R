@@ -266,71 +266,25 @@ plot_institutions_through_time <- function(idig_records) {
 
 }
 
-
-get_id_level <- function(nm) {
-    v3("id level for: ", nm, appendLF = FALSE)
-    stopifnot(length(nm) == 1L)
-    if (is_binomial(cleanup_species_names(nm, rm_subgenus=TRUE))) {
-        r <- "species"
-    } else if (nchar(nm) < 2) {
-        r <- "unknown"
-    } else if (grepl("\\s", nm)) {      # has space in name
-        if (grepl(".+\\(.+\\)$", nm)) { # ends with subgenus
-            r <- "subgenus"
-        } else if (length(gregexpr("\\s", nm)[[1]]) > 1) { # at least 2 words
-            r <- "subspecies"
-        } else {
-            r <- "unknown"
-        }
-    } else {
-        wid <- store_worms_ids()$get(tolower(cleanup_species_names(nm)))
-        if (!inherits(wid, "data.frame")) return("NA_character_")
-        res <- store_worms_classification()$get(as.character(wid$valid_AphiaID))
-        r <- tolower(res$rank[nrow(res)])
-    }
-    v3(" is: ", r)
-    r
-}
-
-test_id_level <- function() {
-    test_dt <- tibble::tribble(
-        ~input,  ~expected_output,
-        "arca arca", "species",
-        "arca arca arca", "subspecies",
-        "arca (arca)", "subgenus"
-    )
-    test_dt$output <- vapply(test_dt$input, get_id_level, character(1))
-    tc <- test_dt$output == test_dt$expected_output
-    if (!all(tc))
-        test_dt[!tc, ]
-
-}
-
-data_identification_level_through_time <- function(idig_records) {
+plot_identification_level_through_time <- function(idig_records) {
     idig_records %>%
-        mutate(id_level = vapply(cleaned_scientificname, get_id_level, character(1))) %>%
-        filter(id_level != "unknown", !is.na(id_level), !is.na(year))
-}
-
-
-plot_identification_level_through_time <- function(id_level) {
-    id_level %>%
+        dplyr::filter(!is.na(year)) %>%
         ## count subspecies as species level identification
-        dplyr::mutate(id_level = replace(id_level, id_level == "subspecies", "species")) %>%
-        count(year, phylum, id_level) %>%
-        group_by(year, phylum) %>%
-        mutate(p = n/sum(n),
+        dplyr::mutate(rank = replace(rank, rank == "Subspecies", "Species")) %>%
+        dplyr::count(year, worms_phylum, rank) %>%
+        dplyr::group_by(year, worms_phylum) %>%
+        dplyr::mutate(p = n/sum(n),
                n_lots = sum(n)) %>%
-        filter(id_level == "species",
-               phylum %in% c("annelida", "arthropoda", "porifera",
-                             "cnidaria", "echinodermata", "mollusca")) %>%
-        ungroup() %>%
-        mutate(phylum = capitalize(phylum)) %>%
-        ggplot(aes(x = year, y = p, colour = phylum, fill = phylum)) +
+        dplyr::filter(rank == "Species",
+                      worms_phylum %in% c("annelida", "arthropoda", "porifera",
+                                          "cnidaria", "echinodermata", "mollusca")) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(worms_phylum = capitalize(worms_phylum)) %>%
+        ggplot(aes(x = year, y = p, colour = worms_phylum, fill = worms_phylum)) +
         geom_point(aes(size = n_lots)) +
         geom_hline(yintercept = 1) +
         geom_smooth(method = "lm", formula = y ~ splines::bs(x, degree = 3), show.legend = FALSE) +
-        facet_wrap(~ phylum) +
+        facet_wrap(~ worms_phylum) +
         guides(color = FALSE, fill = FALSE) +
         scale_size_continuous(name = "Number of specimens") +
         labs(x = "Year", y = "Proportion of specimens identified at the species level") +
