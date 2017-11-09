@@ -173,6 +173,13 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
 
     res <- dplyr::left_join(sp_list, wrms, by = "cleaned_scientificname")
 
+    if (exists("phylum.x", res) &&
+        exists("phylum.y", res)) {
+        res <- res %>%
+            dplyr::select(-phylum.y) %>%
+            dplyr::rename(phylum = `phylum.x`)
+    }
+
     if (remove_vertebrates) {
         res <- res %>%
             dplyr::filter(!worms_class %in% chordata_classes_to_rm())
