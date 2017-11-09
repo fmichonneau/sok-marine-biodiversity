@@ -18,7 +18,17 @@ worm_fail <- function(key, reason) {
 
 fetch_hook_worms_ids <- function(key, namespace) {
     is_lower_case(key)
+    ## if (namespace == "objects")
+    ##    stop("namespace must be the phylum name")
+    ## is_lower(namespace)
     internal_worms <- function(key, fuzzy = FALSE) {
+        worms_one_row <- function(wid, fuzzy) {
+            wid$fuzzy <- fuzzy
+            if (wid$valid_AphiaID == 0 ||
+                is.na(wid$valid_AphiaID)) {
+                worm_fail(key, "AphiaID == 0")
+            } else return(wid)
+        }
         wid <- try(worrms::wm_records_name(key, fuzzy = FALSE),
                    silent = TRUE)
         ## if no content, we repeat using fuzzy matching
@@ -28,8 +38,16 @@ fetch_hook_worms_ids <- function(key, namespace) {
         } else if (inherits(wid, "data.frame")) {
             ## When we get a data frame:
             ## - we check if there is accepted among the names and we choose that
-            ## - otherwise
+            ## - otherwise we do what we can
             if (nrow(wid) > 1L) {
+                ## first try to limit search to only include same phylum as data
+                ## wid_sub <- wid %>%
+                ##     dplyr::mutate(phylum = tolower(phylum)) %>%
+                ##     dplyr::filter(phylum == namespace)
+                ## if (nrow(wid_sub) == 1L) {
+                ##     return(worms_one_row(wid_sub, fuzzy))
+                ## }
+
                 if (any(wid$status %in% c("accepted", "alternate representation"))) {
                     wid <- wid %>%
                         ## only keep accepted if it's there
@@ -47,11 +65,7 @@ fetch_hook_worms_ids <- function(key, namespace) {
                 }
             }
             if (nrow(wid) == 1L) {
-                wid$fuzzy <- fuzzy
-                if (wid$valid_AphiaID == 0 ||
-                    is.na(wid$valid_AphiaID)) {
-                    worm_fail(key, "AphiaID == 0")
-                } else return(wid)
+                return(worms_one_row(wid, fuzzy))
             } else {
                 worm_fail(key, "multi-match")
             }
@@ -148,7 +162,7 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
     stopifnot(all(c("cleaned_scientificname") %in%
                   names(sp_list)))
 
-    wrm_names <- names(store_worms_ids()$get("holothuria"))
+    wrm_names <- names(store_worms_ids()$get("holothuria", namespace = "echinodermata"))
     default_wrms <- set_names(rep(NA, length(wrm_names)), wrm_names)
     default_wrms <- tibble::tibble(!!! default_wrms)
 
@@ -162,8 +176,7 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
                             dplyr::select(worms_id = AphiaID,
                                           worms_valid_name = valid_name,
                                           is_fuzzy = fuzzy,
-                                          rank = rank
-                                          )
+                                          rank = rank)
 
     wrms <- dplyr::bind_cols(spp, wrms) %>%
         dplyr::mutate(worms_id = as.character(worms_id)) %>%
