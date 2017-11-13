@@ -56,10 +56,8 @@ prepare_idig_stats_by_kingdom <- function(db_table) {
         dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
         dplyr::filter(grepl("\\s", cleaned_scientificname)) %>%
         dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname)) %>%
-        dplyr::group_by(cleaned_scientificname) %>%
         add_worms(remove_vertebrates = FALSE)  %>%
         dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
-        dplyr::ungroup() %>%
         dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
                        overwrite = TRUE, indexes = list("scientificname"))
 
