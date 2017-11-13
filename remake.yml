@@ -270,18 +270,14 @@ targets:
   ## iDigBio -------------------------------------------------------------------
   idigbio_database:
     command: create_records_db(coords_usa, db_table=I("us_idigbio"))
-
-  idigbio_database_with_geo:
-    command: add_within_polygon_to_db(I("us_idigbio"))
     depends:
-      - idigbio_database
       - map_usa_db
       - map_gom_db
       - map_pnw_db
 
   idigbio_us_inverts_records_all:
     command: extract_inverts_from_db(db_table=I("us_idigbio"), list_phyla, geo=I("within_eez"))
-    depends: idigbio_database_with_geo
+    depends: idigbio_database
 
   idigbio_us_inverts_records_all_depths:
     command: add_depth(idigbio_us_inverts_records_all, map=map_usa)
@@ -302,7 +298,7 @@ targets:
   ## iDigBio MMS/BLM records
   idigbio_mms_records:
     command: get_idigbio_mms_records(list_phyla)
-    depends: idigbio_database_with_geo
+    depends: idigbio_database
 
   idigbio_mms_summary:
     command: summary_idigbio_mms(idigbio_mms_records)
@@ -310,18 +306,14 @@ targets:
   ## OBIS ----------------------------------------------------------------------
   obis_database:
     command: create_obis_db(coords_usa, db_table=I("us_obis"))
-
-  obis_database_with_geo:
-    command: add_within_polygon_to_db(I("us_obis"))
     depends:
-      - obis_database
       - map_usa_db
       - map_gom_db
       - map_pnw_db
 
   obis_us_inverts_records_all:
     command: extract_inverts_from_db(db_table=I("us_obis"), list_phyla, I("within_eez"))
-    depends: obis_database_with_geo
+    depends: obis_database
 
   obis_us_inverts_records_all_with_depth:
     command: add_depth(obis_us_inverts_records_all)
@@ -374,18 +366,14 @@ targets:
 
   idigbio_gom_database:
     command: create_records_db(coords_gom, db_table=I("gom_idigbio"))
-
-  idigbio_gom_database_with_geo:
-    command: add_within_polygon_to_db(I("gom_idigbio"))
     depends:
-      - idigbio_gom_database
       - map_usa_db
       - map_gom_db
       - map_pnw_db
 
   idigbio_gom_records_all:
     command: extract_inverts_from_db(db_table=I("gom_idigbio"), list_phyla, geo=I("within_gom"))
-    depends: idigbio_gom_database_with_geo
+    depends: idigbio_gom_database
 
   idigbio_gom_records:
     command: keep_marine_species_only(idigbio_gom_records_all)
@@ -433,18 +421,14 @@ targets:
 
   idigbio_pnw_database:
     command: create_records_db(coords_pnw, db_table=I("kozloff_idigbio"))
-
-  idigbio_pnw_database_with_geo:
-    command: add_within_polygon_to_db(I("kozloff_idigbio"))
     depends:
-      - idigbio_pnw_database
       - map_usa_db
       - map_gom_db
       - map_pnw_db
 
   idigbio_pnw_records_all:
     command: extract_inverts_from_db(db_table=I("kozloff_idigbio"), list_phyla, I("within_pnw"))
-    depends: idigbio_pnw_database_with_geo
+    depends: idigbio_pnw_database
 
   idigbio_pnw_records:
     command: keep_marine_species_only(idigbio_pnw_records_all)

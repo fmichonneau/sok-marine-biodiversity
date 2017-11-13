@@ -120,12 +120,6 @@ add_within_polygon_to_db <- function(db_table) {
         stop("something is very wrong: ", sQuote("unique_coords"),
              " table doesn't exist.")
 
-    ## Create within_* fields if they don't exist
-    purrr::map(list("within_eez", "within_gom", "within_pnw"), function(x) {
-        if (! x %in% dbListFields(db, db_table))
-            dbExecute(db, glue::glue("ALTER TABLE {db_table} ADD COLUMN {x} BOOL DEFAULT NULL;"))
-    })
-
     message(glue::glue("Working on joining unique_coords and {db_table} ..."), appendLF = FALSE)
     dbExecute(db,
               glue::glue(

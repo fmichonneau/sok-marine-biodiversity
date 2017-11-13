@@ -104,13 +104,15 @@ get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
 create_records_db <- function(coords, db_table) {
     idig_types <- structure(c("TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
                               "TEXT", "TEXT", "TEXT", "TEXT", "TEXT",
-                              "TEXT", "REAL", "REAL", "TEXT", "TEXT"),
+                              "TEXT", "REAL", "REAL", "TEXT", "TEXT",
+                              "BOOLEAN", "BOOLEAN", "BOOLEAN"),
                             .Names = c("uuid", "catalognumber",
                                   "datecollected", "institutioncode",
                                   "phylum", "class", "order", "family", "genus",
                                   "scientificname", "country",
                                   "decimallatitude", "decimallongitude",
-                                  "data.dwc:fieldNumber", "data.dwc:recordedBy"
+                                  "data.dwc:fieldNumber", "data.dwc:recordedBy",
+                                  "within_eez", "within_gom", "within_pnw"
                                   ))
     db_begin(sok_db())
     on.exit(db_rollback(sok_db(), db_table))
@@ -149,6 +151,7 @@ create_records_db <- function(coords, db_table) {
     dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
     db_analyze(sok_db(), db_table)
     db_commit(sok_db())
+    add_within_polygon_to_db(db_table)
     on.exit(NULL)
 }
 
