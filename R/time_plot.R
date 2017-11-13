@@ -246,23 +246,20 @@ plot_institutions_through_time <- function(idig_records) {
     inst_to_keep <- idig %>%
         dplyr::count(institutioncode, sort = TRUE) %>%
         dplyr::filter(n  >= 1000) %>%
-        dplyr::distinct() %>%
-        .[["institutioncode"]]
-
-    tmp_data <- data_frame(institutioncode = inst_to_keep)
+        dplyr::distinct()
 
     idig %>%
-        dplyr::filter(institutioncode %in% inst_to_keep) %>%
+        dplyr::semi_join(inst_to_keep, by = "institutioncode") %>%
         dplyr::count(institutioncode, year) %>%
         tidyr::complete(year = 1850:2017, institutioncode,  fill = list(n = 0)) %>%
-        dplyr::filter(year >= 1999) %>%
         dplyr::group_by(institutioncode) %>%
         dplyr::arrange(year) %>%
-        dplyr::mutate(cum_n = cumsum(n)) %>% filter(year == 2017) %>% arrange(desc(cum_n))
+        dplyr::mutate(cum_n = cumsum(n)) %>%
         dplyr::ungroup() %>%
-        ggplot(aes(x = year, y = cum_n, #color = institutioncode,
+        ggplot(aes(x = year, y = cum_n,
                    fill = institutioncode)) +
-        geom_col() + facet_wrap(~ institutioncode, scales = "free_y")
+        geom_col() + facet_wrap(~ institutioncode, scales = "free_y") +
+        scale_fill_viridis(discrete = TRUE)
 
 }
 
