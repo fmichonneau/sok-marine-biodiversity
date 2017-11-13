@@ -177,8 +177,7 @@ extract_inverts_from_db <- function(db_table, list_phyla, geo) {
         dplyr::filter(!is.na(family))
 
     all_phyla_to_keep <- list_phyla %>%
-        dplyr::filter(common_phylum != "to_drop",
-                      !is.na(phylum)) %>%
+        dplyr::filter(common_phylum != "to_drop") %>%
         dplyr::distinct(phylum) %>%
         dplyr::pull(phylum)
 
