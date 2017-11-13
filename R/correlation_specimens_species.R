@@ -91,10 +91,14 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
 
     worms_data <- wrms_stats %>%
         dplyr::filter(kingdom ==  "Animalia") %>%
+        dplyr::filter(phylum != "Chordata") %>%
         dplyr::mutate(phylum = tolower(phylum),
                       phylum = replace(phylum,
                                        phylum %in% c("dicyemida", "orthonectida"),
-                                       "mesozoa"))
+                                       "mesozoa"),
+                      phylum = replace(phylum,
+                                       phylum == "chordata - inverts",
+                                       "chordata"))
 
     idig_worms <- idig_res %>%
         dplyr::mutate(worms_phylum = replace(worms_phylum,
@@ -107,7 +111,7 @@ calc_records_rare_phyla <- function(idig, obis, wrms_stats) {
         dplyr::left_join(worms_data, by = c("worms_phylum" = "phylum")) %>%
         dplyr::mutate(is_rare = if_else(n_records < 500,  TRUE, FALSE))
 
-    if (any(is.na(idig_worms$all_taxa_marine_non_fossil)))
+    if (any(is.na(idig_worms$accepted_species_marine_non_fossil)))
         stop("Something is wrong with the phylum names!")
 
     calc_p_coll <- . %>%

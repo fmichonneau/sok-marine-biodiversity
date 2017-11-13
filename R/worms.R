@@ -1,8 +1,16 @@
 read_worms_stats <- function(worms_csv) {
-    wrms_stats <- readr::read_csv(worms_csv)
-    ## use Appletans 2012 number (removing fishes and other vertebrates)
-    wrms_stats$accepted_species_marine_non_fossil[wrms_stats$phylum == "Chordata"] <- 3053
-    wrms_stats
+    readr::read_csv(worms_csv) %>%
+        ## from WoRMS website: http://www.marinespecies.org/aphia.php?p=browser&id[]=2&id[]=1821#focus
+        dplyr::bind_rows(tibble::tibble(
+                                     kingdom = "Animalia",
+                                     phylum = "Chordata - inverts",
+                                     all_taxa_marine_non_fossil = NA_integer_,
+                                     all_taxa_species_marine_non_fossil = NA_integer_,
+                                     accepted_species_marine_non_fossil = 3089,
+                                     accepted_species_non_marine_non_fossil = NA_integer_,
+                                     checked_taxa = NA_integer_
+                                 )) %>%
+            dplyr::arrange(kingdom, phylum)
 }
 
 ## Storr for the WoRMS ids: given a taxon name, what is its WoRMS id? ----------
