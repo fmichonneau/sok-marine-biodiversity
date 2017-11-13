@@ -121,7 +121,7 @@ add_within_polygon_to_db <- function(db_table) {
              " table doesn't exist.")
 
     ## Create within_* fields if they don't exist
-    map(list("within_eez", "within_gom", "within_pnw"), function(x) {
+    purrr::map(list("within_eez", "within_gom", "within_pnw"), function(x) {
         if (! x %in% dbListFields(db, db_table))
             dbExecute(db, glue::glue("ALTER TABLE {db_table} ADD COLUMN {x} BOOL DEFAULT NULL;"))
     })

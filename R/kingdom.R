@@ -200,12 +200,6 @@ calc_kingdom_diversity <- function(worms_stats) {
 
 plot_kingdom_diversity <- function(kng) {
     kng %>%
-        ## option 1 -- compare bar heights
-        ## ggplot(aes(x = database, y  = prop_spp,
-        ##            fill = reorder(sub_kingdom,
-        ##                           prop_spp))) +
-        ## geom_bar(stat = "identity") + coord_flip() +
-        ## option 2 -- compare by sub kingdom
         ggplot(aes(x = reorder(sub_kingdom, prop_spp), y = prop_spp, fill = database)) +
         geom_col(position = "dodge") + coord_flip() +
         geom_text(aes(y = prop_spp + .01, label = n_spp), position = position_dodge(.9),
