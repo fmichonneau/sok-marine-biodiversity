@@ -497,11 +497,8 @@ targets:
   idigbio_invert_summary:
     command: plot_idigbio_invert_summary(idigbio_us_inverts_records_species, idigbio_bold)
 
-  idigbio_identification_level_through_time:
-    command: data_identification_level_through_time(idigbio_us_inverts_records_all)
-
   figures/idigbio_identification_level_through_time.pdf:
-    command: plot_identification_level_through_time(idigbio_identification_level_through_time)
+    command: plot_identification_level_through_time(idigbio_us_inverts_records_all)
     plot:
       width: 8
       height: 5
