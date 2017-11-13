@@ -178,7 +178,7 @@ calc_kingdom_diversity <- function(worms_stats) {
                       )) %>%
         dplyr::group_by(sub_kingdom) %>%
         dplyr::summarize(
-                   n_spp = sum(all_species_marine_non_fossil)
+                   n_spp = sum(accepted_species_marine_non_fossil)
                ) %>%
         dplyr::bind_rows(
             data_frame(
