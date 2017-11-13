@@ -64,15 +64,15 @@ prepare_idig_stats_by_kingdom <- function(db_table) {
                        overwrite = TRUE, indexes = list("scientificname"))
 
     ## worms info to idigbio records
-    map(list("worms_kingdom", "worms_phylum", "worms_class",
-             "worms_order", "worms_family", "worms_valid_name", "worms_id"),
+    purrr::map(list("worms_kingdom", "worms_phylum", "worms_class",
+             "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
         function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN {x} TEXT DEFAULT NULL;"))
         )
     dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN is_marine BOOL DEFAULT NULL;"))
     dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
-                             "SET (worms_valid_name, worms_id, is_marine, worms_kingdom, worms_phylum,",
+                             "SET (worms_valid_name, worms_id, is_marine, rank, worms_kingdom, worms_phylum,",
                              "     worms_class, worms_order, worms_family) = ",
-                             "(SELECT worms_valid_name, worms_id, is_marine, worms_kingdom, ",
+                             "(SELECT worms_valid_name, worms_id, is_marine, rank, worms_kingdom, ",
                              "        worms_phylum, worms_class, worms_order, worms_family ",
                              " FROM {db_table}_species ",
                              "  WHERE {db_table}_clean.scientificname = {db_table}_species.scientificname);"))
@@ -108,15 +108,15 @@ prepare_obis_stats_by_kingdom <- function(db_table) {
 
     ## worms info to idigbio records
     v3(glue::glue("Adding worms info to {db_table}_clean ..."), appendLF = FALSE)
-    map(list("worms_kingdom", "worms_phylum", "worms_class",
-             "worms_order", "worms_family", "worms_valid_name", "worms_id"),
+    purrr::map(list("worms_kingdom", "worms_phylum", "worms_class",
+             "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
         function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN {x} TEXT DEFAULT NULL;"))
         )
     dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN is_marine BOOL DEFAULT NULL;"))
     dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
-                             "SET (worms_valid_name, worms_id, is_marine, worms_kingdom, worms_phylum,",
+                             "SET (worms_valid_name, worms_id, is_marine, rank, worms_kingdom, worms_phylum,",
                              "     worms_class, worms_order, worms_family) = ",
-                             "(SELECT worms_valid_name, worms_id, is_marine, worms_kingdom, ",
+                             "(SELECT worms_valid_name, worms_id, is_marine, rank, worms_kingdom, ",
                              "        worms_phylum, worms_class, worms_order, worms_family ",
                              " FROM {db_table}_species ",
                              "  WHERE {db_table}_clean.aphiaid = {db_table}_species.aphiaid);"))
@@ -177,7 +177,7 @@ calc_kingdom_diversity <- function(worms_stats) {
         dplyr::summarize(
                    n_spp = sum(all_species_marine_non_fossil)
                ) %>%
-        bind_rows(
+        dplyr::bind_rows(
             data_frame(
                 sub_kingdom =  "animalia - vertebrates",
                 n_spp = n_vertebrates)
