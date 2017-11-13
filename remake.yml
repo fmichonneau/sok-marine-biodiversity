@@ -803,7 +803,7 @@ targets:
     command: calc_prop_missing_depth(obis_us_inverts_records_all)
 
   records_rare_phyla:
-    command: calc_records_rare_phyla(idigbio_us_inverts_records_all, obis_us_inverts_records_all, worms_stats)
+    command: calc_records_rare_phyla(idigbio_us_inverts_records_species, obis_us_inverts_records_species, worms_stats)
 
   n_idigbio_phyla:
     command: calc_n_idigbio_phyla(idigbio_us_inverts_records_all)
