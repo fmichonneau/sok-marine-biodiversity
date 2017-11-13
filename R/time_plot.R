@@ -276,11 +276,12 @@ plot_identification_level_through_time <- function(idig_records) {
                       worms_phylum %in% c("annelida", "arthropoda", "porifera",
                                           "cnidaria", "echinodermata", "mollusca")) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(worms_phylum = capitalize(worms_phylum)) %>%
-        ggplot(aes(x = year, y = p, colour = worms_phylum, fill = worms_phylum)) +
-        geom_point(aes(size = n_lots)) +
+        dplyr::mutate(worms_phylum = capitalize(worms_phylum),
+                      mean_p_id = roll_mean(p, 3, fill = NA)) %>%
+        ggplot(aes(colour = worms_phylum, fill = worms_phylum)) +
+        geom_point(aes(x = year, y = p, size = n_lots)) +
         geom_hline(yintercept = 1) +
-        geom_smooth(method = "lm", formula = y ~ splines::bs(x, degree = 3), show.legend = FALSE) +
+        geom_smooth(aes(x = year, y = mean_p_id, colour = worms_phylum), se = FALSE) +
         facet_wrap(~ worms_phylum) +
         guides(color = FALSE, fill = FALSE) +
         scale_size_continuous(name = "Number of specimens") +
