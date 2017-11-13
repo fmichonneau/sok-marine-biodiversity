@@ -185,11 +185,19 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
         }
         v2(" DONE.")
     })
-
+    dbExecute(sok_db(), glue::glue("DELETE FROM {db_table} a USING (
+      SELECT MIN(ctid) as ctid, uuid
+        FROM {db_table}
+        GROUP BY uuid HAVING COUNT(*) > 1
+      ) dups
+      WHERE a.uuid = dups.uuid
+      AND a.ctid <> dups.ctid"))
     db_create_indexes(sok_db(), db_table, indexes = list(c("phylum", "class", "order", "family", "scientificname"),
                                                     c("phylum"), c("class"), c("family"), c("order"),
-                                                    c("scientificname")),
+                                                    c("scientificname"), c("decimallatitude", "decimallongitude"),
+                                                    c("uuid")),
                       unique = FALSE)
+    dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
     db_analyze(sok_db(), db_table)
     db_commit(sok_db())
     on.exit(NULL)

@@ -135,9 +135,18 @@ create_records_db <- function(coords, db_table) {
         db_insert_into(sok_db(), db_table, r)
     })
 
+    dbExecute(sok_db(), glue::glue("DELETE FROM {db_table} a USING (
+      SELECT MIN(ctid) as ctid, uuid
+        FROM {db_table}
+        GROUP BY uuid HAVING COUNT(*) > 1
+      ) dups
+      WHERE a.uuid = dups.uuid
+      AND a.ctid <> dups.ctid"))
     db_create_indexes(sok_db(), db_table, indexes = list(c("phylum", "class", "family", "scientificname"),
-                                                    c("country")),
+                                                         c("country"), c("uuid"),
+                                                         c("decimallatitude", "decimallongitude")),
                       unique = FALSE)
+    dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
     db_analyze(sok_db(), db_table)
     db_commit(sok_db())
     on.exit(NULL)
