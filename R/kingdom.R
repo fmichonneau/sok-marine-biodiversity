@@ -57,6 +57,8 @@ prepare_idig_stats_by_kingdom <- function(db_table) {
         dplyr::filter(grepl("\\s", cleaned_scientificname)) %>%
         dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname)) %>%
         add_worms(remove_vertebrates = FALSE)  %>%
+        dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
+        dplyr::filter(!is.na(rank)) %>%
         dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
         dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
                        overwrite = TRUE, indexes = list("scientificname"))
@@ -98,6 +100,7 @@ prepare_obis_stats_by_kingdom <- function(db_table) {
         dplyr::filter(!is.na(aphiaid)) %>%
         add_worms_by_id(remove_vertebrates = FALSE) %>%
         dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
+        dplyr::filter(!is.na(rank)) %>%
         dplyr::mutate(worms_kingdom = add_kingdom(worms_id))  %>%
         dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
                        overwrite = TRUE, indexes = list("aphiaid"))
