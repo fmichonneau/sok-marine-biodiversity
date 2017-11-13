@@ -186,3 +186,7 @@
 "magnoliopsida","to_drop","plantae"
 "urochordata","chordata","animalia"
 "lichen indet.","to_drop","fungi"
+"indetermined","to_drop","NA"
+"indet.","to_drop","NA"
+"plasmodiophoromycota","to_drop","chromista"
+"miozoa","to_drop","protozoa"
