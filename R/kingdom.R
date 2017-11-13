@@ -138,7 +138,7 @@ add_sub_kingdom <- function(db_table) {
                                              "ascidiacea",
                                              "holocephali",
                                              "leptocardii",
-                                             "thaliacea") ~ "animalia",
+                                             "thaliacea") ~ "animalia - invertebrates",
                           worms_phylum == "chordata" &
                           worms_class %in% c("actinopterygii",
                                              "aves",
@@ -147,7 +147,7 @@ add_sub_kingdom <- function(db_table) {
                                              "myxini",
                                              "petromyzonti",
                                              "reptilia") ~ "animalia - vertebrates",
-                          worms_kingdom == "animalia" ~ "animalia",
+                          worms_kingdom == "animalia" ~ "animalia - invertebrates",
                           worms_kingdom == "chromista" ~ "chromista",
                           worms_kingdom == "plantae" ~ "plantae",
                           TRUE ~ "others"
@@ -159,6 +159,7 @@ calc_kingdom_diversity <- function(worms_stats) {
 
     ## retrieved from http://www.marinespecies.org/aphia.php?p=browser&id=1821#ct
     n_vertebrates <- 19741
+
     get_n_spp <- . %>%
         dplyr::group_by(sub_kingdom) %>%
         dplyr::summarize(
@@ -168,6 +169,8 @@ calc_kingdom_diversity <- function(worms_stats) {
         dplyr::collect()
 
     wrm <- worms_stats %>%
+        ## we don't need it here, as we split vertebrates/invertebrates below
+        dplyr::filter(phylum != "Chordata - inverts") %>%
         dplyr::mutate(sub_kingdom = case_when(
                           tolower(kingdom) %in% c("fungi", "protozoa", "bacteria",
                                                   "archaea", "viruses", "biota incertae sedis") ~ "others",
@@ -183,6 +186,7 @@ calc_kingdom_diversity <- function(worms_stats) {
                 n_spp = n_vertebrates)
         )
     wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - n_vertebrates
+    wrm[wrm$sub_kingdom == "animalia", "sub_kingdom"] <- "animalia - invertebrates"
 
     ## diversity comparison
     bind_rows(
