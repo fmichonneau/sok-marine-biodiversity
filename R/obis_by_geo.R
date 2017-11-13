@@ -93,7 +93,7 @@ obis_data_types <- function() {
                 "originalScientificName", "TEXT",
                 "scientificNameAuthorship", "TEXT",
                 ##"obisID", "INT",
-                ##"resourceID", "INT",
+                "resourceID", "INT",
                 "yearcollected", "INT",
                 ##"species", "TEXT",
                 "qc", "INT",
