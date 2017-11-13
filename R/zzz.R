@@ -19,8 +19,6 @@ init <- function() {
         stop("test_cleanup(TRUE) is broken")
     if (!is.null(test_cleanup(FALSE)))
         stop("test cleanup(FALSE) is broken")
-    if (!is.null(test_id_level()))
-        stop("test_id_level() is broken")
     ## code is evaluated in ./R/ folder
     if (!dir.exists("../data-validation"))
         dir.create("../data-validation")
