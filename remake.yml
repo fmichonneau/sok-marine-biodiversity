@@ -299,6 +299,14 @@ targets:
   idigbio_bold:
     command: find_bold_records(idigbio_us_inverts_records_species, I("worms_valid_name"), map_usa)
 
+  ## iDigBio MMS/BLM records
+  idigbio_mms_records:
+    command: get_idigbio_mms_records(list_phyla)
+    depends: idigbio_database_with_geo
+
+  idigbio_mms_summary:
+    command: summary_idigbio_mms(idigbio_mms_records)
+
   ## OBIS ----------------------------------------------------------------------
   obis_database:
     command: create_obis_db(coords_usa, db_table=I("us_obis"))

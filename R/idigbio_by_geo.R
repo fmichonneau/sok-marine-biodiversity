@@ -279,3 +279,52 @@ make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata"
         facet_wrap(~ `data.dwc:phylum`) +
         scale_fill_viridis(discrete = TRUE)
 }
+
+
+get_idigbio_mms_records <- function(list_phyla) {
+    db <- sok_db()
+    res <- dbSendQuery(db, glue::glue(
+                                     "SELECT * FROM us_idigbio WHERE \"data.dwc:recordedBy\" ~* '(\\y(mms|blm)\\y)' ",
+                                     "AND within_eez IS TRUE")
+                       ) %>%
+        dbFetch()
+
+    chr_class_to_rm <- chordata_classes_to_rm()
+    chr_fam_to_rm <- chordata_families_to_rm()
+    arth_class_to_rm <- arthropod_classes_to_rm()
+
+    taxa_to_rm <- db %>%
+        dplyr::filter(
+               (phylum == "chordata" &
+                (class %in% chr_class_to_rm |
+                 family %in% chr_fam_to_rm)) |
+               (phylum == "arthropoda" & class %in% arth_class_to_rm)
+               ) %>%
+        dplyr::select(phylum, class, family) %>%
+        dplyr::distinct(phylum, class, family) %>%
+        dplyr::filter(!is.na(family))
+
+    all_phyla_to_keep <- list_phyla %>%
+        dplyr::filter(common_phylum != "to_drop",
+                      !is.na(phylum)) %>%
+        dplyr::distinct(phylum) %>%
+        dplyr::pull(phylum)
+
+    res <- res %>%
+        dplyr::filter(phylum %in% all_phyla_to_keep) %>%
+        ## remove the obviously vertebrates and terrestrial arthropods
+        dplyr::anti_join(taxa_to_rm, by = c("phylum", "family")) %>%
+        dplyr::anti_join(taxa_to_rm, by = c("phylum", "class")) %>%
+        ## remove some vertebrates identified at higher level in the scientificname
+        ## field
+        dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
+        dplyr::left_join(list_phyla, by = "phylum") %>%
+        dplyr::select(-phylum,  phylum = common_phylum)
+
+    res
+}
+
+summary_idigbio_mms <- function(idig_mms) {
+    idig_mms %>%
+        dplyr::count(phylum)
+}
