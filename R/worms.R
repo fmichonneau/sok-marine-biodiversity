@@ -128,7 +128,19 @@ store_synonyms <- function(store_path = "data/storr_worms_synonyms") {
 ## Storr for the higher classification: given a WoRMS id, what is the
 ## higher classification
 fetch_hook_worms_classification <- function(key, namespace) {
-    worrms::wm_classification(as.integer(key))
+    .fetch_hook <- function(key) worrms::wm_classification(as.integer(key))
+    res <- try(.fetch_hook(key), silent = TRUE)
+    attempts <- 0
+    pred <- inherits(res, "try-error")
+    while (pred && attempts <= 3) {
+        v3("sleeping ... attempt ", attempts)
+        Sys.sleep(exp(runif(1) * attempts))
+        res <- try(.fetch_hook(key), silent = TRUE)
+        pred <- inherits(res, "try-error")
+        attempts <- attempts + 1
+    }
+    if (pred) stop(res)
+    else return(res)
 }
 
 store_worms_classification <- function(store_path = "data/storr_worms_classification") {
