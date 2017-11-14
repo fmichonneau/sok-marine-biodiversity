@@ -156,68 +156,104 @@ create_records_db <- function(coords, db_table) {
 }
 
 
-extract_inverts_from_db <- function(db_table, list_phyla, geo) {
+add_worms_to_db <- function(db_table) {
+    db <- sok_db()
+
+     ## Drop table if it already exists
+    if (db_has_table(db, glue::glue("{db_table}_worms")))
+        db_drop_table(db, glue::glue("{db_table}_worms"))
+
+    v3(glue::glue("Creating {db_table}_worms ... "), appendLF = FALSE)
+    dbExecute(db, glue::glue("CREATE TABLE {db_table}_worms AS ",
+                             "SELECT * FROM {db_table} ",
+                             "WHERE (within_eez IS TRUE OR ",
+                             "  within_pnw IS TRUE OR within_gom IS TRUE);"))
+    dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ",
+                             "ADD PRIMARY KEY (uuid);"))
+    dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_worms (scientificname)"))
+    v3("DONE.")
+
+    v3(glue::glue("Fetching WoRMS info for {db_table}_worms ..."), appendLF = FALSE)
+     ## get all species names, clean them up, and get worms info
+    if (grepl("idigbio", db_table)) {
+        wrm_res <- dbSendQuery(db, glue::glue("SELECT DISTINCT scientificname FROM {db_table}_worms;")) %>%
+            dbFetch() %>%
+            all_idigbio_species_name_cleanup() %>%
+            dplyr::mutate(cleaned_scientificname = cleanup_species_names(cleaned_scientificname)) %>%
+            dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
+            add_worms(remove_vertebrates = FALSE)
+    } else if (grepl("obis", db_table)){
+        wrm_res <-  dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_worms;")) %>%
+            dbFetch() %>%
+            dplyr::filter(!is.na(aphiaid)) %>%
+            add_worms_by_id(remove_vertebrates = FALSE)
+    } else stop(glue::glue("invalid table name: {db_table}."))
+
+    wrm_res %>%
+        dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
+        dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
+        dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
+                       overwrite = TRUE, indexes = list("scientificname"))
+    v3("DONE.")
+
+    v3(glue::glue("Adding WoRMS info to {db_table}_worms ..."), appendLF = FALSE)
+    ## worms info to idigbio records
+    purrr::map(list("worms_kingdom", "worms_phylum", "worms_class",
+             "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
+        function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ADD COLUMN {x} TEXT DEFAULT NULL;"))
+        )
+    dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ADD COLUMN is_marine BOOL DEFAULT NULL;"))
+    dbExecute(db, glue::glue("UPDATE {db_table}_worms ",
+                             "SET (worms_valid_name, worms_id, is_marine, rank, worms_kingdom, worms_phylum,",
+                             "     worms_class, worms_order, worms_family) = ",
+                             "(SELECT worms_valid_name, worms_id, is_marine, rank, worms_kingdom, ",
+                             "        worms_phylum, worms_class, worms_order, worms_family ",
+                             " FROM {db_table}_species ",
+                             "  WHERE {db_table}_worms.scientificname = {db_table}_species.scientificname);"))
+    db_analyze(db, glue::glue("{db_table}_worms"))
+    v3("DONE.")
+}
+
+filter_by_geo <- function(tbl, geo) {
 
     geo <- match.arg(geo, c("within_eez", "within_gom", "within_pnw"))
     geo <- rlang::sym(geo)
 
-    db <- sok_db() %>%
-        dplyr::tbl(db_table)
-
-    chr_class_to_rm <- chordata_classes_to_rm()
-    chr_fam_to_rm <- chordata_families_to_rm()
-    arth_class_to_rm <- arthropod_classes_to_rm()
-
-    taxa_to_rm <- db %>%
-        dplyr::filter(
-               (phylum == "chordata" &
-                (class %in% chr_class_to_rm |
-                 family %in% chr_fam_to_rm)) |
-               (phylum == "arthropoda" & class %in% arth_class_to_rm)
-               ) %>%
-        dplyr::select(phylum, class, family) %>%
-        dplyr::distinct(phylum, class, family) %>%
-        dplyr::filter(!is.na(family))
-
-    all_phyla_to_keep <- list_phyla %>%
-        dplyr::filter(common_phylum != "to_drop") %>%
-        dplyr::distinct(phylum) %>%
-        dplyr::pull(phylum)
-
-    check_phyla_in_db(db, list_phyla)
-
-    db %>%
+    tbl %>%
         ## First let's keep only the geographic zone of interest
-        dplyr::filter(!!geo) %>%
-        ## let's get the phylum names we need to keep, that will take care
-        ## of plants, fungi, and records with no specified phylum
-        dplyr::filter(phylum %in% all_phyla_to_keep) %>%
-        ## remove the obviously vertebrates and terrestrial arthropods
-        dplyr::anti_join(taxa_to_rm, by = c("phylum", "family")) %>%
-        dplyr::anti_join(taxa_to_rm, by = c("phylum", "class")) %>%
-        ## remove some vertebrates identified at higher level in the scientificname
-        ## field
-        dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
+        dplyr::filter(!!geo)
+}
+
+
+extract_inverts_from_db <- function(db_table, list_phyla, geo) {
+
+    db <- sok_db()
+
+    add_worms_to_db(db_table)
+
+    db_worms <- db %>% tbl(glue::glue("{db_table}_worms"))
+
+    arth_class_to_rm <- tibble::tibble(
+                                    worms_phylum = "arthropoda",
+                                    worms_class = arthropod_classes_to_rm())
+
+    db_worms %>%
+        filter_by_geo(geo) %>%
+        add_sub_kingdom() %>%
+        dplyr::filter(sub_kingdom == "animalia - invertebrates") %>%
+        ## remove insects and other possibly ambiguous arthropods
+        dplyr::anti_join(arth_class_to_rm) %>%
         ## select needed columns
         dplyr::select(uuid, phylum, class, order, family, genus, scientificname,
                       decimallatitude, decimallongitude, datecollected, institutioncode,
                       within_eez, within_gom, within_pnw,
+                      worms_phylum, worms_class, worms_order, worms_family,
+                      worms_valid_name, worms_id, is_marine, rank,
                       dplyr::contains("depth", ignore.case = TRUE)) %>%
         dplyr::collect(n = Inf) %>%
-        dplyr::distinct(uuid, .keep_all = TRUE) %>%
-        dplyr::mutate(cleaned_scientificname = cleanup_species_names(scientificname),
-                      is_binomial = is_binomial(cleaned_scientificname),
-                      datecollected = as.Date(datecollected),
+        dplyr::mutate(datecollected = as.Date(datecollected),
                       uuid = as.character(uuid)) %>%
-        dplyr::left_join(list_phyla, by = "phylum") %>%
-        dplyr::select(-phylum, phylum = common_phylum) %>%
-        add_worms() %>%
-        parse_year() %>%
-        ## redo a filtering to deal with possible name
-        ## collision across kingdoms:
-        dplyr::filter(worms_phylum %in% all_phyla_to_keep)
-
-
+        parse_year()
 }
 
 

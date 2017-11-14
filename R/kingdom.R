@@ -23,136 +23,51 @@ all_idigbio_species_name_cleanup <- . %>%
     ## remove blend, dronen
     dplyr::mutate(cleaned_scientificname = gsub("\\s[a-z]+,\\s[a-z]+", "", cleaned_scientificname))
 
-prepare_idig_stats_by_kingdom <- function(db_table) {
-
-    db <- sok_db()
-
-    ## clean up
-    chordata_classes <- chordata_classes_to_rm()[-match("unknown", chordata_classes_to_rm())]
-    chordata_classes <- glue("(", collapse(paste0("'", chordata_classes, "'"), sep=", "), ")")
-    chordata_families <- glue("(", collapse(paste0("'", chordata_families_to_rm(), "'"), sep = ", "), ")")
-
-    ## Drop table if it already exists
-    if (db_has_table(db, glue::glue("{db_table}_clean")))
-        db_drop_table(db, glue::glue("{db_table}_clean"))
-
-    ## create tables to infer higher classification and whether species are marine
-    dbExecute(db, glue::glue("CREATE TABLE {db_table}_clean AS ",
-                             "SELECT DISTINCT ON (uuid) * FROM {db_table} ",
-                             "WHERE within_eez IS TRUE;"))
-    dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ",
-                             "ADD PRIMARY KEY (uuid);"))
-    dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_clean (scientificname)"))
-    dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
-                             "SET phylum = 'chordata' ",
-                             "WHERE phylum IS NULL AND (",
-                             "class IN {chordata_classes} OR ",
-                             "family IN {chordata_families})"))
-
-    ## get all species names, clean them up, and get worms info
-    q <- dbSendQuery(db, glue::glue("SELECT DISTINCT scientificname FROM {db_table}_clean"))
-    dbFetch(q) %>%
-        all_idigbio_species_name_cleanup() %>%
-        dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
-        dplyr::filter(grepl("\\s", cleaned_scientificname)) %>%
-        dplyr::mutate(is_binomial = is_binomial(cleaned_scientificname)) %>%
-        add_worms(remove_vertebrates = FALSE)  %>%
-        dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
-        dplyr::filter(!is.na(rank)) %>%
-        dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
-        dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
-                       overwrite = TRUE, indexes = list("scientificname"))
-
-    ## worms info to idigbio records
-    purrr::map(list("worms_kingdom", "worms_phylum", "worms_class",
-             "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
-        function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN {x} TEXT DEFAULT NULL;"))
-        )
-    dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN is_marine BOOL DEFAULT NULL;"))
-    dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
-                             "SET (worms_valid_name, worms_id, is_marine, rank, worms_kingdom, worms_phylum,",
-                             "     worms_class, worms_order, worms_family) = ",
-                             "(SELECT worms_valid_name, worms_id, is_marine, rank, worms_kingdom, ",
-                             "        worms_phylum, worms_class, worms_order, worms_family ",
-                             " FROM {db_table}_species ",
-                             "  WHERE {db_table}_clean.scientificname = {db_table}_species.scientificname);"))
+add_sub_kingdom <- function(tbl) {
+    dplyr::mutate(tbl, sub_kingdom = dplyr::case_when(
+                                     (is.na(worms_id) | !is_marine) ~ NA_character_,
+                                     worms_phylum == "chordata" &
+                                     worms_class %in% c("appendicularia",
+                                                        "ascidiacea",
+                                                        "holocephali",
+                                                        "leptocardii",
+                                                        "thaliacea") ~ "animalia - invertebrates",
+                                     worms_phylum == "chordata" &
+                                     worms_class %in% c("actinopterygii",
+                                                        "aves",
+                                                        "elasmobranchii",
+                                                        "mammalia",
+                                                        "myxini",
+                                                        "petromyzonti",
+                                                        "reptilia") ~ "animalia - vertebrates",
+                                     worms_kingdom == "animalia" ~ "animalia - invertebrates",
+                                     worms_kingdom == "chromista" ~ "chromista",
+                                     worms_kingdom == "plantae" ~ "plantae",
+                                     TRUE ~ "others"
+                                     ))
 }
 
-prepare_obis_stats_by_kingdom <- function(db_table) {
-    db <- sok_db()
-
-    if (db_has_table(db, glue::glue("{db_table}_clean")))
-        db_drop_table(db, glue::glue("{db_table}_clean"))
-
-    ## obis data is cleaner than iDigBio and already has worms_id (aphiaid) as a
-    ## column. This aphiaID may not be the one for the accepted name though.
-    v3(glue::glue("Create {db_table}_clean ... "),  appendLF = FALSE)
-    dbExecute(db, glue::glue("CREATE TABLE {db_table}_clean AS ",
-                             "SELECT DISTINCT ON (uuid) * FROM {db_table} ",
-                             "WHERE within_eez IS TRUE;"))
-    dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_clean (aphiaid); "))
-    v3("DONE.")
-
-    ## get worms info from aphiaid
-    v3(glue::glue("Create {db_table}_species ... "), appendLF = FALSE)
-    dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_clean;")) %>%
-        dbFetch() %>%
-        dplyr::filter(!is.na(aphiaid)) %>%
-        add_worms_by_id(remove_vertebrates = FALSE) %>%
-        dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
-        dplyr::filter(!is.na(rank)) %>%
-        dplyr::mutate(worms_kingdom = add_kingdom(worms_id))  %>%
-        dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
-                       overwrite = TRUE, indexes = list("aphiaid"))
-    v3("DONE.")
-
-    ## worms info to idigbio records
-    v3(glue::glue("Adding worms info to {db_table}_clean ..."), appendLF = FALSE)
-    purrr::map(list("worms_kingdom", "worms_phylum", "worms_class",
-             "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
-        function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN {x} TEXT DEFAULT NULL;"))
-        )
-    dbExecute(db, glue::glue("ALTER TABLE {db_table}_clean ADD COLUMN is_marine BOOL DEFAULT NULL;"))
-    dbExecute(db, glue::glue("UPDATE {db_table}_clean ",
-                             "SET (worms_valid_name, worms_id, is_marine, rank, worms_kingdom, worms_phylum,",
-                             "     worms_class, worms_order, worms_family) = ",
-                             "(SELECT worms_valid_name, worms_id, is_marine, rank, worms_kingdom, ",
-                             "        worms_phylum, worms_class, worms_order, worms_family ",
-                             " FROM {db_table}_species ",
-                             "  WHERE {db_table}_clean.aphiaid = {db_table}_species.aphiaid);"))
-    v3("DONE.")
-
-}
-
-add_sub_kingdom <- function(db_table) {
-    db <- sok_db()
-
-    tbl <- tbl(db, db_table)
-
-    tbl %>%
-        dplyr::filter(is_marine) %>%
-        dplyr::filter(!is.na(worms_id)) %>%
-        dplyr::mutate(sub_kingdom = case_when(
-                          worms_phylum == "chordata" &
-                          worms_class %in% c("appendicularia",
-                                             "ascidiacea",
-                                             "holocephali",
-                                             "leptocardii",
-                                             "thaliacea") ~ "animalia - invertebrates",
-                          worms_phylum == "chordata" &
-                          worms_class %in% c("actinopterygii",
-                                             "aves",
-                                             "elasmobranchii",
-                                             "mammalia",
-                                             "myxini",
-                                             "petromyzonti",
-                                             "reptilia") ~ "animalia - vertebrates",
-                          worms_kingdom == "animalia" ~ "animalia - invertebrates",
-                          worms_kingdom == "chromista" ~ "chromista",
-                          worms_kingdom == "plantae" ~ "plantae",
-                          TRUE ~ "others"
-                      ))
-
+get_kingdom_worms_stats <- function(worms_stats) {
+  wrm <- worms_stats %>%
+    ## we don't need it here, as we split vertebrates/invertebrates below
+    dplyr::filter(phylum != "Chordata - inverts") %>%
+    dplyr::mutate(sub_kingdom = case_when(
+                    tolower(kingdom) %in% c("fungi", "protozoa", "bacteria",
+                                            "archaea", "viruses", "biota incertae sedis") ~ "others",
+                    TRUE ~ tolower(kingdom)
+                  )) %>%
+    dplyr::group_by(sub_kingdom) %>%
+    dplyr::summarize(
+             n_spp = sum(accepted_species_marine_non_fossil)
+           ) %>%
+    dplyr::bind_rows(
+             data_frame(
+               sub_kingdom =  "animalia - vertebrates",
+               n_spp = n_vertebrates)
+           )
+  wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - n_vertebrates
+  wrm[wrm$sub_kingdom == "animalia", "sub_kingdom"] <- "animalia - invertebrates"
+  wrm
 }
 
 calc_kingdom_diversity <- function(worms_stats) {
@@ -161,6 +76,7 @@ calc_kingdom_diversity <- function(worms_stats) {
     n_vertebrates <- 19741
 
     get_n_spp <- . %>%
+        dplyr::filter(within_eez) %>%
         dplyr::group_by(sub_kingdom) %>%
         dplyr::summarize(
                    n_samples = n(),
@@ -168,31 +84,14 @@ calc_kingdom_diversity <- function(worms_stats) {
         ) %>%
         dplyr::collect()
 
-    wrm <- worms_stats %>%
-        ## we don't need it here, as we split vertebrates/invertebrates below
-        dplyr::filter(phylum != "Chordata - inverts") %>%
-        dplyr::mutate(sub_kingdom = case_when(
-                          tolower(kingdom) %in% c("fungi", "protozoa", "bacteria",
-                                                  "archaea", "viruses", "biota incertae sedis") ~ "others",
-                          TRUE ~ tolower(kingdom)
-                      )) %>%
-        dplyr::group_by(sub_kingdom) %>%
-        dplyr::summarize(
-                   n_spp = sum(accepted_species_marine_non_fossil)
-               ) %>%
-        dplyr::bind_rows(
-            data_frame(
-                sub_kingdom =  "animalia - vertebrates",
-                n_spp = n_vertebrates)
-        )
-    wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - n_vertebrates
-    wrm[wrm$sub_kingdom == "animalia", "sub_kingdom"] <- "animalia - invertebrates"
+    wrm <- get_kingdom_worms_stats(worms_stats)
 
     ## diversity comparison
-    bind_rows(
-        idigbio = add_sub_kingdom("us_idigbio_clean") %>%
+    dplyr::bind_rows(
+               idigbio = tbl(sok_db(), "us_idigbio_wwororms") %>%
+                   add_sub_kingdom("us_idigbio_worms") %>%
             get_n_spp(),
-        obis =  add_sub_kingdom("us_obis_clean") %>%
+        obis =  add_sub_kingdom("us_obis_worms") %>%
             get_n_spp(),
         worms = wrm,
         .id = "database") %>%

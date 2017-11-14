@@ -132,7 +132,10 @@ obis_data_types <- function() {
                 "class", "TEXT",
                 "depth", "REAL",
                 "minimumDepthInMeters", "REAL",
-                "maximumDepthInMeters", "REAL"
+                "maximumDepthInMeters", "REAL",
+                "within_eez", "BOOLEAN",
+                "within_gom", "BOOLEAN",
+                "within_pnw", "BOOLEAN"
             ) %>%
         dplyr::mutate(name = tolower(name))
 }
@@ -200,5 +203,6 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
     db_analyze(sok_db(), db_table)
     db_commit(sok_db())
+    add_within_polygon_to_db(db_table)
     on.exit(NULL)
 }
