@@ -24,8 +24,8 @@ all_idigbio_species_name_cleanup <- . %>%
     dplyr::mutate(cleaned_scientificname = gsub("\\s[a-z]+,\\s[a-z]+", "", cleaned_scientificname))
 
 add_sub_kingdom <- function(tbl) {
-    dplyr::mutate(tbl, sub_kingdom = dplyr::case_when(
-                                     (is.na(worms_id) | !is_marine) ~ NA_character_,
+    dplyr::mutate(tbl, sub_kingdom = case_when(
+                                     is.na(worms_id)  ~ NA_character_,
                                      worms_phylum == "chordata" &
                                      worms_class %in% c("appendicularia",
                                                         "ascidiacea",
