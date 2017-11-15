@@ -139,29 +139,30 @@ add_dbs_info <- function(tbl, combined_species, map) {
         dplyr::left_join(dplyr::select(combined_species,
                                        worms_id, idigbio, obis, n_bold_records),
                          by = "worms_id") %>%
+        dplyr::arrange(worms_valid_name) %>%
         dplyr::mutate(
                    info_idigbio = purrr::map(worms_valid_name,
                       function(wm_nm) {
                           v3("worms name: ", wm_nm)
                           .idig <- store_idigbio_species_occurrences()$get(tolower(wm_nm))
                           if (nrow(.idig) < 1)
-                              return(as_tibble(list(
-                                  n_idigbio_total = NA,
-                                  n_idigbio_no_geo = NA,
-                                  n_idigbio_geo_us = NA,
-                                  n_idigbio_country_us = NA
-                              )))
+                              return(tibble::tibble(
+                                  n_idigbio_total = 0,
+                                  n_idigbio_no_geo = 0,
+                                  n_idigbio_geo_us = 0,
+                                  n_idigbio_country_us = 0
+                              ))
                           .idig <- .idig %>%
                               dplyr::rename(decimallatitude = geopoint.lat,
                                             decimallongitude = geopoint.lon) %>%
                               is_within_eez_records(map = map)
-                          as_tibble(list(
+                          tibble::tibble(
                               n_idigbio_total = nrow(.idig),
                               n_idigbio_no_geo = sum(is.na(.idig$decimallatitude) |
                                                      is.na(.idig$decimallongitude)),
-                              n_idigbio_geo_us = sum(.idig$within_eez),
-                              n_idigbio_country_us = sum(.idig$country == "united states")
-                          ))
+                              n_idigbio_geo_us = sum(.idig$is_in_eez),
+                              n_idigbio_country_us = sum(.idig$country == "united states", na.rm = TRUE)
+                          )
                       }),
 
                    info_obis = purrr::map(worms_id,
@@ -170,29 +171,29 @@ add_dbs_info <- function(tbl, combined_species, map) {
                           .obis <- store_obis_occurrences()$get(as.character(wid))
                           if (is.null(.obis))
                               return(
-                                  as_tibble(list(
-                                      n_obis_total = NA,
-                                      n_obis_no_geo = NA,
-                                      n_obis_geo_us = NA
-                                  ))
+                                  tibble::tibble(
+                                      n_obis_total = 0,
+                                      n_obis_no_geo = 0,
+                                      n_obis_geo_us = 0
+                                  )
                               )
 
                           .obis <- .obis %>%
                               dplyr::rename(decimallatitude = decimalLatitude,
                                             decimallongitude = decimalLongitude) %>%
                               is_within_eez_records(map = map)
-
                           ## OBIS doesn't store country info directly, sometimes
                           ## included in locality but difficult to parse.
-                          as_tibble(list(
+                          tibble::tibble(
                               n_obis_total = nrow(.obis),
                               n_obis_no_geo = sum(is.na(.obis$decimallatitude) |
                                                   is.na(.obis$decimallongitude)),
                               n_obis_geo_us = sum(.obis$is_in_eez)
-                          ))
+                          )
                       })
                ) %>%
-        tidyr::unnest()
+         tidyr::unnest()
+
 }
 
 
