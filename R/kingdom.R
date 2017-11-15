@@ -88,7 +88,7 @@ calc_kingdom_diversity <- function(worms_stats) {
 
     ## diversity comparison
     dplyr::bind_rows(
-               idigbio = tbl(sok_db(), "us_idigbio_wwororms") %>%
+               idigbio = tbl(sok_db(), "us_idigbio_worms") %>%
                    add_sub_kingdom("us_idigbio_worms") %>%
             get_n_spp(),
         obis =  add_sub_kingdom("us_obis_worms") %>%
