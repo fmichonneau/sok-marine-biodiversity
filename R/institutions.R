@@ -14,6 +14,8 @@ calc_institutions <- function(idig_records, obis_records) {
                           institutioncode == "am" ~ "The American Museum of Natural History",
                           institutioncode == "ncsm" ~ "The North Carolina Museum of Natural Sciences",
                           institutioncode == "magnt" ~ "Northern Territory Museum and Art Gallery",
+                          institutioncode == "nrm" ~ "Swedish Museum of Natural History",
+                          institutioncode == "inhs" ~ "Illinois Natural History Survey",
                           TRUE ~ "problem"
                       )) %>%
         purrr::pwalk(function(Institution, ...) {
