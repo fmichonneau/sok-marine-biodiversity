@@ -224,9 +224,14 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
 }
 
 keep_marine_species_only <- function(wrm_tbl) {
-    stopifnot(exists("rank", wrm_tbl) &&
-              exists("is_marine", wrm_tbl) &&
-              exists("worms_id", wrm_tbl))
+    if (inherits(wrm_tbl, "tbl_dbi")) {
+        stopifnot(length(setdiff(c("rank", "is_marine", "worms_id"),
+                                 colnames(wrm_tbl))) == 0L)
+    } else {
+        stopifnot(exists("rank", wrm_tbl) &&
+                  exists("is_marine", wrm_tbl) &&
+                  exists("worms_id", wrm_tbl))
+    }
 
     wrm_tbl %>%
         dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
