@@ -29,7 +29,7 @@ init <- function() {
 
 ## control output level based on verbosity level
 
-options(verbose_level = 1L)
+options(verbose_level = 3L)
 verbose <- function(..., level) {
     stopifnot(identical(length(level), 1L),
               is.integer(level))
