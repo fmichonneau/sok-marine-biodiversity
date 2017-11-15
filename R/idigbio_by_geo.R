@@ -159,7 +159,7 @@ create_records_db <- function(coords, db_table) {
 add_worms_to_db <- function(db_table) {
     db <- sok_db()
 
-     ## Drop table if it already exists
+    ## Drop table if it already exists
     if (db_has_table(db, glue::glue("{db_table}_worms")))
         db_drop_table(db, glue::glue("{db_table}_worms"))
 
@@ -183,23 +183,49 @@ add_worms_to_db <- function(db_table) {
             dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
             add_worms(remove_vertebrates = FALSE)
         join_q <- glue::glue("WHERE {db_table}_worms.scientificname = {db_table}_species.scientificname")
+        idx <- list("cleaned_scientificname")
+        types <- structure(c("TEXT", "TEXT", "TEXT",
+                             "TEXT", "BOOLEAN", "TEXT", "BOOLEAN", "TEXT",
+                             "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"),
+                           .Names = c("scientificname", "cleaned_scientificname", "worms_id",
+                             "worms_valid_name", "is_fuzzy", "rank", "is_marine",
+                             "worms_phylum", "worms_class", "worms_order",
+                             "worms_family", "phylum", "worms_kingdom")
+                           )
     } else if (grepl("obis", db_table)){
-        dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_worms (aphia_id)"))
+        dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ALTER aphiaid TYPE TEXT;"))
+        dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_worms (aphiaid)"))
         wrm_res <-  dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_worms;")) %>%
             dbFetch() %>%
             dplyr::filter(!is.na(aphiaid)) %>%
             add_worms_by_id(remove_vertebrates = FALSE)
-        join_q <- glue::glue("WHERE {db_table}_worms.worms_id = {db_table}_species.worms_id")
+        join_q <- glue::glue("WHERE {db_table}_worms.aphiaid = {db_table}_species.worms_id")
+        idx <- list("worms_id")
+        types <- structure(c("TEXT", "TEXT", "BOOLEAN",
+                             "TEXT", "TEXT", "TEXT",  "TEXT",
+                             "TEXT", "TEXT", "TEXT", "TEXT", "TEXT"),
+                           .Names = c("aphiaid", "worms_id", "is_marine",
+                             "worms_valid_name", "rank", "is_fuzzy",
+                             "worms_phylum", "worms_class", "worms_order",
+                             "worms_family", "phylum", "worms_kingdom")
+                           )
     } else stop(glue::glue("invalid table name: {db_table}."))
 
     wrm_res %>%
         dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
         dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
-                       overwrite = TRUE, indexes = list("cleaned_scientificname", "worms_id"))
+                       overwrite = TRUE, indexes = idx, types = types)
+    dbExecute(db, glue::glue("DELETE FROM {db_table}_species a USING (
+      SELECT MIN(ctid) as ctid, worms_id
+        FROM {db_table}_species
+        GROUP BY worms_id HAVING COUNT(*) > 1
+      ) dups
+      WHERE a.worms_id = dups.worms_id
+      AND a.ctid <> dups.ctid"))
     v3("DONE.")
 
     v3(glue::glue("Adding WoRMS info to {db_table}_worms ... "), appendLF = FALSE)
-    ## worms info to idigbio records
+    ## add worms info to records
     purrr::map(list("worms_kingdom", "worms_phylum", "worms_class",
              "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
         function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ADD COLUMN {x} TEXT DEFAULT NULL;"))
@@ -254,7 +280,7 @@ extract_inverts_from_db <- function(db_table, geo) {
                       dplyr::contains("depth", ignore.case = TRUE)) %>%
         dplyr::collect(n = Inf) %>%
         ## remove insects and other possibly ambiguous arthropods
-        dplyr::anti_join(arth_class_to_rm) %>%
+        dplyr::anti_join(arth_class_to_rm, by = c("worms_phylum", "worms_class")) %>%
         dplyr::mutate(datecollected = as.Date(datecollected),
                       uuid = as.character(uuid)) %>%
         dplyr::filter(!is.na(worms_phylum)) %>%
