@@ -225,7 +225,7 @@ filter_by_geo <- function(tbl, geo) {
 }
 
 
-extract_inverts_from_db <- function(db_table, list_phyla, geo) {
+extract_inverts_from_db <- function(db_table, geo) {
 
     db <- sok_db()
 
@@ -240,9 +240,8 @@ extract_inverts_from_db <- function(db_table, list_phyla, geo) {
     db_worms %>%
         filter_by_geo(geo) %>%
         add_sub_kingdom() %>%
-        dplyr::filter(sub_kingdom == "animalia - invertebrates") %>%
-        ## remove insects and other possibly ambiguous arthropods
-        dplyr::anti_join(arth_class_to_rm) %>%
+        dplyr::filter(sub_kingdom == "animalia - invertebrates",
+                      is_marine) %>%
         ## select needed columns
         dplyr::select(uuid, phylum, class, order, family, genus, scientificname,
                       decimallatitude, decimallongitude, datecollected, institutioncode,
@@ -251,8 +250,11 @@ extract_inverts_from_db <- function(db_table, list_phyla, geo) {
                       worms_valid_name, worms_id, is_marine, rank,
                       dplyr::contains("depth", ignore.case = TRUE)) %>%
         dplyr::collect(n = Inf) %>%
+        ## remove insects and other possibly ambiguous arthropods
+        dplyr::anti_join(arth_class_to_rm) %>%
         dplyr::mutate(datecollected = as.Date(datecollected),
                       uuid = as.character(uuid)) %>%
+        dplyr::filter(!is.na(worms_phylum)) %>%
         parse_year()
 }
 
