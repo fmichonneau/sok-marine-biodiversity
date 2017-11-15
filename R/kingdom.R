@@ -76,7 +76,8 @@ calc_kingdom_diversity <- function(worms_stats) {
     n_vertebrates <- 19741
 
     get_n_spp <- . %>%
-        dplyr::filter(within_eez) %>%
+        filter_by_geo("within_eez") %>%
+        keep_marine_species_only() %>%
         dplyr::group_by(sub_kingdom) %>%
         dplyr::summarize(
                    n_samples = n(),
