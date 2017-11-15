@@ -85,8 +85,13 @@ add_classification <- function(data) {
     res
 }
 
-add_kingdom <- function(x) {
-    x <- as.character(x)
-    res <- store_worms_classification()$mget(x)
-    vapply(res, function(x) dplyr::pull(x, scientificname)[1] %>% tolower(), character(1))
+add_kingdom <- function(wid) {
+    wid <- as.character(wid)
+    res <- store_worms_classification()$mget(wid)
+    vapply(res, function(x) {
+        ## should only be for "Biota" wid == 1
+        if (!exists("scientificname", x))
+            return(NA_character_)
+        dplyr::pull(x, scientificname)[1] %>% tolower()
+    }, character(1))
 }
