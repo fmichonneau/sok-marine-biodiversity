@@ -48,6 +48,10 @@ add_sub_kingdom <- function(tbl) {
 }
 
 get_kingdom_worms_stats <- function(worms_stats) {
+
+ ## retrieved from http://www.marinespecies.org/aphia.php?p=browser&id=1821#ct
+ n_vertebrates <- 19741
+
   wrm <- worms_stats %>%
     ## we don't need it here, as we split vertebrates/invertebrates below
     dplyr::filter(phylum != "Chordata - inverts") %>%
@@ -72,8 +76,7 @@ get_kingdom_worms_stats <- function(worms_stats) {
 
 calc_kingdom_diversity <- function(worms_stats) {
 
-    ## retrieved from http://www.marinespecies.org/aphia.php?p=browser&id=1821#ct
-    n_vertebrates <- 19741
+    db <- sok_db()
 
     get_n_spp <- . %>%
         filter_by_geo("within_eez") %>%
@@ -89,12 +92,13 @@ calc_kingdom_diversity <- function(worms_stats) {
 
     ## diversity comparison
     dplyr::bind_rows(
-               idigbio = tbl(sok_db(), "us_idigbio_worms") %>%
-                   add_sub_kingdom("us_idigbio_worms") %>%
-            get_n_spp(),
-        obis =  add_sub_kingdom("us_obis_worms") %>%
-            get_n_spp(),
-        worms = wrm,
+               idigbio = tbl(db, "us_idigbio_worms") %>%
+                   add_sub_kingdom() %>%
+                   get_n_spp(),
+            obis =  tbl(db, "us_obis_worms") %>%
+                add_sub_kingdom() %>%
+                get_n_spp(),
+            worms = wrm,
         .id = "database") %>%
         dplyr::group_by(database) %>%
         dplyr::mutate(prop_spp = n_spp/sum(n_spp),
@@ -126,6 +130,8 @@ plot_kingdom_samples <- function(kng) {
 
 calc_kingdom_stats <- function() {
 
+    db <- sok_db()
+
     get_median <- . %>%
         group_by(sub_kingdom, worms_phylum, worms_valid_name) %>%
         summarize(
@@ -139,10 +145,12 @@ calc_kingdom_stats <- function() {
         )
 
     dplyr::bind_rows(
-        idigbio = add_sub_kingdom("us_idigbio_clean") %>%
-            get_median(),
-        obis =  add_sub_kingdom("us_obis_clean") %>%
-            get_median(),
+               idigbio =  tbl(db, "us_idigbio_worms") %>%
+                   add_sub_kingdom() %>%
+                   get_median(),
+            obis =  tbl(db, "us_obis_clean") %>%
+                add_sub_kingdom() %>%
+                get_median(),
         .id = "database")
 }
 
