@@ -285,10 +285,6 @@ targets:
   idigbio_us_inverts_records_species:
     command: keep_marine_species_only(idigbio_us_inverts_records_all)
 
-  idigbio_records_higher_classification:
-    command: prepare_idig_stats_by_kingdom(I("us_idigbio"))
-    depends: idigbio_us_inverts_records_all
-
   idigbio_iucn:
     command: add_iucn_status(idigbio_us_inverts_records_species)
 
@@ -321,23 +317,19 @@ targets:
   obis_us_inverts_records_species:
     command: keep_marine_species_only(obis_us_inverts_records_all)
 
-  obis_records_higher_classification:
-    command: prepare_obis_stats_by_kingdom(I("us_obis"))
-    depends: obis_us_inverts_records_all
-
   ## Kingdom statistics --------------------------------------------------------
 
   kingdom_diversity:
     command: calc_kingdom_diversity(worms_stats)
     depends:
-      - idigbio_records_higher_classification
-      - obis_records_higher_classification
+      - idigbio_us_inverts_records_all
+      - obis_us_inverts_records_all
 
   kingdom_stats:
     command: calc_kingdom_stats()
     depends:
-      - idigbio_records_higher_classification
-      - obis_records_higher_classification
+      - idigbio_us_inverts_records_all
+      - obis_us_inverts_records_all
 
   figures/plot_kingdom_diversity.pdf:
     command: plot_kingdom_diversity(kingdom_diversity)
