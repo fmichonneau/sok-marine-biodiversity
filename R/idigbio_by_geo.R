@@ -170,29 +170,32 @@ add_worms_to_db <- function(db_table) {
                              "  within_pnw IS TRUE OR within_gom IS TRUE);"))
     dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ",
                              "ADD PRIMARY KEY (uuid);"))
-    dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_worms (scientificname)"))
     v3("DONE.")
 
     v3(glue::glue("Fetching WoRMS info for {db_table}_worms ... "), appendLF = FALSE)
      ## get all species names, clean them up, and get worms info
     if (grepl("idigbio", db_table)) {
+        dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_worms (scientificname)"))
         wrm_res <- dbSendQuery(db, glue::glue("SELECT DISTINCT scientificname FROM {db_table}_worms;")) %>%
             dbFetch() %>%
             all_idigbio_species_name_cleanup() %>%
             dplyr::mutate(cleaned_scientificname = cleanup_species_names(cleaned_scientificname)) %>%
             dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
             add_worms(remove_vertebrates = FALSE)
+        join_q <- glue::glue("WHERE {db_table}_worms.scientificname = {db_table}_species.scientificname")
     } else if (grepl("obis", db_table)){
+        dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_worms (aphia_id)"))
         wrm_res <-  dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_worms;")) %>%
             dbFetch() %>%
             dplyr::filter(!is.na(aphiaid)) %>%
             add_worms_by_id(remove_vertebrates = FALSE)
+        join_q <- glue::glue("WHERE {db_table}_worms.worms_id = {db_table}_species.worms_id")
     } else stop(glue::glue("invalid table name: {db_table}."))
 
     wrm_res %>%
         dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
         dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
-                       overwrite = TRUE, indexes = list("scientificname"))
+                       overwrite = TRUE, indexes = list("cleaned_scientificname", "worms_id"))
     v3("DONE.")
 
     v3(glue::glue("Adding WoRMS info to {db_table}_worms ... "), appendLF = FALSE)
@@ -201,6 +204,7 @@ add_worms_to_db <- function(db_table) {
              "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
         function(x) dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ADD COLUMN {x} TEXT DEFAULT NULL;"))
         )
+
     dbExecute(db, glue::glue("ALTER TABLE {db_table}_worms ADD COLUMN is_marine BOOL DEFAULT NULL;"))
     dbExecute(db, glue::glue("UPDATE {db_table}_worms ",
                              "SET (worms_valid_name, worms_id, is_marine, rank, worms_kingdom, worms_phylum,",
@@ -208,7 +212,7 @@ add_worms_to_db <- function(db_table) {
                              "(SELECT worms_valid_name, worms_id, is_marine, rank, worms_kingdom, ",
                              "        worms_phylum, worms_class, worms_order, worms_family ",
                              " FROM {db_table}_species ",
-                             "  WHERE {db_table}_worms.scientificname = {db_table}_species.scientificname);"))
+                             " {join_q} );"))
     db_analyze(db, glue::glue("{db_table}_worms"))
     v3("DONE.")
 }
