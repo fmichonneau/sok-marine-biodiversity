@@ -173,7 +173,7 @@ add_worms_to_db <- function(db_table) {
     dbExecute(db, glue::glue("CREATE INDEX ON {db_table}_worms (scientificname)"))
     v3("DONE.")
 
-    v3(glue::glue("Fetching WoRMS info for {db_table}_worms ..."), appendLF = FALSE)
+    v3(glue::glue("Fetching WoRMS info for {db_table}_worms ... "), appendLF = FALSE)
      ## get all species names, clean them up, and get worms info
     if (grepl("idigbio", db_table)) {
         wrm_res <- dbSendQuery(db, glue::glue("SELECT DISTINCT scientificname FROM {db_table}_worms;")) %>%
@@ -190,13 +190,12 @@ add_worms_to_db <- function(db_table) {
     } else stop(glue::glue("invalid table name: {db_table}."))
 
     wrm_res %>%
-        dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
         dplyr::mutate(worms_kingdom = add_kingdom(worms_id)) %>%
         dplyr::copy_to(db, ., name = glue::glue("{db_table}_species"), temporary = FALSE,
                        overwrite = TRUE, indexes = list("scientificname"))
     v3("DONE.")
 
-    v3(glue::glue("Adding WoRMS info to {db_table}_worms ..."), appendLF = FALSE)
+    v3(glue::glue("Adding WoRMS info to {db_table}_worms ... "), appendLF = FALSE)
     ## worms info to idigbio records
     purrr::map(list("worms_kingdom", "worms_phylum", "worms_class",
              "worms_order", "worms_family", "worms_valid_name", "worms_id", "rank"),
