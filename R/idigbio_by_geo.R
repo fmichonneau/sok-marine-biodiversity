@@ -353,47 +353,59 @@ make_plot_idigbio_records_per_date <- function(idig, to_keep = c("Echinodermata"
 get_idigbio_mms_records <- function(list_phyla) {
     db <- sok_db()
     res <- dbSendQuery(db, glue::glue(
-                                     "SELECT * FROM us_idigbio WHERE \"data.dwc:recordedBy\" ~* '(\\y(mms|blm)\\y)' ",
+                                     "SELECT * FROM us_idigbio_worms ",
+                                     "WHERE \"data.dwc:recordedBy\" ~* '(\\y(mms|blm)\\y)' ",
                                      "AND within_eez IS TRUE")
                        ) %>%
         dbFetch()
 
-    chr_class_to_rm <- chordata_classes_to_rm()
-    chr_fam_to_rm <- chordata_families_to_rm()
-    arth_class_to_rm <- arthropod_classes_to_rm()
+    arth_class_to_rm <- tibble::tibble(
+                                    worms_phylum = "arthropoda",
+                                    worms_class = arthropod_classes_to_rm())
 
-    taxa_to_rm <- db %>%
-        dplyr::filter(
-               (phylum == "chordata" &
-                (class %in% chr_class_to_rm |
-                 family %in% chr_fam_to_rm)) |
-               (phylum == "arthropoda" & class %in% arth_class_to_rm)
-               ) %>%
-        dplyr::select(phylum, class, family) %>%
-        dplyr::distinct(phylum, class, family) %>%
-        dplyr::filter(!is.na(family))
 
-    all_phyla_to_keep <- list_phyla %>%
-        dplyr::filter(common_phylum != "to_drop",
-                      !is.na(phylum)) %>%
-        dplyr::distinct(phylum) %>%
-        dplyr::pull(phylum)
-
-    res <- res %>%
-        dplyr::filter(phylum %in% all_phyla_to_keep) %>%
-        ## remove the obviously vertebrates and terrestrial arthropods
-        dplyr::anti_join(taxa_to_rm, by = c("phylum", "family")) %>%
-        dplyr::anti_join(taxa_to_rm, by = c("phylum", "class")) %>%
-        ## remove some vertebrates identified at higher level in the scientificname
-        ## field
-        dplyr::filter(!scientificname %in% c("chordata", "pisces", "vertebrata", "agnatha")) %>%
+    res %>%
+        add_sub_kingdom() %>%
+        dplyr::filter(sub_kingdom == "animalia - invertebrates",
+                      is_marine) %>%
+        ## remove ambiguous arthropods
+        dplyr::anti_join(arth_class_to_rm, by = c("worms_phylum", "worms_class")) %>%
         dplyr::left_join(list_phyla, by = "phylum") %>%
-        dplyr::select(-phylum,  phylum = common_phylum)
+        dplyr::filter(!is.na(worms_phylum)) %>%
+        parse_year()
 
-    res
 }
 
 summary_idigbio_mms <- function(idig_mms) {
     idig_mms %>%
         dplyr::count(phylum)
+}
+
+mms_samples_through_time <- function(idig_mms) {
+    idigbio_mms_records %>%
+        dplyr::filter(!is.na(year)) %>%
+        dplyr::count(worms_phylum, year) %>%
+        dplyr::group_by(year) %>%
+        dplyr::arrange(dplyr::desc(n), .by_group = TRUE) %>%
+        dplyr::top_n(5, n) %>%
+        dplyr::ungroup() %>%
+        ggplot() + geom_col(aes(x = year, y = n, fill = worms_phylum))
+}
+
+list_species_only_collected_by_mms <- function(idig_mms, idig_recs) {
+    ## remove the blm/mms records from full iDigBio list
+    idig_res_no_mms <- dplyr::anti_join(idig_recs, idig_mms, by = "uuid")
+
+    ## extract species for blm/mms set
+    idig_mms_spp <- idig_mms %>%
+        dplyr::filter(rank == "Species" |
+                      rank == "Subspecies") %>%
+        dplyr::distinct(worms_phylum, worms_valid_name)
+    ## extract species for iDigBio list that doesn't contain blm/mms records
+    idig_no_mms_spp <- dplyr::distinct(idig_res_no_mms, worms_phylum, worms_valid_name)
+
+    ## remove species from
+    dplyr::anti_join(idig_mms_spp, idig_no_mms_spp,
+                     by = c("worms_phylum", "worms_valid_name")) %>%
+        tibble::as_tibble()
 }
