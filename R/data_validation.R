@@ -29,7 +29,7 @@ validate_records <- function(recs) {
         stop("Duplicated uuid")
 
     ## all records are within the EEZ
-    within_eez <- all(recs$is_in_eez)
+    within_eez <- all(recs$within_eez)
 
     if (!within_eez)
         stop("Stop records aren't within the EEZ")
