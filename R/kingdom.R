@@ -29,13 +29,13 @@ add_sub_kingdom <- function(tbl) {
                                      worms_phylum == "chordata" &
                                      worms_class %in% c("appendicularia",
                                                         "ascidiacea",
-                                                        "holocephali",
                                                         "leptocardii",
                                                         "thaliacea") ~ "animalia - invertebrates",
                                      worms_phylum == "chordata" &
                                      worms_class %in% c("actinopterygii",
                                                         "aves",
                                                         "elasmobranchii",
+                                                        "holocephali",
                                                         "mammalia",
                                                         "myxini",
                                                         "petromyzonti",
