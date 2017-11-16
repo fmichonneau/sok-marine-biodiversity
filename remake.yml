@@ -294,7 +294,7 @@ targets:
   ## iDigBio MMS/BLM records
   idigbio_mms_records:
     command: get_idigbio_mms_records(list_phyla)
-    depends: idigbio_database
+    depends: idigbio_us_inverts_records_all
 
   idigbio_mms_summary:
     command: summary_idigbio_mms(idigbio_mms_records)
