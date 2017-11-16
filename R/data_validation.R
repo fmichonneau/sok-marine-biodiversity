@@ -17,7 +17,7 @@ assert_all_marine <- assert_column("is_marine", check_all_true = TRUE)
 assert_all_in_worms <- assert_column("worms_id", check_all_true = FALSE)
 
 
-validate_records <- function(recs, list_phyla) {
+validate_records <- function(recs) {
 
     recs_name <- deparse(substitute(recs))
     v1("Working with: ", recs_name)
@@ -33,15 +33,6 @@ validate_records <- function(recs, list_phyla) {
 
     if (!within_eez)
         stop("Stop records aren't within the EEZ")
-
-    ## only phyla from list are represented (and they are all represented)
-    recs_phyla <- unique(recs$phylum)
-
-    check_phyla <- all(recs_phyla %in% list_phyla$common_phylum[list_phyla$common_phylum != "to_drop"]) &&
-        length(setdiff(recs_phyla, list_phyla$common_phylum[list_phyla$common_phylum != "to_drop"])) == 0L
-
-    if (!check_phyla)
-        stop("Some phyla aren't what they should be.")
 
     ## only records with non-empty worms_valid_name field
     only_accepted_worms <- sum(is.na(recs$worms_valid_name)) == 0L

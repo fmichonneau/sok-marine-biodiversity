@@ -880,10 +880,10 @@ targets:
 ### Data validation ------------------------------------------------------------
 
   validate_idigbio_records:
-    command: validate_records(idigbio_us_inverts_records_species, list_phyla)
+    command: validate_records(idigbio_us_inverts_records_species)
 
   validate_obis_records:
-    command: validate_records(obis_us_inverts_records_species, list_phyla)
+    command: validate_records(obis_us_inverts_records_species)
 
   validate_idigbio_coords_usa:
     command: validate_idigbio_store(coords_usa)
