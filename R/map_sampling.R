@@ -273,7 +273,22 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
     gg_r <- split(gg_r, gg_r$year)
     gg_r <- lapply(gg_r, data_map, raster)
     gg_r <- bind_rows(gg_r, .id = "year")
-    gg_r <- dplyr::select(gg_r, year, x, y, value = n_samples)
+
+
+    cum_n_smpl <- gg_r %>%
+        dplyr::mutate(n_samples = replace(n_samples, is.na(n_samples), 0L)) %>%
+        split(gg_r$year) %>%
+        purrr::map(pluck, "n_samples") %>%
+        purrr::transpose() %>%
+        purrr::map(cumsum) %>%
+        purrr::transpose() %>%
+        purrr::simplify_all() %>%
+        tibble::as_tibble() %>%
+        tidyr::gather() %>%
+        dplyr::select(cum_n_samples = value)
+
+    gg_r <- bind_cols(gg_r, cum_n_smpl)
+    gg_r <- dplyr::select(gg_r, year, x, y, value = n_samples, cum_n_samples)
 
     state <- maps::map("world", fill = TRUE, plot = FALSE)
 
@@ -295,10 +310,10 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
     state_map <- fortify(state)
 
     gg_split <- split(gg_r, gg_r$year)
-    ts_l <- lapply(gg_split, function(x) {
+    ts_l <- parallel::mclapply(gg_split, function(x) {
 
         bubbles_start <- x %>%
-            dplyr::filter(!is.na(value)) %>%
+            dplyr::filter(!is.na(x)) %>%
             dplyr::mutate(color = "red",
                           size = 10 * value,
                           alpha = 1)
@@ -310,7 +325,8 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
         tf <- tweenr::tween_states(ts, tweenlength = 3, statelength = 1,
                                    ease = "quadratic-out", nframes = n_frames)
         tf
-    })
+    }, mc.cores = getOption("mc.cores"))
+
     tf <- bind_rows(ts_l, .id = "year_frame") %>%
         dplyr::mutate(year_frame = as.integer(year_frame),
                       cum_frame = n_frames * (year_frame - min(year_frame)),
@@ -318,8 +334,7 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
                       x_year = -100, y_year = 40)
 
     p <- ggplot(data = tf, aes(frame = full_frame)) +
-        geom_raster(data = gg_r, aes(x = x, y = y, fill = value), na.rm = TRUE,
-                    inherit.aes = FALSE) +
+        geom_raster(aes(x = x, y = y, fill = cum_n_samples)) +
         scale_fill_gradient2(low = "#5E98AE", mid = "#E3C94A", high = "#D5331E",
                              midpoint = mid_point,
                              breaks = c(1, 10, 100, 1000, 5000), trans = "log",
@@ -332,7 +347,8 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
         geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
                      colour = "gray30", binwidth = 500, size = .1,
                      inherit.aes = FALSE) +
-        geom_point(aes(x, y, color = color, size = size, alpha = alpha)) +
+        geom_point(data = dplyr::filter(tf, !is.na(value)),
+                   aes(x, y, color = color, size = size, alpha = alpha)) +
         scale_size(range = c(3, 25), guide = FALSE) +
         scale_colour_identity(guide = FALSE) +
         scale_alpha(guide = FALSE) +
@@ -341,6 +357,6 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
         theme(legend.title = element_blank()) +
         xlab("Longitude") + ylab("Latitude")
 
-    animation::ani.options(ani.width = 1600, ani.height = 900, interval = 1/24)
+    animation::ani.options(ani.width = 1600, ani.height = 900, interval = 1/30)
     gganimate::gganimate(p, file)
 }
