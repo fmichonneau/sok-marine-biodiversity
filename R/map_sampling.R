@@ -262,12 +262,10 @@ animated_map <- function(recrds, file = "/tmp/sampling_map.mp4")  {
     gganimate::gganimate(p, file)
 }
 
-
-
-bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
+get_bubble_map_data <- function(recrds, raster) {
 
     ## number of frames per year:
-    n_frames <- 20
+    n_frames <- 15
 
     gg_r <- recrds
     gg_r <- split(gg_r, gg_r$year)
@@ -275,6 +273,7 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
     gg_r <- bind_rows(gg_r, .id = "year")
 
 
+    ## get the cumulative number of samples per year
     cum_n_smpl <- gg_r %>%
         dplyr::mutate(n_samples = replace(n_samples, is.na(n_samples), 0L)) %>%
         split(gg_r$year) %>%
@@ -290,24 +289,6 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
     gg_r <- bind_cols(gg_r, cum_n_smpl)
     gg_r <- dplyr::select(gg_r, year, x, y, value = n_samples, cum_n_samples)
 
-    state <- maps::map("world", fill = TRUE, plot = FALSE)
-
-    ## convert the 'map' to something we can work with via geom_map
-    IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
-    state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
-
-    us_bathy <- suppressMessages(getNOAA.bathy(lon1 = -128, lon2 = -60,
-                                               lat1 = 22, lat2 = 51,
-                                               keep = TRUE)) %>%
-        fortify() %>%
-        filter(z < 0 & z > -1500)
-
-    mid_point <-  log(quantile(seq(min(gg_r$value, na.rm = TRUE),
-                                   max(gg_r$value, na.rm = TRUE),
-                                   by = 1), .02))
-
-    ## this does the magic for geom_map
-    state_map <- fortify(state)
 
     gg_split <- split(gg_r, gg_r$year)
     ts_l <- parallel::mclapply(gg_split, function(x) {
@@ -324,14 +305,58 @@ bubble_map <- function(recrds, file = "/tmp/sampling_map.mp4", raster)  {
         ts <- list(bubbles_start, bubbles_end)
         tf <- tweenr::tween_states(ts, tweenlength = 3, statelength = 1,
                                    ease = "quadratic-out", nframes = n_frames)
-        tf
-    }, mc.cores = getOption("mc.cores"))
+        tibble::as_tibble(tf) %>%
+            dplyr::filter(!is.na(value) |
+                          cum_n_samples > 0L)
+    }, mc.cores = getOption("mc.cores")-1)
 
-    tf <- bind_rows(ts_l, .id = "year_frame") %>%
+    dplyr::bind_rows(ts_l, .id = "year_frame") %>%
+        dplyr::mutate_if(is.factor, as.character) %>%
         dplyr::mutate(year_frame = as.integer(year_frame),
                       cum_frame = n_frames * (year_frame - min(year_frame)),
                       full_frame = .frame + cum_frame,
-                      x_year = -100, y_year = 40)
+                      x_year = -100, y_year = 40) %>%
+            readr::write_csv("data/bubble_map_data.csv")
+}
+
+
+bubble_map <- function(tf, file = "/tmp/sampling_map.mp4")  {
+    tf <- readr::read_csv(tf, col_types = cols(
+                                  year_frame = col_integer(),
+                                  year = col_character(),
+                                  x = col_double(),
+                                  y = col_double(),
+                                  value = col_integer(),
+                                  cum_n_samples = col_double(), #to accomodate sci notation
+                                  color = col_character(),
+                                  size = col_double(),
+                                  alpha = col_double(),
+                                  .frame = col_integer(),
+                                  cum_frame = col_integer(),
+                                  full_frame = col_double(),
+                                  x_year = col_double(),
+                                  y_year = col_double()
+                              )
+                          )
+
+    state <- maps::map("world", fill = TRUE, plot = FALSE)
+
+    ## convert the 'map' to something we can work with via geom_map
+    IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
+    state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
+
+    us_bathy <- suppressMessages(getNOAA.bathy(lon1 = -128, lon2 = -60,
+                                               lat1 = 22, lat2 = 51,
+                                               keep = TRUE)) %>%
+        fortify() %>%
+        filter(z < 0 & z > -1500)
+
+    mid_point <-  log(quantile(seq(min(tf$cum_n_samples, na.rm = TRUE),
+                                   max(tf$cum_n_samples, na.rm = TRUE),
+                                   by = 1), .02))
+
+    ## this does the magic for geom_map
+    state_map <- fortify(state)
 
     p <- ggplot(data = tf, aes(frame = full_frame)) +
         geom_raster(aes(x = x, y = y, fill = cum_n_samples)) +
