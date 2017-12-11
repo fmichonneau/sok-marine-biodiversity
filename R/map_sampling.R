@@ -1,11 +1,11 @@
 
-raster_from_map <- function(map) {
+raster_from_map <- function(map, res = .2) {
     bbox <- round(lawn::lawn_bbox(map), 0)
     ## let's make the bounding box a little larger to accommodate rounding:
     raster::raster(vals = NA,
                    xmn = bbox[1] - 1, ymn = bbox[2] - 1,
                    xmx = bbox[3] + 1, ymx = bbox[4] + 1,
-                   res = .2)
+                   res = res)
 }
 
 add_rastercell <- function(d, raster) {
