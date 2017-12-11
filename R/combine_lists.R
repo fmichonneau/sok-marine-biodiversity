@@ -6,7 +6,7 @@ deduplicate_records <- function(data) {
                         worms_valid_name, approx_lat, approx_lon,
                         datecollected, .keep_all = TRUE) %>%
         dplyr::select(worms_phylum, worms_class, worms_order, worms_family,
-                      worms_valid_name, decimallatitude,
+                      worms_valid_name, rank, decimallatitude,
                       decimallongitude, datecollected, year,
                       within_eez, within_gom, within_pnw) %>%
         dplyr::rename(phylum = worms_phylum)
