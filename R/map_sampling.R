@@ -216,51 +216,7 @@ make_heatmap_by_phylum <- function(recs, file, raster, base_map) {
 }
 
 
-animated_map <- function(recrds, file = "/tmp/sampling_map.mp4")  {
 
-    gg_r <- split(recrds, recrds$year)
-    gg_r <- lapply(gg_r, data_map)
-    gg_r <- bind_rows(gg_r, .id = "year")
-    gg_r <- dplyr::select(gg_r, year, x, y, value = n_samples)
-
-    state <- maps::map("world", fill = TRUE, plot = FALSE)
-
-    ## convert the 'map' to something we can work with via geom_map
-    IDs <- sapply(strsplit(state$names, ":"), function(x) x[1])
-    state <- map2SpatialPolygons(state, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
-
-    us_bathy <- suppressMessages(getNOAA.bathy(lon1 = -128, lon2 = -60,
-                                               lat1 = 22, lat2 = 51,
-                                               keep = TRUE)) %>%
-        fortify() %>%
-        filter(z < 0 & z > -1500)
-
-    mid_point <-  log(quantile(seq(min(gg_r$value, na.rm = TRUE),
-                                   max(gg_r$value, na.rm = TRUE),
-                                   by = 1), .02))
-
-    ## this does the magic for geom_map
-    state_map <- fortify(state)
-
-    p <- ggplot() +
-        geom_raster(data = gg_r, aes(x = x, y = y, fill = value, frame = year), na.rm = TRUE) +
-        scale_fill_gradient2(low = "#5E98AE", mid = "#E3C94A", high = "#D5331E",
-                             midpoint = mid_point,
-                             breaks = c(1, 10, 100, 1000, 5000), trans = "log",
-                             na.value = NA) +
-        geom_map(data=state_map, map=state_map,
-                 aes(map_id=id),
-                 fill="gray20", colour = "gray20", size = .05) +
-        geom_contour(data = us_bathy, aes(x = x, y = y, z = z),
-                     colour = "gray30", binwidth = 500, size = .1) +
-        coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
-        theme_bw(base_family = "Ubuntu Condensed") +
-        theme(legend.title = element_blank()) +
-        xlab("Longitude") + ylab("Latitude")
-
-    animation::ani.options(ani.width = 1200, ani.height =  800, interval = .2)
-    gganimate::gganimate(p, file)
-}
 
 get_bubble_map_data <- function(recrds, raster) {
 
