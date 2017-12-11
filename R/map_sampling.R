@@ -218,7 +218,7 @@ make_heatmap_by_phylum <- function(recs, file, raster, base_map) {
 
 
 
-get_bubble_map_data <- function(recrds, raster) {
+get_bubble_map_data <- function(recrds, raster, out = "data/bubble_map_data.csv") {
 
     ## number of frames per year:
     n_frames <- 15
@@ -272,7 +272,16 @@ get_bubble_map_data <- function(recrds, raster) {
                       cum_frame = n_frames * (year_frame - min(year_frame)),
                       full_frame = .frame + cum_frame,
                       x_year = -100, y_year = 40) %>%
-            readr::write_csv("data/bubble_map_data.csv")
+            readr::write_csv(out)
+}
+
+get_bubble_map_species <- function(recrds) {
+    recrds %>%
+        dplyr::filter(rank %in% c("Species", "Subspecies")) %>%
+        dplyr::group_by(worms_valid_name) %>%
+        dplyr::filter(year == min(year)) %>%
+        dplyr::slice(1) %>%
+        dplyr::ungroup()
 }
 
 
