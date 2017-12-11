@@ -297,8 +297,14 @@ targets:
     command: get_idigbio_mms_records(list_phyla)
     depends: idigbio_us_inverts_records_all
 
-  idigbio_mms_summary:
-    command: summary_idigbio_mms(idigbio_mms_records)
+  idigbio_mms_summary_by_phylum:
+    command: summary_idigbio_mms_by_phylum(idigbio_mms_records)
+
+  idigbio_mms_summary_by_year:
+    command: summary_idigbio_mms_by_year(idigbio_mms_records)
+
+  idigbio_mms_species_only:
+    command: list_species_only_collected_by_mms(idigbio_mms_records, idigbio_us_inverts_records_species)
 
   ## OBIS ----------------------------------------------------------------------
   obis_database:
@@ -980,6 +986,10 @@ targets:
       - itis_molluscs_in_dbs
       - itis_crustaceans_in_dbs
       - idigbio_stats
+      - idigbio_mms_records
+      - idigbio_mms_summary_by_year
+      - idigbio_mms_summary_by_phylum
+      - idigbio_mms_species_only
       - institution_contributions
       ## figures
       - figures/plot_kingdom_diversity.pdf

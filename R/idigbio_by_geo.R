@@ -376,10 +376,16 @@ get_idigbio_mms_records <- function(list_phyla) {
 
 }
 
-summary_idigbio_mms <- function(idig_mms) {
+summary_idigbio_mms_by_phylum <- function(idig_mms) {
     idig_mms %>%
-        dplyr::count(phylum)
+        dplyr::count(phylum, sort = TRUE)
 }
+
+summary_idigbio_mms_by_year <- function(idig_mms) {
+    idig_mms %>%
+        dplyr::count(year)
+}
+
 
 mms_samples_through_time <- function(idig_mms) {
     idigbio_mms_records %>%
@@ -401,7 +407,8 @@ list_species_only_collected_by_mms <- function(idig_mms, idig_recs) {
         dplyr::filter(rank == "Species" |
                       rank == "Subspecies") %>%
         dplyr::distinct(worms_phylum, worms_valid_name)
-    ## extract species for iDigBio list that doesn't contain blm/mms records
+
+    ## extract species for iDigBio list that don't contain blm/mms records
     idig_no_mms_spp <- dplyr::distinct(idig_res_no_mms, worms_phylum, worms_valid_name)
 
     ## remove species from
