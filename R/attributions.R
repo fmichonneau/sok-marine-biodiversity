@@ -19,21 +19,21 @@ store_idigbio_uuid <- function(coords, store_path = "data/storr_idigbio_uuid") {
 ## data downloaded during the geographic searches.
 idigbio_attribution <- function(idig) {
     stopifnot(exists("uuid", idig))
-    map_df(idig$uuid, function(uu) {
-        rec <- store_idigbio_uuid()$get(uu)
-        attribution <- attr(rec, "attribution")
-        if (length(attribution) == 0L) return(NULL)
-        if (length(attribution) == 1L)
-        attribution[[1]] %>%
-            purrr::map_if(is.null,  ~ NA_character_) %>%
-            as_tibble %>%
-            ## remove nested info, not needed for our purposes
-            dplyr::select_if(is.atomic) %>%
-            dplyr::distinct()
-    }) %>%
-        dplyr::rename(recordset_uuid = uuid) %>%
-        dplyr::group_by(recordset_uuid) %>%
-        dplyr::mutate(itemCount = n()) %>%
-        dplyr::distinct()
+    store_idigbio_uuid()$mget(idig$uuid) %>%
+       map_df(function(uu) {
+           attribution <- attr(uu, "attribution")
+           if (length(attribution) == 0L) return(NULL)
+           if (length(attribution) == 1L)
+               attribution[[1]] %>%
+                   purrr::map_if(is.null,  ~ NA_character_) %>%
+                   as_tibble %>%
+                   ## remove nested info, not needed for our purposes
+                   dplyr::select_if(is.atomic) %>%
+                   dplyr::distinct()
+       }) %>%
+           dplyr::rename(recordset_uuid = uuid) %>%
+           dplyr::group_by(recordset_uuid) %>%
+           dplyr::mutate(itemCount = n()) %>%
+           dplyr::distinct()
 
 }
