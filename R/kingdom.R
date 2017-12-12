@@ -1,5 +1,6 @@
 
-all_idigbio_species_name_cleanup <- . %>%
+all_idigbio_species_name_cleanup <- function(x) {
+    x %>%
     ## remove non-ascii characters
     dplyr::mutate(cleaned_scientificname = iconv(scientificname, "latin1", "ASCII", sub = "")) %>%
     ## remove subsp. foo
@@ -22,6 +23,7 @@ all_idigbio_species_name_cleanup <- . %>%
     dplyr::mutate(cleaned_scientificname = gsub("([a-z]+,\\s)?[a-z]+\\sand\\s[a-z]+", "", cleaned_scientificname)) %>%
     ## remove blend, dronen
     dplyr::mutate(cleaned_scientificname = gsub("\\s[a-z]+,\\s[a-z]+", "", cleaned_scientificname))
+}
 
 add_sub_kingdom <- function(tbl) {
     dplyr::mutate(tbl, sub_kingdom = case_when(
