@@ -280,7 +280,7 @@ targets:
     command: extract_inverts_from_db(db_table=I("us_idigbio"), geo=I("within_eez"))
     depends: idigbio_database
 
-  idigbio_us_inverts_records_all_depths:
+  idigbio_us_inverts_records_all_with_depth:
     command: add_depth(idigbio_us_inverts_records_all, map=map_usa)
 
   idigbio_us_inverts_records_species:
@@ -319,7 +319,7 @@ targets:
     depends: obis_database
 
   obis_us_inverts_records_all_with_depth:
-    command: add_depth(obis_us_inverts_records_all)
+    command: add_depth(obis_us_inverts_records_all, map = map_usa)
 
   obis_us_inverts_records_species:
     command: keep_marine_species_only(obis_us_inverts_records_all)
@@ -952,8 +952,10 @@ targets:
     depends:
       - idigbio_us_inverts_records_species
       - idigbio_us_inverts_records_all
+      - idigbio_us_inverts_records_all_with_depth
       - obis_us_inverts_records_species
       - obis_us_inverts_records_all
+      - obis_us_inverts_records_all_with_depth
       - kingdom_diversity
       - kingdom_stats
       - idigbio_gom_records

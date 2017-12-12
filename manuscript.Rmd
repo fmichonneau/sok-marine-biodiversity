@@ -119,10 +119,20 @@ n_spp_east <- combined_records %>%
 n_spp_west <- combined_records %>%
     dplyr::filter(is_west_coast == TRUE) %>%
     count_spp
+
+prop_idigbio_continental_shelf <-
+   mean(idigbio_us_inverts_records_all_with_depth$marmap_depth < 0 &
+        idigbio_us_inverts_records_all_with_depth$marmap_depth > -200) * 100 %>%
+   format_output()
+
+prop_obis_continental_shelf <-
+    mean(obis_us_inverts_records_all_with_depth$marmap_depth < 0 &
+         obis_us_inverts_records_all_with_depth$marmap_depth > -200) * 100 %>%
+    format_output()
 ```
 
 
-Most samples have been collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A). More records have been collected from the Atlantic Ocean, than the Gulf of Mexico, and the Pacific Ocean (`r format(sum(combined_records$is_east_coast), big.mark=",")`, `r format(sum(combined_records$is_in_gom), big.mark=",")`, and `r format(sum(combined_records$is_west_coast), big.mark=",")` records respectively). The highest species richness has been recorded from the Gulf of Mexico (`r format(n_spp_gom, big.mark=",")` species), followed by the Atlantic Ocean (`r format(n_spp_east, big.mark=",")` species), and the Pacific Ocean (`r format(n_spp_west, big.mark=",")` species).
+Most samples have been collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A), with `r prop_idigbio_continental_shelf`% (iDigBio) and `r prop_obis_continental shelf`% (OBIS) of the records collected between 0-200m. More records have been collected from the Atlantic Ocean, than the Gulf of Mexico, and the Pacific Ocean (`r format(sum(combined_records$is_east_coast), big.mark=",")`, `r format(sum(combined_records$is_in_gom), big.mark=",")`, and `r format(sum(combined_records$is_west_coast), big.mark=",")` records respectively). The highest species richness has been recorded from the Gulf of Mexico (`r format(n_spp_gom, big.mark=",")` species), followed by the Atlantic Ocean (`r format(n_spp_east, big.mark=",")` species), and the Pacific Ocean (`r format(n_spp_west, big.mark=",")` species).
 
 
 Spatial distribution of species richness with latitude differ markedly between the Pacific and the Atlantic coasts. On the Pacific coast, richness is lowest around 40° of latitude, whereas on the Atlantic coast, it is highest at the same latitude (Fig. \@ref(fig:map-diversity-sampling)B, Fig. \@ref(fig:latitudinal-gradient)).
