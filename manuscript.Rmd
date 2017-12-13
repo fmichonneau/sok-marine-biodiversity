@@ -34,13 +34,14 @@ Until very recently, our knowledge of biodiversity was scattered among heterogen
 We focus on the continental US because the marine biodiversity is extensively documented as the result of a long history of studies by governmental, academic, and private institutions [@Fautin2010]. The continental US includes a wide diversity of marine ecosystems from the Florida Keys, to the Gulf of Maine on the East Coast; and from the arid Southern California to the oceanic shores of the Pacific Northwest on the West coast. With estuaries, bays, sandy beaches, rocky shores, and coral reefs, the US coastlines harbors many biota. While the continental shelf extends for several hundred kilometers on the East coast, it is narrow on the West coast. This diversity of habitats and bathymetric profiles, combined with efforts at the national level to make data publicly available, make this region especially suitable to evaluate how much we know about marine biodiversity using biodiversity repositories. Additionally, apart from the syntheses that emerged from the Census of Marine Life efforts [@Costello2010,@Fautin2010], no study has yet attempted to synthesize the current state of knowledge of marine biodiversity across the continental US, and this study is the first using data from public databases.
 
 
-## Results
+## Results and Discussion
 
 
 ### What do we know about marine invertebrates in the US?
 
-We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species (`r n_distinct(na.omit(combined_species$worms_phylum))` phyla) of marine invertebrates in the continental US EEZ by combining  `r format(nrow(idigbio_records), big.mark=",")` museum records from iDigBio (`r format(n_distinct(idigbio_records$worms_valid_name), big.mark = ",")` species, `r n_distinct(na.omit(idigbio_records$worms_phylum))` phyla), and `r format(nrow(obis_records), big.mark=",")` records from OBIS (`r format(n_distinct(obis_records$worms_valid_name), big.mark=",")` species,
-`r n_distinct(na.omit(obis_records$worms_phylum))` phyla). Extant marine invertebrates occurring in the US represent less than `r format_output(nrow(idigbio_records)/idigbio_stats$total_no_fossil*100)`% of the total number of non-fossil iDigBio records (`r round(idigbio_stats$total_no_fossil/1e6, 1)` million), and `r format_output(nrow(idigbio_records)/idigbio_stats$usa_no_fossil*100)`% of the US records (`r round(idigbio_stats$usa_no_fossil/1e6, 1)` million). Marine invertebrates that occur in the US represent 4.1% of the 48 million occurrence records in OBIS.
+We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species (`r n_distinct(na.omit(combined_species$worms_phylum))` phyla) of marine invertebrates in the continental US EEZ by combining  `r format(nrow(idigbio_us_inverts_records_species), big.mark=",")` museum records from iDigBio (`r format(n_distinct(idigbio_us_inverts_records_species$worms_valid_name), big.mark = ",")` species, `r n_distinct(na.omit(idigbio_us_inverts_records_species$worms_phylum))` phyla), and `r format(nrow(obis_us_inverts_records_species), big.mark=",")` records from OBIS (`r format(n_distinct(obis_us_inverts_records_species$worms_valid_name), big.mark=",")` species,
+`r n_distinct(na.omit(obis_us_inverts_records_species$worms_phylum))` phyla). 
+
 
 ```{r kingdom-stats}
 get_vert_prop <- function(db) {
@@ -79,24 +80,32 @@ print.xtableList(institution_contributions, colnames.format = "multiple",
                  table.placement = "!ht", comment = FALSE)
 ```
 
-Marine invertebrates are underrepresented in iDigBio and OBIS given their diversity. We compared the total number of species represented in iDigBio and OBIS for each major division of life to the total described diversity based on the WoRMS estimates[@worms-stats]. While marine vertebrates represent  `r total_vert_prop`% of the global diversity, they represent `r idigbio_vert_prop`% and `r obis_vert_prop`% of the species in iDigBio and OBIS respectively (Fig. \@ref(fig:kingdom-diversity-plot)). This underrepresentation is also apparent in the collecting effort: the median number of specimens in iDigBio per species ranges between `r kng_medians %>% filter(sub_kingdom=="animalia") %>% pull(rg)` for invertebrate phyla, but is `r kng_medians %>% filter(sub_kingdom=="animalia - vertebrates") %>% pull(rg)` for vertebrates.
+
+
+Marine invertebrates are underrepresented in iDigBio and OBIS. This underrepresentation is manifest in the small fraction of records that marine invertebrates represent. Extant marine invertebrates occurring in the US EEZ represent  `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$total_no_fossil*100)`% of the total number of non-fossil iDigBio records (`r round(idigbio_stats$total_no_fossil/1e6, 1)` million), and `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$usa_no_fossil*100)`% of the US records (`r round(idigbio_stats$usa_no_fossil/1e6, 1)` million). Marine invertebrates however represent between 11% and 18% of the described global diversity (number of described marine inverterbrates species: 200,000-210,000 [@Appeltans2012], total number of described species: 1.2-1.9 million [@Mora2011,@Chapman2009]). 
+
+We compared the total number of species represented in iDigBio and OBIS for each major division of life to the total described diversity based on the WoRMS estimates[@worms-stats]. While marine vertebrates represent  `r total_vert_prop`% of the global marine diversity, they represent `r idigbio_vert_prop`% and `r obis_vert_prop`% of the species in iDigBio and OBIS respectively (Fig. \@ref(fig:kingdom-diversity-plot)). This underrepresentation is also apparent in the collecting effort: the median number of specimens in iDigBio per species ranges between `r kng_medians %>% filter(sub_kingdom=="animalia") %>% pull(rg)` for marine invertebrate phyla, but is `r kng_medians %>% filter(sub_kingdom=="animalia - vertebrates") %>% pull(rg)` for marine vertebrates.
 
 ```{r itis-stats}
 prop_molluscs <- itis_molluscs_in_dbs %>%
     dplyr::summarize(
                prop_idigbio_us = format_output(mean(n_idigbio_geo_us > 0,
-                                                    na.rm = TRUE)),
+                                                    na.rm = TRUE)* 100),
                prop_obis_us = format_output(mean(n_obis_geo_us > 0,
-                                                 na.rm = TRUE))
+                                                 na.rm = TRUE) * 100)
            )
 
-
+prop_crustaceans <- itis_crustaceans_in_dbs %>%
+    dplyr::summarize(
+             prop_idigbio_us = format_output(mean(n_idigbio_geo_us > 0,
+                                                  na.rm = TRUE) * 100),
+             prop_obis_us = format_output(mean(n_obis_geo_us > 0,
+                                             na.rm = TRUE) * 100)               
+           )
 ```
 
-To assess the fraction of digitization of the fauna, we compared the species included in iDigBio and OBIS with the comprehensive checklists for molluscs [@turgean1998] and crustaceans[@mclaughlin2005] that are available for the United States. For molluscs, of the `r nrow(itis_molluscs_in_dbs)` species included in the checklist, 
+To assess the fraction of digitization of the fauna, we compared the species included in iDigBio and OBIS with the comprehensive checklists for molluscs [@turgeon1998] and crustaceans [@mclaughlin2005] that are available for the United States. For molluscs, of the `r format(nrow(itis_molluscs_in_dbs), big.mark=",")` species included in the checklist, `r prop_molluscs$prop_idigbio_us`% are in iDigBio and `r prop_molluscs$prop_obis_us`% are in OBIS. For crustaceans, of the `r format(nrow(itis_crustaceans_in_dbs), big.mark=",")` species included in the checklist, `r prop_crustaceans$prop_idigbio_us`% are in iDigBio and `r prop_crustaceans$prop_obis_us`% are in OBIS.
 
-
-<!-- find checklists for fish, birds, mammals to compare with -->
 
 ```{r kingdom-diversity-plot, fig.cap='Comparison of the proportions of the diversity represented in iDigBio and OBIS  with the global diversity (as reported by WoRMS) for each kingdom. Vertebrates are overrepresented, while other animal groups are underpresented. Total number of species for each category are indicated next to the bars.(\\#fig:kingdom-diversity-plot)'}
 knitr::include_graphics("figures/plot_kingdom_diversity.pdf")
