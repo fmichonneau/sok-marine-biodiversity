@@ -30,6 +30,7 @@ is_within_map_records <- function(area) {
         if (nrow(filtered_data) < 1)
             stop("something is wrong")
 
+        browser()
         res_lawn <- filtered_data %>%
             dplyr::mutate(
                        lat = round(decimallatitude, 1),
@@ -40,6 +41,15 @@ is_within_map_records <- function(area) {
             dplyr::filter(!is.na(lat), !is.na(long)) %>%
             dplyr::select(coord_key, lat, long) %>%
             dplyr::distinct(coord_key, .keep_all = TRUE)
+
+        split_coords <- split(simplified_coords, ceiling(seq_len(nrow(simplified_coords))/1000))
+
+        res <- vector("list", length(split_coords))
+        for (i in 1:length(split_coords)) {
+            if (i == 77) browser()
+            message("i", i)
+            res[[i]] <- is_within_map(split_coords[[i]], map)
+        }
 
         res_is_within <- is_within_map(simplified_coords, map)$features$geometry$coordinates %>%
                            purrr::map_df(function(x)
@@ -61,6 +71,47 @@ is_within_map_records <- function(area) {
 is_within_eez_records <- is_within_map_records("eez")
 is_within_pnw_records <- is_within_map_records("pnw")
 is_within_gom_records <- is_within_map_records("gom")
+
+
+test_within <- function(d, map_name) {
+    map_name <- match.arg(map_name, c("usa", "gom", "pnw"))
+
+    stopifnot(exists(c("decimallatitude", "decimallongitude"), d))
+
+    temp_name <- glue::collapse(c("temp_coords_", format(Sys.time(), "%Y%m%d%H%M%S")))
+    db <- sok_db()
+    on.exit(dbDrop(db, temp_name))
+
+    d_to_insert <- dplyr::select(d,
+                       decimallatitude,
+                       decimallongitude) %>%
+        dplyr::filter(!is.na(decimallatitude),
+                      !is.na(decimallongitude)) %>%
+        dplyr::mutate(hash = paste(decimallatitude, decimallongitude, sep = "-")) %>%
+        dplyr::distinct(hash, .keep_all = TRUE) %>%
+        dplyr::select(-hash)
+    dbWriteTable(db, temp_name, d_to_insert, temporary = TRUE)
+    dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
+    dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
+
+    dbExecute(db,
+              glue::glue("UPDATE {temp_name} ",
+                         "SET ",
+                         "  geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326);"))
+
+    dbExecute(db,
+              glue::glue(
+                        "UPDATE {temp_name} ",
+                        "SET within_{map_name} = ST_Contains(map_{map_name}, {temp_name}.geom_point) ",
+                        "FROM (SELECT geom_polygon AS map_{map_name} FROM maps WHERE area_id ='map_{map_name}') AS foo;"))
+    q <- dbSendQuery(db, glue::glue("SELECT decimallatitude, decimallongitude, within_{map_name} FROM {temp_name}"))
+    res <- dbFetch(q)
+    dbClearResult(q)
+
+    col_nm <- rlang::sym(glue::glue("within_{map_name}"))
+
+    dplyr::left_join(d, res, by = c("decimallatitude", "decimallongitude"))
+}
 
 
 ### this approach was way too slow!
