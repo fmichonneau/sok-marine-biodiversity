@@ -26,13 +26,13 @@ calc_institutions <- function(idig_records, obis_records) {
                       "Number of records" = n)
 
     res_obis <- obis_records %>%
+        ## regroup all noaa records
         dplyr::mutate(institutioncode_simple = case_when(
                           grepl("noaa|nmfs|dsc_rtp", institutioncode) ~ "noaa",
                           TRUE ~ institutioncode
                       )) %>%
         dplyr::count(institutioncode_simple, sort = TRUE) %>%
         dplyr::filter(!is.na(institutioncode_simple)) %>%
-        ## regroup all noaa records
         dplyr::top_n(10, n) %>%
         dplyr::mutate(Institution = case_when(
                           institutioncode_simple == "noaa" ~ "National Oceanographic and Atmostpheric Association¹",
@@ -72,11 +72,10 @@ calc_institutions <- function(idig_records, obis_records) {
     capt <- as.character(
         glue::glue(
                   "Top 10 institutions that contribute to the ",
-                  "records used in this study to iDigBio (A) and OBIS (B). ",
+                  "records identified at the species level used in this study to iDigBio (A) and OBIS (B). ",
                   "Federal and States agencies are important contributors to ",
                   "marine biodiversity data. Differences in numbers for the ",
-                  "same data sources across databases are due to data filtering ",
-                  "operated by OBIS.")
+                  "same data sources across databases are due to differences in data quality filters.")
     )
     x_list_tbl <- xtable::xtableList(
                               list_tbl, align = c("lp{12cm}R{3cm}"),
