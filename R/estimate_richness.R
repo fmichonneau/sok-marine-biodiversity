@@ -139,15 +139,15 @@ if (FALSE) {
     predict(pnw_sar_nls, data.frame(area = lawn_area(map_pnw)/1e6))
 
     ## seems fairly reasonable given crudeness of approach
-    all_us <- spp_from_cells(combined_records, usa_raster)
-    usa_sar_nls <- nls(n_spp ~ a*area^z, data = all_us, start = list(a = 5, z = .2))
-    predict(usa_sar_nls, data.frame(area = lawn_area(map_usa)/1e6), se.fit = T)
+    all_us <- spp_from_cells(combined_records, eez_raster)
+    eez_sar_nls <- nls(n_spp ~ a*area^z, data = all_us, start = list(a = 5, z = .2))
+    predict(eez_sar_nls, data.frame(area = lawn_area(map_eez)/1e6), se.fit = T)
 
-    east_us <- spp_from_cells(dplyr::filter(combined_records, is_east_coast), usa_raster)
+    east_us <- spp_from_cells(dplyr::filter(combined_records, is_east_coast), eez_raster)
     east_sar_nls <- nls(n_spp ~ a * area^z,  data = east_us, start = list(a = 5, z = .2))
-    predict(east_sar_nls, data.frame(area = lawn_area(map_usa)/2/1e6))
+    predict(east_sar_nls, data.frame(area = lawn_area(map_eez)/2/1e6))
 
-    west_us <- spp_from_cells(dplyr::filter(combined_records, is_west_coast), usa_raster)
+    west_us <- spp_from_cells(dplyr::filter(combined_records, is_west_coast), eez_raster)
     west_sar_nls <- nls(n_spp ~ a * area^z,  data = west_us, start = list(a = 5, z = .2))
-    predict(west_sar_nls, data.frame(area = lawn_area(map_usa)/2/1e6))
+    predict(west_sar_nls, data.frame(area = lawn_area(map_eez)/2/1e6))
 }

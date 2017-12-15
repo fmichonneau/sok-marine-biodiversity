@@ -1,4 +1,4 @@
-get_map_usa <- function(file) {
+get_map_eez <- function(file) {
     res <- geojsonio::geojson_read(x = file, method = "local", what = "sp")
     geojsonio::geojson_json(res)
 }
@@ -18,69 +18,10 @@ get_map_pnw <- function() {
         geojsonio::geojson_json()
 }
 
-is_within_map <- function(points, map) {
-    pts <- geojsonio::geojson_json(points, geometry = "point",
-                                   lat = "lat", lon = "long")
-    res <- lawn::lawn_within(pts, map)
-    res
-}
-
-is_within_map_records <- function(area) {
-    function(filtered_data, map) {
-        if (nrow(filtered_data) < 1)
-            stop("something is wrong")
-
-        browser()
-        res_lawn <- filtered_data %>%
-            dplyr::mutate(
-                       lat = round(decimallatitude, 1),
-                       long = round(decimallongitude, 1),
-                       coord_key = paste(lat, long, sep = "|"))
-
-        simplified_coords <-  res_lawn %>%
-            dplyr::filter(!is.na(lat), !is.na(long)) %>%
-            dplyr::select(coord_key, lat, long) %>%
-            dplyr::distinct(coord_key, .keep_all = TRUE)
-
-        split_coords <- split(simplified_coords, ceiling(seq_len(nrow(simplified_coords))/1000))
-
-        res <- vector("list", length(split_coords))
-        for (i in 1:length(split_coords)) {
-            if (i == 77) browser()
-            message("i", i)
-            res[[i]] <- is_within_map(split_coords[[i]], map)
-        }
-
-        res_is_within <- is_within_map(simplified_coords, map)$features$geometry$coordinates %>%
-                           purrr::map_df(function(x)
-                                      data.frame(
-                                          coord_key = paste(x[2], x[1], sep = "|"),
-                                          lat = x[2],
-                                          lon = x[1],
-                                          stringsAsFactors = FALSE))
-
-        if (nrow(res_is_within) > 0) {
-            res_lawn[[paste0("is_in_", area)]] <- res_lawn$coord_key %in% res_is_within$coord_key
-        } else {
-            res_lawn[[paste0("is_in_", area)]] <- FALSE
-        }
-        dplyr::select(res_lawn, -lat, -long, -coord_key)
-    }
-}
-
-is_within_eez_records <- is_within_map_records("eez")
-is_within_pnw_records <- is_within_map_records("pnw")
-is_within_gom_records <- is_within_map_records("gom")
-
-
-test_within <- function(d, map_name) {
-    map_name <- match.arg(map_name, c("usa", "gom", "pnw"))
+is_within_map_records <- function(d, map_name) {
+    map_name <- match.arg(map_name, c("eez", "gom", "pnw"))
 
     stopifnot(exists(c("decimallatitude", "decimallongitude"), d))
-
-    temp_name <- glue::collapse(c("temp_coords_", format(Sys.time(), "%Y%m%d%H%M%S")))
-    db <- sok_db()
-    on.exit(dbDrop(db, temp_name))
 
     d_to_insert <- dplyr::select(d,
                        decimallatitude,
@@ -90,6 +31,16 @@ test_within <- function(d, map_name) {
         dplyr::mutate(hash = paste(decimallatitude, decimallongitude, sep = "-")) %>%
         dplyr::distinct(hash, .keep_all = TRUE) %>%
         dplyr::select(-hash)
+
+    if (nrow(d_to_insert) < 1) {
+        d[[glue::glue("within_{map_name}")]] <- rep(NA, nrow(d))
+        return(d)
+    }
+
+    db <- sok_db()
+    temp_name <- glue::collapse(c("temp_coords_", format(Sys.time(), "%Y%m%d%H%M%S")))
+    on.exit(dbDrop(db, temp_name, display = FALSE))
+
     dbWriteTable(db, temp_name, d_to_insert, temporary = TRUE)
     dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
     dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
@@ -113,45 +64,6 @@ test_within <- function(d, map_name) {
     dplyr::left_join(d, res, by = c("decimallatitude", "decimallongitude"))
 }
 
-
-### this approach was way too slow!
-
-## fetch_eez_coords <- function(key, namespace) {
-##     if (is.na(key))
-##         return(NA)
-##     usa_map <- get_usa_map()
-##     coords <- unlist(strsplit(key, ":"))
-##     lat <- as.numeric(coords[1])
-##     lon <- as.numeric(coords[2])
-##     pts <- data.frame(long = lon, lat = lat, stringsAsFactors = FALSE)
-##     pts <- SpatialPoints(pts, proj4string = CRS(proj4string(usa_map)))
-##     in_eez <- !is.na(sp::over(pts, usa_map)$polygonid)
-##     in_eez
-## }
-
-## store_eez_coords <- function(path = "data/eez_coords_storr") {
-##     invisible(storr::storr_external(
-##                          storr::driver_rds(path = path, mangle_key = TRUE),
-##                          fetch_eez_coords)
-##               )
-## }
-
-
-## get_is_in_eez <- function(uuid, long, lat) {
-##     points <- data.frame(
-##         uuid = uuid,
-##         long = long,
-##         lat = lat,
-##         stringsAsFactors = FALSE
-##     )
-##     res <- logical(nrow(points))
-##     pb <- progress::progress_bar$new(total = nrow(points))
-##     for (i in seq_len(nrow(points))) {
-##         if (any(is.na(c(points$lat[i], points$long[i]))))
-##             res[i] <- NA
-##         coords <- paste(points$lat[i], points$long[i], sep = ":")
-##         res[i] <- store_eez_coords()$get(coords)
-##         pb$tick()
-##     }
-##     res
-## }
+is_within_eez_records <- function(d) is_within_map_records(d, "eez")
+is_within_pnw_records <- function(d) is_within_map_records(d, "pnw")
+is_within_gom_records <- function(d) is_within_map_records(d, "gom")

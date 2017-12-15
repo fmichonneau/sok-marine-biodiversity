@@ -1,20 +1,20 @@
-prepare_sampling_effort_data <- function(id, map_gom) {
+prepare_sampling_effort_data <- function(id) {
     id %>%
         dplyr::rename(decimallatitude = y, decimallongitude = x) %>%
-        is_within_gom_records(map_gom) %>%
+        is_within_gom_records() %>%
         dplyr::mutate(region = case_when(
-                          decimallongitude > -100 & is_in_gom == FALSE ~ "atlantic",
-                          decimallongitude > -100 & is_in_gom == TRUE ~ "gom",
+                          decimallongitude > -100 & within_gom == FALSE ~ "atlantic",
+                          decimallongitude > -100 & within_gom == TRUE ~ "gom",
                           decimallongitude < -100 ~ "pacific"
                       )) %>%
         dplyr::rename(latitude = decimallatitude, longitude = decimallongitude)
 }
 
 
-plot_sampling_effort <- function(id, map_gom) {
+plot_sampling_effort <- function(id) {
     id %>%
         dplyr::filter(n_specimen > 0, n_species > 0) %>%
-        prepare_sampling_effort_data(map_gom) %>%
+        prepare_sampling_effort_data() %>%
         ggplot(aes(x = n_specimen, y = n_species,
                    shape = region, colour = latitude)) +
         scale_colour_viridis(option = "magma", direction = -1,
@@ -30,9 +30,9 @@ plot_sampling_effort <- function(id, map_gom) {
 
 ## proportion of cells with less than 500 observations, where the number of
 ## species is within 10% of the number of observations.
-calc_stat_sampling_effort <- function(id, map_gom) {
+calc_stat_sampling_effort <- function(id) {
     res <- id %>%
-        prepare_sampling_effort_data(map_gom) %>%
+        prepare_sampling_effort_data() %>%
         dplyr::mutate(within_90 = (n_species - (n_specimen * .9)) > 0) %>%
         dplyr::filter(n_specimen <= 500) %>%
         dplyr::pull(within_90)

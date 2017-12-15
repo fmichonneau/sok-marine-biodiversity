@@ -134,7 +134,7 @@ crust_name_geo <- function(tbl) {
         add_worms()
 }
 
-add_dbs_info <- function(tbl, combined_species, map) {
+add_dbs_info <- function(tbl, combined_species) {
     tbl %>%
         dplyr::left_join(dplyr::select(combined_species,
                                        worms_id, idigbio, obis, n_bold_records),
@@ -155,12 +155,12 @@ add_dbs_info <- function(tbl, combined_species, map) {
                           .idig <- .idig %>%
                               dplyr::rename(decimallatitude = geopoint.lat,
                                             decimallongitude = geopoint.lon) %>%
-                              is_within_eez_records(map = map)
+                              is_within_eez_records()
                           tibble::tibble(
                               n_idigbio_total = nrow(.idig),
                               n_idigbio_no_geo = sum(is.na(.idig$decimallatitude) |
                                                      is.na(.idig$decimallongitude)),
-                              n_idigbio_geo_us = sum(.idig$is_in_eez),
+                              n_idigbio_geo_us = sum(.idig$within_eez),
                               n_idigbio_country_us = sum(.idig$country == "united states", na.rm = TRUE)
                           )
                       }),
@@ -181,14 +181,14 @@ add_dbs_info <- function(tbl, combined_species, map) {
                           .obis <- .obis %>%
                               dplyr::rename(decimallatitude = decimalLatitude,
                                             decimallongitude = decimalLongitude) %>%
-                              is_within_eez_records(map = map)
+                              is_within_eez_records()
                           ## OBIS doesn't store country info directly, sometimes
                           ## included in locality but difficult to parse.
                           tibble::tibble(
                               n_obis_total = nrow(.obis),
                               n_obis_no_geo = sum(is.na(.obis$decimallatitude) |
                                                   is.na(.obis$decimallongitude)),
-                              n_obis_geo_us = sum(.obis$is_in_eez)
+                              n_obis_geo_us = sum(.obis$within_eez)
                           )
                       })
                ) %>%
@@ -197,7 +197,7 @@ add_dbs_info <- function(tbl, combined_species, map) {
 }
 
 
-crust_name_in_dbs <- function(tbl, combined_species, map) {
+crust_name_in_dbs <- function(tbl, combined_species) {
 
     ## keep only the continental marine species
     select_crust <- tbl %>%
@@ -207,7 +207,7 @@ crust_name_in_dbs <- function(tbl, combined_species, map) {
 
     ## check species that are in the combined US list
     res <- select_crust %>%
-        add_dbs_info(combined_species, map)
+        add_dbs_info(combined_species)
     res
 }
 
@@ -251,10 +251,10 @@ moll_name_geo <- function(tbl) {
         add_worms()
 }
 
-molluscs_name_in_dbs <- function(tbl, combined_species, map) {
+molluscs_name_in_dbs <- function(tbl, combined_species) {
     select_moll <- tbl %>%
         dplyr::filter((north_america | us_atlantic | us_pacific)) %>%
-        add_dbs_info(combined_species, map)
+        add_dbs_info(combined_species)
 }
 
 itis_in_idigbio <- function() {

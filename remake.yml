@@ -73,7 +73,7 @@ targets:
       - data-validation/map_kozloff_idigbio.pdf
       - validate_idigbio_records
       - validate_obis_records
-      - validate_idigbio_coords_usa
+      - validate_idigbio_coords_eez
       - validate_idigbio_coords_gom
       - validate_idigbio_coords_pnw
       ## FIXME - validate_combined_records
@@ -111,7 +111,8 @@ targets:
     command: add_iucn_status(kozloff_worms_species)
 
   kozloff_bold:
-    command: find_bold_records(kozloff_worms_species, I("worms_valid_name"), map_usa)
+    command: find_bold_records(kozloff_worms_species, I("worms_valid_name"))
+    depends: map_eez_db
 
   ## iDigbio -------------------------------------------------------------------
   kozloff_idigbio_raw:
@@ -121,10 +122,12 @@ targets:
     command: filter_raw_records(kozloff_idigbio_raw)
 
   kozloff_idigbio_in_us:
-    command: is_within_eez_records(kozloff_idigbio, map_usa)
+    command: is_within_eez_records(kozloff_idigbio)
+    depends: map_eez_db
 
   kozloff_idigbio_in_pnw:
-    command: is_within_pnw_records(kozloff_idigbio_in_us, map_pnw)
+    command: is_within_pnw_records(kozloff_idigbio_in_us)
+    depends: map_pnw_db
 
   kozloff_spp_records_idigbio:
     command: get_n_records_in_db(kozloff_worms_species, kozloff_idigbio_in_pnw, field_name=I("n_idigbio"), region=I("pnw"))
@@ -141,10 +144,12 @@ targets:
     command: filter_raw_records("data/kozloff_obis.feather")
 
   kozloff_obis_in_us:
-    command: is_within_eez_records(kozloff_obis, map_usa)
+    command: is_within_eez_records(kozloff_obis)
+    depends: map_eez_db
 
   kozloff_obis_in_pnw:
-    command: is_within_pnw_records(kozloff_obis_in_us, map_pnw)
+    command: is_within_pnw_records(kozloff_obis_in_us)
+    depends: map_pnw_db
 
   kozloff_spp_records_obis:
     command: get_n_records_in_db(kozloff_worms_species, kozloff_obis_in_pnw, field_name=I("n_obis"), region=I("pnw"))
@@ -157,10 +162,12 @@ targets:
     command: filter_raw_records("data/kozloff_gbif.feather")
 
   kozloff_gbif_in_us:
-    command: is_within_eez_records(kozloff_gbif, map_usa)
+    command: is_within_eez_records(kozloff_gbif)
+    depends: map_eez_db
 
   kozloff_gbif_in_pnw:
-    command: is_within_pnw_records(kozloff_gbif_in_us, map_pnw)
+    command: is_within_pnw_records(kozloff_gbif_in_us)
+    depends: map_pnw_db
 
   kozloff_spp_records_gbif:
     command: get_n_records_in_db(kozloff_worms_species, kozloff_gbif_in_pnw, field_name=I("n_gbif"), region=I("pnw"))
@@ -193,7 +200,8 @@ targets:
     command: add_iucn_status(gom_worms_species)
 
   gom_bold:
-    command: find_bold_records(gom_worms_species, I("worms_valid_name"), map_usa)
+    command: find_bold_records(gom_worms_species, I("worms_valid_name"))
+    depends: map_eez_db
 
   ## iDigBio -------------------------------------------------------------------
   gom_idigbio_raw:
@@ -203,10 +211,12 @@ targets:
     command: filter_raw_records(gom_idigbio_raw)
 
   gom_idigbio_in_us:
-    command: is_within_eez_records(gom_idigbio, map_usa)
+    command: is_within_eez_records(gom_idigbio)
+    depends: map_eez_db
 
   gom_idigbio_in_gom:
-    command: is_within_gom_records(gom_idigbio_in_us, map_gom)
+    command: is_within_gom_records(gom_idigbio_in_us)
+    depends: map_gom_db
 
   gom_spp_records_idigbio:
     command: get_n_records_in_db(gom_worms_species, gom_idigbio_in_gom, field_name=I("n_idigbio"), region=I("gom"))
@@ -219,10 +229,12 @@ targets:
     command: filter_raw_records("data/gom_obis.feather")
 
   gom_obis_in_us:
-    command: is_within_eez_records(gom_obis, map_usa)
+    command: is_within_eez_records(gom_obis)
+    depends: map_eez_db
 
   gom_obis_in_gom:
-    command: is_within_gom_records(gom_obis_in_us, map_gom)
+    command: is_within_gom_records(gom_obis_in_us)
+    depends: map_gom_db
 
   gom_spp_records_obis:
     command: get_n_records_in_db(gom_worms_species, gom_obis_in_gom, field_name=I("n_obis"), region=I("gom"))
@@ -235,10 +247,12 @@ targets:
     command: filter_raw_records("data/gom_gbif.feather")
 
   gom_gbif_in_us:
-    command: is_within_eez_records(gom_gbif, map_usa)
+    command: is_within_eez_records(gom_gbif)
+    depends: map_eez_db
 
   gom_gbif_in_gom:
-    command: is_within_gom_records(gom_gbif_in_us, map_gom)
+    command: is_within_gom_records(gom_gbif_in_us)
+    depends: map_gom_db
 
   gom_spp_records_gbif:
     command: get_n_records_in_db(gom_worms_species, gom_gbif_in_gom, field_name=I("n_gbif"), region=I("gom"))
@@ -256,23 +270,23 @@ targets:
 
 ### get species list from the US using iDigBio ---------------------------------
 
-  map_usa:
-    command: get_map_usa("data-raw/USA-EEZ/eez.shp")
+  map_eez:
+    command: get_map_eez("data-raw/USA-EEZ/eez.shp")
 
-  map_usa_db:
-    command: insert_map_into_db(map_usa)
+  map_eez_db:
+    command: insert_map_into_db(map_eez)
 
-  usa_raster:
-    command: raster_from_map(map_usa)
+  eez_raster:
+    command: raster_from_map(map_eez)
 
-  coords_usa:
-    command: get_coords_idigbio_query(map_usa)
+  coords_eez:
+    command: get_coords_idigbio_query(map_eez)
 
   ## iDigBio -------------------------------------------------------------------
   idigbio_database:
-    command: create_records_db(coords_usa, db_table=I("us_idigbio"))
+    command: create_records_db(coords_eez, db_table=I("us_idigbio"))
     depends:
-      - map_usa_db
+      - map_eez_db
       - map_gom_db
       - map_pnw_db
 
@@ -281,7 +295,7 @@ targets:
     depends: idigbio_database
 
   idigbio_us_inverts_records_all_with_depth:
-    command: add_depth(idigbio_us_inverts_records_all, map=map_usa)
+    command: add_depth(idigbio_us_inverts_records_all, map=map_eez)
 
   idigbio_us_inverts_records_species:
     command: keep_marine_species_only(idigbio_us_inverts_records_all)
@@ -290,7 +304,8 @@ targets:
     command: add_iucn_status(idigbio_us_inverts_records_species)
 
   idigbio_bold:
-    command: find_bold_records(idigbio_us_inverts_records_species, I("worms_valid_name"), map_usa)
+    command: find_bold_records(idigbio_us_inverts_records_species, I("worms_valid_name"))
+    depends: map_eez_db
 
   ## iDigBio MMS/BLM records
   idigbio_mms_records:
@@ -308,9 +323,9 @@ targets:
 
   ## OBIS ----------------------------------------------------------------------
   obis_database:
-    command: create_obis_db(coords_usa, db_table=I("us_obis"))
+    command: create_obis_db(coords_eez, db_table=I("us_obis"))
     depends:
-      - map_usa_db
+      - map_eez_db
       - map_gom_db
       - map_pnw_db
 
@@ -319,7 +334,7 @@ targets:
     depends: obis_database
 
   obis_us_inverts_records_all_with_depth:
-    command: add_depth(obis_us_inverts_records_all, map = map_usa)
+    command: add_depth(obis_us_inverts_records_all, map = map_eez)
 
   obis_us_inverts_records_species:
     command: keep_marine_species_only(obis_us_inverts_records_all)
@@ -347,7 +362,7 @@ targets:
   ## Contributions by institution ----------------------------------------------
 
   institution_contributions:
-    command: calc_institutions(idigbio_us_inverts_records_all, obis_us_inverts_records_all)
+    command: calc_institutions(idigbio_us_inverts_records_species, obis_us_inverts_records_species)
 
   ## Gulf of Mexico ------------------------------------------------------------
 
@@ -366,7 +381,7 @@ targets:
   idigbio_gom_database:
     command: create_records_db(coords_gom, db_table=I("gom_idigbio"))
     depends:
-      - map_usa_db
+      - map_eez_db
       - map_gom_db
       - map_pnw_db
 
@@ -390,7 +405,8 @@ targets:
     command: combine_records(idigbio = idigbio_gom_records, obis = obis_gom_records)
 
   total_gom_species:
-    command: combine_species_list(idigbio = idigbio_gom_records, obis = obis_gom_records, checklist = gom_worms_species, map_usa = map_usa)
+    command: combine_species_list(idigbio = idigbio_gom_records, obis = obis_gom_records, checklist = gom_worms_species)
+    depends: map_eez_db
 
   total_gom_records:
     command: combine_records(idigbio=idigbio_gom_records, obis=obis_gom_records, checklist=gom_worms_species)
@@ -421,7 +437,7 @@ targets:
   idigbio_pnw_database:
     command: create_records_db(coords_pnw, db_table=I("kozloff_idigbio"))
     depends:
-      - map_usa_db
+      - map_eez_db
       - map_gom_db
       - map_pnw_db
 
@@ -445,7 +461,7 @@ targets:
     command: combine_records(idigbio_pnw_records, obis_pnw_records)
 
   total_pnw_species:
-    command: combine_species_list(idigbio = idigbio_pnw_records, obis = obis_pnw_records, checklist = kozloff_worms_species, map_usa = map_usa)
+    command: combine_species_list(idigbio = idigbio_pnw_records, obis = obis_pnw_records, checklist = kozloff_worms_species)
 
   total_pnw_records:
       command: combine_records(idigbio=idigbio_pnw_records, obis=obis_pnw_records, checklist=kozloff_worms_species)
@@ -462,7 +478,8 @@ targets:
   ## Synthesis -----------------------------------------------------------------
 
   combined_regional_species_list:
-    command: combined_regional_by_geo(gom_worms_species, idigbio_gom_records, obis_gom_records, kozloff_worms_species, idigbio_pnw_records, obis_pnw_records, map_usa = map_usa)
+    command: combined_regional_by_geo(gom_worms_species, idigbio_gom_records, obis_gom_records, kozloff_worms_species, idigbio_pnw_records, obis_pnw_records)
+    depends: map_eez_db
 
   figures/database_coverage.pdf:
     command: combine_upsetr_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
@@ -509,7 +526,8 @@ targets:
     command: crust_name_geo(itis_crustaceans)
 
   itis_crustaceans_in_dbs:
-    command: crust_name_in_dbs(itis_crustaceans_geo, combined_species, map_usa)
+    command: crust_name_in_dbs(itis_crustaceans_geo, combined_species)
+    depends: map_eez_db
 
   itis_molluscs_parsed:
     command: molluscs_names()
@@ -521,12 +539,13 @@ targets:
     command: moll_name_geo(itis_molluscs)
 
   itis_molluscs_in_dbs:
-    command: molluscs_name_in_dbs(itis_molluscs_geo, combined_species, map_usa)
+    command: molluscs_name_in_dbs(itis_molluscs_geo, combined_species)
+    depends: map_eez_db
 
 ### iDigBio global stats -------------------------------------------------------
 
   idigbio_stats:
-    command: get_idigbio_stats(map_usa)
+    command: get_idigbio_stats(map_eez)
 
 ### summary tables
   # table_idigbio_species_sequenced:
@@ -561,7 +580,7 @@ targets:
 
   ## iDigBio
   idigbio_data_map:
-    command: data_map(idigbio_us_inverts_records_all, raster=usa_raster)
+    command: data_map(idigbio_us_inverts_records_all, raster=eez_raster)
 
   idigbio_data_map_samples:
     command: data_map_samples(idigbio_data_map)
@@ -570,10 +589,10 @@ targets:
     command: data_map_diversity(idigbio_data_map)
 
   idigbio_map_samples:
-    command: make_heatmap(idigbio_data_map_samples, I("iDigbio -- Number of samples"), base_map = map_usa)
+    command: make_heatmap(idigbio_data_map_samples, I("iDigbio -- Number of samples"), base_map = map_eez)
 
   idigbio_map_diversity:
-    command: make_heatmap(idigbio_data_map_diversity, I("iDigBio -- Number of species"), base_map = map_usa)
+    command: make_heatmap(idigbio_data_map_diversity, I("iDigBio -- Number of species"), base_map = map_eez)
 
   figures/idigbio_map_sampling.pdf:
     command: combine_cowplots(idigbio_map_samples, idigbio_map_diversity, nrow=I(2), common_legend=I(FALSE))
@@ -583,7 +602,7 @@ targets:
 
   ## OBIS
   obis_map_data:
-    command: data_map(obis_us_inverts_records_all, raster = usa_raster)
+    command: data_map(obis_us_inverts_records_all, raster = eez_raster)
 
   obis_map_samples_data:
     command: data_map_samples(obis_map_data)
@@ -592,10 +611,10 @@ targets:
     command: data_map_diversity(obis_map_data)
 
   obis_map_samples:
-    command: make_heatmap(obis_map_samples_data, I("OBIS -- Number of samples"), base_map = map_usa)
+    command: make_heatmap(obis_map_samples_data, I("OBIS -- Number of samples"), base_map = map_eez)
 
   obis_map_diversity:
-    command: make_heatmap(obis_map_diversity_data, I("OBIS -- Number of species"), base_map = map_usa)
+    command: make_heatmap(obis_map_diversity_data, I("OBIS -- Number of species"), base_map = map_eez)
 
   figures/obis_map_sampling.pdf:
     command: combine_cowplots(obis_map_samples, obis_map_diversity, nrow=I(2), common_legend=I(FALSE))
@@ -608,10 +627,10 @@ targets:
     command: combine_records(idigbio_us_inverts_records_all, obis_us_inverts_records_all)
 
   combined_species:
-    command: combine_species_list(idigbio = idigbio_us_inverts_records_species, obis = obis_us_inverts_records_species, map_usa=map_usa)
+    command: combine_species_list(idigbio = idigbio_us_inverts_records_species, obis = obis_us_inverts_records_species)
 
   combined_data_map:
-    command: data_map(combined_records, raster=usa_raster)
+    command: data_map(combined_records, raster=eez_raster)
 
   combined_data_map_samples:
     command: data_map_samples(combined_data_map)
@@ -623,10 +642,10 @@ targets:
     command: data_map_standardized_diversity(combined_data_map_samples, combined_data_map_diversity)
 
   combined_map_samples:
-    command: make_heatmap(combined_data_map_samples, I("Number of samples"), base_map = map_usa)
+    command: make_heatmap(combined_data_map_samples, I("Number of samples"), base_map = map_eez)
 
   combined_map_diversity:
-    command: make_heatmap(combined_data_map_diversity, I("Number of species"), base_map = map_usa)
+    command: make_heatmap(combined_data_map_diversity, I("Number of species"), base_map = map_eez)
 
   figures/combined_map_sampling.pdf:
     command: combine_cowplots(combined_map_samples, combined_map_diversity, nrow=I(2), common_legend=I(FALSE))
@@ -707,10 +726,10 @@ targets:
 
   ## maps for supplementary materials
   outputs/map_diversity_by_phylum.pdf:
-    command: make_heatmap_by_phylum(combined_records, file="outputs/map_diversity_by_phylum.pdf", raster = usa_raster, base_map = map_usa)
+    command: make_heatmap_by_phylum(combined_records, file="outputs/map_diversity_by_phylum.pdf", raster = eez_raster, base_map = map_eez)
 
   data/bubble_map_data.csv:
-    command: get_bubble_map_data(combined_records, usa_raster, "data/bubble_map_data.csv")
+    command: get_bubble_map_data(combined_records, eez_raster, "data/bubble_map_data.csv")
 
   outputs/bubble_combined_samples.mp4:
     command: bubble_map("data/bubble_map_data.csv", "outputs/bubble_combined_samples.mp4")
@@ -719,14 +738,14 @@ targets:
     command: get_bubble_map_species(combined_records)
 
   data/bubble_map_data_species.csv:
-    command: get_bubble_map_data(bubble_map_species, usa_raster, "data/bubble_map_data_species.csv")
+    command: get_bubble_map_data(bubble_map_species, eez_raster, "data/bubble_map_data_species.csv")
 
   outputs/bubble_species.mp4:
     command: bubble_map("data/bubble_map_data_species.csv", "outputs/bubble_species.mp4")
 
   ## rank abundance plots
   rastercell_distribution:
-    command: n_rastercell_per_species(combined_records, usa_raster)
+    command: n_rastercell_per_species(combined_records, eez_raster)
 
   plot_raster_cell_distribution:
     command: plot_rank_abundance(rastercell_distribution)
@@ -763,7 +782,8 @@ targets:
 ### plot sampling effort (correlation between number of samples vs number species
 
   figures/plot_sampling_effort.pdf:
-    command: plot_sampling_effort(combined_data_map_standardized_diversity, map_gom)
+    command: plot_sampling_effort(combined_data_map_standardized_diversity)
+    depends: map_gom_db
     plot:
       height: 4.5
       width: 6.5
@@ -788,7 +808,8 @@ targets:
     command: make_stat_barcoding(barcode_status_data)
 
   stat_sampling_effort:
-    command: calc_stat_sampling_effort(combined_data_map_standardized_diversity, map_gom)
+    command: calc_stat_sampling_effort(combined_data_map_standardized_diversity)
+    depends: map_gom_db
 
   prop_spp_barcoded:
     command: calc_prop_spp_barcoded(combined_species)
@@ -821,7 +842,8 @@ targets:
     command: not_in_list_collected_recently(database_overlap, map_gom, map_pnw)
 
   not_really_in_database:
-    command: get_not_really_in_database(database_overlap, map_usa)
+    command: get_not_really_in_database(database_overlap)
+    depends: map_eez_db
 
   spp_not_in_lists:
     command: n_spp_not_in_lists(database_overlap)
@@ -904,8 +926,8 @@ targets:
   validate_obis_records:
     command: validate_records(obis_us_inverts_records_species)
 
-  validate_idigbio_coords_usa:
-    command: validate_idigbio_store(coords_usa)
+  validate_idigbio_coords_eez:
+    command: validate_idigbio_store(coords_eez)
     depends: idigbio_database
 
   validate_idigbio_coords_gom:
@@ -935,7 +957,7 @@ targets:
     command: sample_richness_in_cells(gom_species_per_cell, gom_list_rasters)
 
   us_list_rasters:
-    command: list_rasters(map_usa)
+    command: list_rasters(map_eez)
 
   us_with_cells:
     command: add_cell_id(combined_records, us_list_rasters)

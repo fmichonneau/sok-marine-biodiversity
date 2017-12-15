@@ -90,14 +90,14 @@ get_idigbio_by_geo <- function(coords, q) {
     }
 }
 
-get_coords_idigbio_query <- function(map_usa, cellsize = .5) {
-    bb_eez <- generate_bounding_boxes(map_usa, cellsize = cellsize)
+get_coords_idigbio_query <- function(map_eez, cellsize = .5) {
+    bb_eez <- generate_bounding_boxes(map_eez, cellsize = cellsize)
     coords_to_query(bb_eez)
 }
 
 ## for all the coordinates of the bounding boxes, find the iDigBio
 ## records they contain coords: output of get_coords_idigbio_query
-## map_usa: map in GeoJSON db_table: name of table in the postgres
+## map_eez: map in GeoJSON db_table: name of table in the postgres
 ## database that will store the results use_cache: if TRUE, this uses
 ## the results from the iDigBio storr; if false, the entire storr is
 ## destroyed before

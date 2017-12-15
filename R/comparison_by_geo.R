@@ -21,14 +21,11 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
 }
 
 combined_regional_by_geo <- function(gom_worms, gom_idigbio, gom_obis,
-                                     pnw_worms, pnw_idigbio, pnw_obis,
-                                     map_usa) {
+                                     pnw_worms, pnw_idigbio, pnw_obis) {
 
     list(
-        gom = combine_species_list(checklist = gom_worms, idigbio = gom_idigbio, obis = gom_obis,
-                                   map_usa = map_usa),
-        pnw = combine_species_list(checklist = pnw_worms, idigbio = pnw_idigbio, obis = pnw_obis,
-                                   map_usa = map_usa)
+        gom = combine_species_list(checklist = gom_worms, idigbio = gom_idigbio, obis = gom_obis),
+        pnw = combine_species_list(checklist = pnw_worms, idigbio = pnw_idigbio, obis = pnw_obis)
     ) %>%
         dplyr::bind_rows(.id = "region")
 }
@@ -347,14 +344,14 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
         add_worms()
 
     .gom <- . %>%
-        is_within_gom_records(map_gom) %>%
-        dplyr::filter(is_in_gom == TRUE) %>%
+        is_within_gom_records() %>%
+        dplyr::filter(within_gom == TRUE) %>%
         dplyr::group_by(worms_phylum, worms_valid_name) %>%
         dplyr::summarize(min_year = min(year))
 
     .pnw <- . %>%
-        is_within_pnw_records(map_pnw) %>%
-        dplyr::filter(is_in_pnw == TRUE) %>%
+        is_within_pnw_records() %>%
+        dplyr::filter(within_pnw == TRUE) %>%
         dplyr::group_by(worms_phylum, worms_valid_name) %>%
         dplyr::summarize(min_year = min(year))
 
@@ -431,7 +428,7 @@ n_spp_not_in_lists <- function(db_overlap) {
 ## their records, or they have records that fall outside the
 ## geographic area.
 ## Only GOM for now.
-get_not_really_in_database <- function(database_overlap, map_usa) {
+get_not_really_in_database <- function(database_overlap) {
 
     idig_gom_not_in_db <- database_overlap %>%
         dplyr::filter(region == "gom",
@@ -440,7 +437,7 @@ get_not_really_in_database <- function(database_overlap, map_usa) {
 
     idig_gom_spp_records <- idig_gom_not_in_db %>%
         fetch_spp_from_idigbio() %>%
-        is_within_eez_records(map_usa)
+        is_within_eez_records()
 
     ## species that are trully absent
     idig_gom_n_spp_not_in_db <- length(setdiff(tolower(idig_gom_not_in_db$worms_valid_name),
@@ -462,17 +459,17 @@ get_not_really_in_database <- function(database_overlap, map_usa) {
     idig_gom_p_spp_no_coords <- mean(idig_gom_spp_no_coords$p_no_coords == 1)
 
     ## proportion of species that have at least one record within US EEZ
-    idig_gom_within_usa <- idig_gom_spp_records %>%
+    idig_gom_within_eez <- idig_gom_spp_records %>%
         dplyr::filter(!has_no_coords(decimallatitude, decimallongitude)) %>%
         ## only East coast records
         dplyr::filter(decimallongitude > -100 ) %>%
         dplyr::group_by(scientificname) %>%
         dplyr::summarize(
-                   is_in_eez = any(is_in_eez)
+                   within_eez = any(within_eez)
                )
 
-    idig_gom_n_spp_within_usa <- nrow(idig_gom_within_usa)
-    idig_gom_p_spp_within_usa <- mean(idig_gom_within_usa$is_in_eez)
+    idig_gom_n_spp_within_eez <- nrow(idig_gom_within_eez)
+    idig_gom_p_spp_within_eez <- mean(idig_gom_within_eez$within_eez)
 
     ## WARNING: Here the `n` refers to the denominator for the
     ## proportions, not the actual number of records
@@ -481,8 +478,8 @@ get_not_really_in_database <- function(database_overlap, map_usa) {
         idig_gom_p_spp_not_in_db = idig_gom_n_spp_not_in_db/n_distinct(idig_gom_not_in_db$worms_valid_name),
         idig_gom_n_spp_no_coords = idig_gom_n_spp_no_coords,
         idig_gom_p_spp_no_coords = idig_gom_p_spp_no_coords,
-        idig_gom_n_spp_within_usa = idig_gom_n_spp_within_usa,
-        idig_gom_p_spp_within_usa = idig_gom_p_spp_within_usa
+        idig_gom_n_spp_within_eez = idig_gom_n_spp_within_eez,
+        idig_gom_p_spp_within_eez = idig_gom_p_spp_within_eez
     )
 }
 

@@ -32,12 +32,12 @@ add_geo <- function(d) {
                                              TRUE, FALSE))
 
     ## check that no record gets assigned more than one geographic area
-    if (any(d$is_in_gom + d$is_east_coast + d$is_west_coast) > 3)
+    if (any(d$within_gom + d$is_east_coast + d$is_west_coast) > 3)
         stop("something's wrong!")
     d
 }
 
-combine_species_list <- function(..., map_usa) {
+combine_species_list <- function(...) {
     d <- list(...)
     if (is.null(names(d)) && !all(nzchar(names(names(d))))) {
         stop("arguments need to be named")
@@ -55,7 +55,7 @@ combine_species_list <- function(..., map_usa) {
         dplyr::count(data_source, worms_phylum, worms_class, worms_order,
                      worms_family, worms_valid_name, worms_id) %>%
         tidyr::spread(data_source, n) %>%
-        find_bold_records(col_nm = "worms_valid_name", map_usa = map_usa)
+        find_bold_records(col_nm = "worms_valid_name")
 }
 
 

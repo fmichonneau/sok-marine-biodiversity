@@ -3,14 +3,15 @@ insert_map_into_db <- function(map) {
     ## This table is named like the `map` object.
     name <- deparse(substitute(map))
     sp_map <- geojsonio::geojson_sp(map)
+
+    db <- sok_db()
     rpostgis::pgInsert(db, name = c("public", name),
                        data.obj = sp_map, overwrite = TRUE,
                        row.names = FALSE)
 
-    db <- sok_db()
 
     ## Then we had the union of the layers of these objects into a master table
-    ## that holds all the polygons we use: map_usa, map_gom, map_pnw.  But
+    ## that holds all the polygons we use: map_eez, map_gom, map_pnw.  But
     ## first, we need to make sure that the `maps` table exists, and create it
     ## otherwise.
     if (!dbExistsTable(db, "maps")) {
@@ -40,7 +41,7 @@ insert_map_into_db <- function(map) {
 ## be filtered for geography
 add_unique_coords_to_db <- function(db, src_table) {
 
-    maps <- c("map_usa", "map_gom", "map_pnw")
+    maps <- c("map_eez", "map_gom", "map_pnw")
 
     ## make sure maps table exists and it contains all the data we need
     if (!dbExistsTable(db, "maps")) stop("'maps' table doesn't exist.")

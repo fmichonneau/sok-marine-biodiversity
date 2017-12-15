@@ -27,22 +27,22 @@ bb_to_df <- function(bb) {
 ## from the map of the EEZ from the USA, create a data frame that
 ## contains the coordinates for a grid that spans the area. This grid
 ## will be used to do an iDigBio search by geography
-generate_bounding_boxes <- function(map_usa, cellsize = .5) {
+generate_bounding_boxes <- function(map_eez, cellsize = .5) {
 
-    map_usa_sp_df <- geojson_sp(map_usa)
+    map_eez_sp_df <- geojson_sp(map_eez)
 
-    map_usa_fort <- ggplot2::fortify(map_usa_sp_df)
-    res <- lapply(levels(map_usa_fort$piece), function(i) {
+    map_eez_fort <- ggplot2::fortify(map_eez_sp_df)
+    res <- lapply(levels(map_eez_fort$piece), function(i) {
         SpatialPolygons(
             list(
                 Polygons(
-                    list(Polygon(subset(map_usa_fort, piece == i)[, c("long", "lat")])),
+                    list(Polygon(subset(map_eez_fort, piece == i)[, c("long", "lat")])),
                     ID = 1)
-            ), proj4string = CRS(proj4string(map_usa_sp_df)))
+            ), proj4string = CRS(proj4string(map_eez_sp_df)))
     }) %>%
         lapply(get_bounding_box, cellsize = cellsize) %>%
         lapply(bb_to_df)
-    names(res) <- levels(map_usa_fort$piece)
+    names(res) <- levels(map_eez_fort$piece)
 
     dplyr::bind_rows(res, .id = "piece")
 }

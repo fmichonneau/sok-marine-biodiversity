@@ -37,7 +37,7 @@ store_bold_specimens_per_species <- function(store_path = "data/storr_bold_speci
 ## this function takes a data frame, for which the column named with
 ## the content of `col_nm` contains the species names to look up in
 ## BOLD. It returns a data frame.
-find_bold_records <- function(res, col_nm, map_usa, show_progress = TRUE) {
+find_bold_records <- function(res, col_nm, show_progress = TRUE) {
     if (!exists(col_nm, res))
         stop("invalid column name")
 
@@ -63,7 +63,7 @@ find_bold_records <- function(res, col_nm, map_usa, show_progress = TRUE) {
                               !is.na(decimallongitude))
             if (nrow(coord_data) > 0) {
                 any_within_eez <- any(is_within_eez_records(
-                    coord_data, map_usa)$is_in_eez)
+                    coord_data)$within_eez)
             } else any_within_eez <- NA
         } else {
             any_within_eez <- NA

@@ -7,7 +7,7 @@ get_n_records_in_db <- function(worm, db, field_name, region = c("gom", "pnw")) 
     ## region: either "gom" for Gulf of Mexico, or "pnw" for Pacific North West.
 
     region <- match.arg(region)
-    is_in_region <- paste0("is_in_", region)
+    within_region <- paste0("within_", region)
 
     db <- db %>%
         dplyr::mutate(scientificname = tolower(scientificname))
@@ -18,13 +18,13 @@ get_n_records_in_db <- function(worm, db, field_name, region = c("gom", "pnw")) 
         dplyr::rename_(.dots = setNames("n", field_name))
 
     summary_db_in_us <- db %>%
-        dplyr::filter(is_in_eez == TRUE) %>%
+        dplyr::filter(within_eez == TRUE) %>%
         dplyr::group_by(scientificname) %>%
         dplyr::tally(.) %>%
         dplyr::rename_(.dots = setNames("n", paste0(field_name, "_in_us")))
 
     summary_db_in_region <- db %>%
-        dplyr::filter(!!sym(is_in_region)) %>%
+        dplyr::filter(!!sym(within_region)) %>%
         dplyr::group_by(scientificname) %>%
         dplyr::tally(.) %>%
         dplyr::rename_(.dots = setNames("n", paste0(field_name, "_in_", region)))
