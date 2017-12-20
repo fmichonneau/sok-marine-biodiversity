@@ -262,10 +262,6 @@ extract_inverts_from_db <- function(db_table, geo) {
 
     db_worms <- db %>% tbl(glue::glue("{db_table}_worms"))
 
-    arth_class_to_rm <- tibble::tibble(
-                                    worms_phylum = "arthropoda",
-                                    worms_class = arthropod_classes_to_rm())
-
     db_worms %>%
         filter_by_geo(geo) %>%
         add_sub_kingdom() %>%
@@ -279,8 +275,6 @@ extract_inverts_from_db <- function(db_table, geo) {
                       worms_valid_name, worms_id, is_marine, rank,
                       dplyr::contains("depth", ignore.case = TRUE)) %>%
         dplyr::collect(n = Inf) %>%
-        ## remove insects and other possibly ambiguous arthropods
-        dplyr::anti_join(arth_class_to_rm, by = c("worms_phylum", "worms_class")) %>%
         dplyr::mutate(datecollected = as.Date(datecollected),
                       uuid = as.character(uuid)) %>%
         dplyr::filter(!is.na(worms_phylum)) %>%

@@ -224,9 +224,17 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
 }
 
 keep_marine_species_only <- function(wrm_tbl) {
+    arth_class_to_rm <- tibble::tibble(
+                                    worms_phylum = "arthropoda",
+                                    worms_class = arthropod_classes_to_rm()
+                                )
+
     if (inherits(wrm_tbl, "tbl_dbi")) {
         stopifnot(length(setdiff(c("rank", "is_marine", "worms_id"),
                                  colnames(wrm_tbl))) == 0L)
+        arth_class_to_rm <- copy_to(sok_db(), arth_class_to_rm, overwrite = TRUE,
+                                    temporary = TRUE)
+
     } else {
         stopifnot(exists("rank", wrm_tbl) &&
                   exists("is_marine", wrm_tbl) &&
@@ -236,7 +244,10 @@ keep_marine_species_only <- function(wrm_tbl) {
     wrm_tbl %>%
         dplyr::filter(rank == "Species" | rank == "Subspecies") %>%
         dplyr::filter(is_marine) %>%
-        dplyr::filter(!is.na(worms_id))
+        dplyr::filter(!is.na(worms_id)) %>%
+        ## remove insects and other possibly ambiguous arthropods
+        dplyr::anti_join(arth_class_to_rm, by = c("worms_phylum", "worms_class"))
+
 }
 
 add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE) {
