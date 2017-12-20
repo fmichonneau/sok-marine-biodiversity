@@ -17,7 +17,10 @@ add_rastercell <- function(d, raster) {
 
 data_map <- function(recs, raster) {
 
-    recs <- add_rastercell(recs, raster)
+    recs <- recs %>%
+        filter(!is.na(decimallatitude) &
+               !is.na(decimallongitude)) %>%
+        add_rastercell(raster)
 
     if (any(is.na(recs$rastercell))) {
         stop("something is wrong with the limits of the raster.")
