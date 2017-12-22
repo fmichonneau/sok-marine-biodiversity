@@ -1,8 +1,13 @@
 calc_institutions <- function(idig_records, obis_records) {
 
     res_idig <- idig_records %>%
-        dplyr::count(institutioncode, sort = TRUE) %>%
-        dplyr::top_n(10, n) %>%
+        dplyr::group_by(institutioncode) %>%
+        dplyr::summarize(
+                   n = n(),
+                   n_spp = n_distinct(worms_valid_name)
+               ) %>%
+        dplyr::arrange(desc(n_spp)) %>%
+        dplyr::top_n(10, n_spp) %>%
         dplyr::mutate(Institution = case_when(
                           institutioncode == "usnm" ~ "Smithsonian Institution National Museum of Natural History",
                           institutioncode == "uf" ~ "Florida Museum of Natural History, University of Florida",
@@ -21,22 +26,30 @@ calc_institutions <- function(idig_records, obis_records) {
         purrr::pwalk(function(Institution, ...) {
                    if(any(grepl("problem", Institution))) stop("unknown collection in idigbio")
                }) %>%
-        dplyr::mutate(n = format(n, big.mark = ",")) %>%
+        dplyr::mutate(n = format(n, big.mark = ","),
+                      n_spp = format(n_spp, big.mark = ",")) %>%
         dplyr::select(Institution,
-                      "Number of records" = n)
+                      "Number of records" = n,
+                      "Number of species" = n_spp)
 
     res_obis <- obis_records %>%
         ## regroup all noaa records
         dplyr::mutate(institutioncode_simple = case_when(
                           grepl("noaa|nmfs|dsc_rtp", institutioncode) ~ "noaa",
+                          grepl("smithsonian", institutioncode) ~ "usnm",
                           TRUE ~ institutioncode
                       )) %>%
-        dplyr::count(institutioncode_simple, sort = TRUE) %>%
+        dplyr::group_by(institutioncode_simple) %>%
         dplyr::filter(!is.na(institutioncode_simple)) %>%
-        dplyr::top_n(10, n) %>%
+        dplyr::summarize(
+                   n = n(),
+                   n_spp = n_distinct(worms_valid_name)
+               ) %>%
+        dplyr::arrange(desc(n_spp)) %>%
+        dplyr::top_n(10, n_spp) %>%
         dplyr::mutate(Institution = case_when(
-                          institutioncode_simple == "noaa" ~ "National Oceanographic and Atmostpheric Association¹",
-                          institutioncode_simple == "usnm" ~  "Smithsonian Institution National Museum of Natural History",
+                          institutioncode_simple == "noaa" ~ "National Oceanographic and Atmostpheric Association²",
+                          institutioncode_simple == "usnm" ~  "Smithsonian Institution National Museum of Natural History¹",
                           institutioncode_simple == "tpwd" ~ "Texas Parks and Wildlife Department",
                           institutioncode_simple == "boemre" ~ "Bureau of Ocean Energy Management, Regulation, and Enforcement",
                           institutioncode_simple == "emap_nca" ~ "U.S. Environmental Protection Agency through its Environmental Monitoring and Assessment Program (EMAP)",
@@ -47,14 +60,20 @@ calc_institutions <- function(idig_records, obis_records) {
                           institutioncode_simple == "sahfos" ~ "Sir Alister Hardy Foundation for Ocean Science",
                           institutioncode_simple == "uf" ~ "Florida Museum of Natural History, University of Florida",
                           institutioncode_simple == "tamu" ~ "The Texas A&M Biodiversity Research and Teaching Collections",
+                          institutioncode_simple == "worms editorial board" ~ "WoRMS editorial board",
+                          institutioncode_simple == "marine resources research institute, scdnr" ~ "Marine Resource Research Institute, South Carolina Department of Natural Resources",
+                          institutioncode_simple == "woodsholebiosurvey" ~ "Woods Hole Biological Survey",
+                          institutioncode_simple == "hex" ~ "Hexacorallians of the World, Kansas University Natural History Museum",
                           TRUE ~ "problem"
                       ))%>%
         purrr::pwalk(function(Institution, ...) {
                    if(any(grepl("problem", Institution))) stop("unknown collection in obis")
                }) %>%
-        dplyr::mutate(n = format(n, big.mark = ",")) %>%
+        dplyr::mutate(n = format(n, big.mark = ","),
+                      n_spp = format(n_spp, big.mark = ",")) %>%
         dplyr::select(Institution,
-                      "Number of records" = n)
+                      "Number of records" = n,
+                      "Number of species" = n_spp)
 
     list_tbl <- list(
                res_idig,
@@ -62,23 +81,27 @@ calc_institutions <- function(idig_records, obis_records) {
     )
     attr(list_tbl, "subheadings") <- c("A. iDigBio", "B. OBIS")
     attr(list_tbl, "message") <- strwrap(glue::collapse(
-        c("¹NOAA records include data from the Hollings Marine Laboratory, ",
+        c(
+          "¹also includes data from the Smithsonian ",
+          "Environmental Research Center. ",
+          "²NOAA records include data from the Hollings Marine Laboratory, ",
           "the Northeast Fisheries Science Center, ",
           "the Southwest Fisheries Science Center, ",
           "the National Centers for Coastal Ocean Science, ",
           "the Center for Coastal Environmental Health and Biomolecular Research, ",
           "the National Marine Fisheries Service, and ",
-          "the Deep Sea Coral Research and Technology Program.")), width = 100)
+          "the Deep Sea Coral Research and Technology Program."
+          )), width = 100)
     capt <- as.character(
         glue::glue(
-                  "Top 10 institutions that contribute to the ",
-                  "records identified at the species level used in this study to iDigBio (A) and OBIS (B). ",
+                  "Top 10 institutions that contribute the most species to the ",
+                  "records used in this study to iDigBio (A) and OBIS (B). ",
                   "Federal and States agencies are important contributors to ",
                   "marine biodiversity data. Differences in numbers for the ",
                   "same data sources across databases are due to differences in data quality filters.")
     )
     x_list_tbl <- xtable::xtableList(
-                              list_tbl, align = c("lp{12cm}R{3cm}"),
+                              list_tbl, align = c("l", "p{11.5cm}", "R{2cm}", "R{2cm}"),
                               caption = capt
                               )
     x_list_tbl
