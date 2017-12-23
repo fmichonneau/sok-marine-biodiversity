@@ -44,14 +44,40 @@ We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark =
 
 
 ```{r kingdom-stats}
-get_invert_prop <- function(db) {
+get_invert_prop <- function(db, what = c("invert", "vert")) {
+    what <- match.arg(what)
+    string_what <- c("invert" = "Animalia - Invertebrates",
+                     "vert" = "Animalia - Vertebrates")
+    what <- string_what[what]
     format_output(kingdom_diversity[kingdom_diversity$database == db &
-                                    kingdom_diversity$sub_kingdom == "Animalia - Invertebrates", "prop_spp"] * 100)
+                                    kingdom_diversity$sub_kingdom == what,
+                                    "prop_spp"] * 100)
 }
 
-total_invert_prop <- get_invert_prop("worms")
-idigbio_invert_prop <- get_invert_prop("idigbio")
-obis_invert_prop <- get_invert_prop("obis")
+total_invert_prop <- get_invert_prop("worms", "invert")
+idigbio_invert_prop <- get_invert_prop("idigbio", "invert")
+obis_invert_prop <- get_invert_prop("obis", "invert")
+
+total_vert_prop <- get_invert_prop("worms", "vert")
+idigbio_vert_prop <- get_invert_prop("idigbio", "vert")
+obis_vert_prop <- get_invert_prop("obis", "vert")
+
+median_obis_vert <- kingdom_stats %>%
+    filter(database=="obis" & sub_kingdom == "animalia - vertebrates") %>%
+    pull("median_sample")
+
+median_obis_invert <- kingdom_stats %>%
+    filter(database=="obis" & sub_kingdom == "animalia - invertebrates") %>%
+    pull("median_sample")
+
+
+median_idigbio_vert <- kingdom_stats %>%
+    filter(database=="idigbio" & sub_kingdom == "animalia - vertebrates") %>%
+    pull("median_sample")
+
+median_idigbio_invert <- kingdom_stats %>%
+    filter(database=="idigbio" & sub_kingdom == "animalia - invertebrates") %>%
+    pull("median_sample")
 ```
 
 
@@ -69,35 +95,11 @@ print.xtableList(institution_contributions, colnames.format = "multiple",
                  table.placement = "!ht", comment = FALSE)
 ```
 
-```{r}
-prop_obis_invert_samples <- kingdom_diversity %>%
-    filter(database == "obis" & sub_kingdom == "Animalia - Invertebrates") %>%
-    pull(prop_samp) %>%
-    `*`(100) %>%
-    format_output()
 
-prop_obis_invert_species <- kingdom_diversity %>%
-    filter(database == "obis" & sub_kingdom == "Animalia - Invertebrates") %>%
-    pull(prop_spp)%>%
-    `*`(100) %>%
-    format_output()
+Marine invertebrates are underrepresented in biodiversity databases. This underrepresentation is manifest in the small proportion of records they represent in the iDigBio database. While marine invertebrates compose between 11% and 18% of the described global diversity (number of described marine inverterbrates species: 200,000-210,000 [@Appeltans2012], total number of described species: 1.2-1.9 million [@Mora2011,@Chapman2009]),
+marine invertebrates from the US EEZ only make up `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$total_no_fossil*100)`% of the total number of non-fossil iDigBio records (`r round(idigbio_stats$total_no_fossil/1e6, 1)` million), and `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$eez_no_fossil*100)`% of the US records (`r round(idigbio_stats$eez_no_fossil/1e6, 1)` million). 
 
-prop_idigbio_invert_samples <-  kingdom_diversity %>%
-    filter(database == "idigbio" & sub_kingdom == "Animalia - Invertebrates") %>%
-    pull(prop_samp) %>%
-    `*`(100) %>%
-    format_output()
-
-prop_idigbio_invert_species <- kingdom_diversity %>%
-    filter(database == "idigbio" & sub_kingdom == "Animalia - Invertebrates") %>%
-    pull(prop_spp)%>%
-    `*`(100) %>%
-    format_output()
-```
-
-Marine invertebrates are underrepresented in biodiversity databases. This underrepresentation is manifest in the small proportion of records they represent in the total iDigBio database: marine invertebrates from the US EEZ make up `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$total_no_fossil*100)`% of the total number of non-fossil iDigBio records (`r round(idigbio_stats$total_no_fossil/1e6, 1)` million), and `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$eez_no_fossil*100)`% of the US records (`r round(idigbio_stats$eez_no_fossil/1e6, 1)` million). This underrepresentation is also manifest in the collecting effort. In OBIS records for the US EEZ, marine invertebrates represent `r prop_obis_invert_samples`% of the occurrences but `r prop_obis_invert_species`% of the number of species. In the iDigBio dataset, marine invertebrates represent `r prop_idigbio_invert_samples`% of the records but `r prop_idigbio_invert_species`% of the species.
-
-We compared the total number of species represented in iDigBio and OBIS for each major division of life to the total described diversity based on the WoRMS estimates[@worms-stats]. While marine invertebrates represent  `r total_invert_prop`% of the global marine diversity, they represent `r idigbio_invert_prop`% and `r obis_invert_prop`% of the species in iDigBio and OBIS respectively (Fig. \@ref(fig:kingdom-diversity-plot)). In other words, while the number of records per species is much lower for marine invertebrates than marine vertebrates, the number of species represented in the databases is on par with the expected diversity for the group.
+This underrepresentation is also manifest in the intensity of the collecting effort. In OBIS records for the US EEZ, marine invertebrates represent `r invert_props$prop_obis_invert_samples`% of the occurrences but `r invert_props$prop_obis_invert_species`% of the total number of species; and in iDigBio, they represent `r invert_props$prop_idigbio_invert_samples`% of the records but `r invert_props$prop_idigbio_invert_species`% of the species. In contrast, marine vertebrates represent `r invert_props$prop_idigbio_vert_samples`% of the samples and `r invert_props$prop_idigbio_vert_species`% of the species in iDigBio, and `r invert_props$prop_obis_vert_samples`% of the samples and `r invert_props$prop_obis_vert_species`% of the species in OBIS (Fig. \@ref(fig:kingdom-diversity-plot)). In other words, while marine invertebrates are represented at a level on par with their diversity in the marine fraction of the databases, each species is represented by fewer samples compared to vertebrates (median number of records per species for invertebrates `r median_idigbio_invert` and `r median_obis_invert`, _vs_ and `r median_idigbio_vert` and `r median_obis_vert` for vertebrates, for iDigBio and OBIS respectively).
 
 ```{r itis-stats}
 prop_molluscs <- itis_molluscs_in_dbs %>%

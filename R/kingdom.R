@@ -135,12 +135,12 @@ calc_kingdom_stats <- function() {
     db <- sok_db()
 
     get_median <- . %>%
-        group_by(sub_kingdom, worms_phylum, worms_valid_name) %>%
+        group_by(sub_kingdom, worms_valid_name) %>%
         summarize(
             n_samples = n()
         ) %>%
         collect() %>%
-        group_by(sub_kingdom, worms_phylum) %>%
+        group_by(sub_kingdom) %>%
         summarize(
             median_sample = median(n_samples),
             mean_sample = mean(n_samples)
@@ -156,6 +156,64 @@ calc_kingdom_stats <- function() {
         .id = "database")
 }
 
+get_invert_props <- function(kingdom_diversity) {
+
+    smrz_samp <- . %>%
+        pull(prop_samp) %>%
+        `*`(100) %>%
+        format_output()
+
+    smrz_spp <- . %>%
+        pull(prop_spp) %>%
+        `*`(100) %>%
+        format_output()
+
+    ## invertebrates
+    prop_obis_invert_samples <- kingdom_diversity %>%
+        filter(database == "obis" & sub_kingdom == "Animalia - Invertebrates") %>%
+        smrz_samp()
+
+    prop_obis_invert_species <- kingdom_diversity %>%
+        filter(database == "obis" & sub_kingdom == "Animalia - Invertebrates") %>%
+        smrz_spp()
+
+    prop_idigbio_invert_samples <-  kingdom_diversity %>%
+        filter(database == "idigbio" & sub_kingdom == "Animalia - Invertebrates") %>%
+        smrz_samp()
+
+    prop_idigbio_invert_species <- kingdom_diversity %>%
+        filter(database == "idigbio" & sub_kingdom == "Animalia - Invertebrates") %>%
+        smrz_spp()
+
+    ## vertebrates
+    prop_obis_vert_samples <- kingdom_diversity %>%
+        filter(database == "obis" & sub_kingdom == "Animalia - Vertebrates") %>%
+        smrz_samp()
+
+    prop_obis_vert_species <- kingdom_diversity %>%
+        filter(database == "obis" & sub_kingdom == "Animalia - Vertebrates") %>%
+        smrz_spp()
+
+    prop_idigbio_vert_samples <-  kingdom_diversity %>%
+        filter(database == "idigbio" & sub_kingdom == "Animalia - Vertebrates") %>%
+        smrz_samp()
+
+    prop_idigbio_vert_species <- kingdom_diversity %>%
+        filter(database == "idigbio" & sub_kingdom == "Animalia - Vertebrates") %>%
+        smrz_spp()
+
+    list(
+        prop_obis_invert_samples = prop_obis_invert_samples,
+        prop_obis_invert_species = prop_obis_invert_species,
+        prop_idigbio_invert_samples = prop_idigbio_invert_samples,
+        prop_idigbio_invert_species = prop_idigbio_invert_species,
+        prop_obis_vert_samples = prop_obis_vert_samples,
+        prop_obis_vert_species = prop_obis_vert_species,
+        prop_idigbio_vert_samples = prop_idigbio_vert_samples,
+        prop_idigbio_vert_species = prop_idigbio_vert_species
+    )
+
+}
 
 
 if (FALSE) {

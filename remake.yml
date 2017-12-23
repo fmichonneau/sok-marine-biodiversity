@@ -353,6 +353,9 @@ targets:
       - idigbio_us_inverts_records_all
       - obis_us_inverts_records_all
 
+  invert_props:
+    command: get_invert_props(kingdom_diversity)
+
   figures/plot_kingdom_diversity.pdf:
     command: plot_kingdom_diversity(kingdom_diversity)
     plot:
@@ -1024,6 +1027,7 @@ targets:
       - idigbio_mms_summary_by_phylum
       - idigbio_mms_species_only
       - institution_contributions
+      - invert_props
       ## figures
       - figures/plot_kingdom_diversity.pdf
       - figures/combined_map_sampling.pdf
