@@ -23,20 +23,24 @@ is_within_map_records <- function(d, map_name) {
 
     stopifnot(exists(c("decimallatitude", "decimallongitude"), d))
 
+    add_hash <- . %>%
+        dplyr::mutate(hash = paste(decimallatitude, decimallongitude, sep = "|"))
+
+    d <- d %>% add_hash
+
     d_to_insert <- dplyr::select(d,
                        decimallatitude,
                        decimallongitude) %>%
         dplyr::filter(!is.na(decimallatitude),
                       !is.na(decimallongitude)) %>%
-        dplyr::mutate(hash = paste(decimallatitude, decimallongitude, sep = "-")) %>%
-        dplyr::distinct(hash, .keep_all = TRUE) %>%
-        dplyr::select(-hash)
+        dplyr::distinct(hash, .keep_all = TRUE)
 
     if (nrow(d_to_insert) < 1) {
         d[[glue::glue("within_{map_name}")]] <- rep(NA, nrow(d))
         return(d)
     }
 
+    col_nm <- rlang::sym(glue::glue("within_{map_name}"))
     db <- sok_db()
     temp_name <- glue::collapse(c("temp_coords_", format(Sys.time(), "%Y%m%d%H%M%S")))
     on.exit(dbDrop(db, temp_name, display = FALSE))
@@ -56,12 +60,13 @@ is_within_map_records <- function(d, map_name) {
                         "SET within_{map_name} = ST_Contains(map_{map_name}, {temp_name}.geom_point) ",
                         "FROM (SELECT geom_polygon AS map_{map_name} FROM maps WHERE area_id ='map_{map_name}') AS foo;"))
     q <- dbSendQuery(db, glue::glue("SELECT decimallatitude, decimallongitude, within_{map_name} FROM {temp_name}"))
-    res <- dbFetch(q)
+    res <- dbFetch(q) %>%
+        add_hash %>%
+        dplyr::select(!!col_nm, hash)
     dbClearResult(q)
 
-    col_nm <- rlang::sym(glue::glue("within_{map_name}"))
-
-    dplyr::left_join(d, res, by = c("decimallatitude", "decimallongitude"))
+    dplyr::left_join(d, res, by = "hash") %>%
+        dplyr::select(-hash)
 }
 
 is_within_eez_records <- function(d) is_within_map_records(d, "eez")
