@@ -545,6 +545,9 @@ targets:
     command: molluscs_name_in_dbs(itis_molluscs_geo, combined_species)
     depends: map_eez_db
 
+  itis_stats:
+    command: get_itis_stats(itis_molluscs_in_dbs, itis_crustaceans_in_dbs, idigbio_us_inverts_records_species, obis_us_inverts_records_species)
+
 ### iDigBio global stats -------------------------------------------------------
 
   idigbio_stats:
