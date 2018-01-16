@@ -258,27 +258,89 @@ molluscs_name_in_dbs <- function(tbl, combined_species) {
         add_dbs_info(combined_species)
 }
 
-itis_in_idigbio <- function() {
+get_itis_stats <- function(itis_moll, itis_crust, idig_recs, obis_recs) {
 
-}
+    ## calculate number of species in ITIS lists
+    calc_nspp <- . %>%
+        dplyr::filter(is_marine) %>%
+        dplyr::select(worms_valid_name) %>%
+        dplyr::n_distinct()
+    
+    itis_moll_nspp <- itis_moll %>%
+        calc_nspp
 
-itis_in_obis <- function() {
+    itis_crust_nspp <- itis_crust %>%
+        calc_nspp
 
-}
+    ## get species lists per database
+    ## -- molluscs
+    itis_moll <- itis_moll %>%
+        dplyr::filter(is_marine) %>%
+        dplyr::distinct(worms_valid_name)
 
-itis_in_bold <- function() {
+    idig_moll <- idig_recs %>%
+        dplyr::filter(worms_phylum == "mollusca") %>%
+        dplyr::distinct(worms_valid_name)
 
-}
+    obis_moll <- obis_recs %>%
+        dplyr::filter(worms_phylum == "mollusca") %>%
+        dplyr::distinct(worms_valid_name)
 
-itis_molluscs_stats <- function(moll_geo) {
+    ## -- crustaceans
+    itis_crust <- itis_crust %>%
+        dplyr::filter(is_marine) %>%
+        dplyr::distinct(worms_valid_name)
+
+    idig_crust <- idig_recs %>%
+        dplyr::filter(worms_phylum == "arthropoda") %>%
+        dplyr::distinct(worms_valid_name)
+
+    obis_crust <- obis_recs %>%
+        dplyr::filter(worms_phylum == "arthropoda") %>%
+        dplyr::distinct(worms_valid_name)
+
+    ## figure out intersection
+    ## -- molluscs
+    calc_moll <- . %>%
+        dplyr::select(worms_valid_name) %>%
+        dplyr::n_distinct() %>%
+        `/`(itis_moll_nspp) %>%
+        `*`(100) %>%
+        format_output()
+
+    prop_moll_idig <-  dplyr::semi_join(itis_moll, idig_moll,
+                                        by = "worms_valid_name") %>%
+        calc_moll
+
+    prop_moll_obis <- dplyr::semi_join(itis_moll, obis_moll,
+                                        by = "worms_valid_name") %>%
+        calc_moll
+
+    ## -- crustaceans
+    calc_crust <- . %>%
+        dplyr::select(worms_valid_name) %>%
+        dplyr::n_distinct() %>%
+        `/`(itis_crust_nspp) %>%
+        `*`(100) %>%
+        format_output()
+
+    prop_crust_idig <-  dplyr::semi_join(itis_crust, idig_crust,
+                                        by = "worms_valid_name") %>%
+        calc_crust
+
+    prop_crust_obis <- dplyr::semi_join(itis_crust, obis_crust,
+                                        by = "worms_valid_name") %>%
+        calc_crust
+
+    ## --- output
     list(
-        n_spp = sum(moll_geo$is_marine)
+        moll_nspp = itis_moll_nspp,
+        crust_nspp = itis_crust_nspp,
+        prop_moll_idig = prop_moll_idig,
+        prop_moll_obis = prop_moll_obis,
+        prop_crust_idig = prop_crust_idig,
+        prop_crust_obis = prop_crust_obis
     )
-
-}
-
-itis_crustaceans_stats <- function() {
-
 }
 
 
