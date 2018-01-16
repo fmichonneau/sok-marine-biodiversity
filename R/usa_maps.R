@@ -26,11 +26,11 @@ is_within_map_records <- function(d, map_name) {
     add_hash <- . %>%
         dplyr::mutate(hash = paste(decimallatitude, decimallongitude, sep = "|"))
 
-    d <- d %>% add_hash
+    d_ <- d %>% add_hash
 
-    d_to_insert <- dplyr::select(d,
-                       decimallatitude,
-                       decimallongitude) %>%
+
+    d_to_insert <- d_ %>%
+        dplyr::select(decimallatitude, decimallongitude, hash) %>%
         dplyr::filter(!is.na(decimallatitude),
                       !is.na(decimallongitude)) %>%
         dplyr::distinct(hash, .keep_all = TRUE)
@@ -41,11 +41,18 @@ is_within_map_records <- function(d, map_name) {
     }
 
     col_nm <- rlang::sym(glue::glue("within_{map_name}"))
-    db <- sok_db()
-    temp_name <- glue::collapse(c("temp_coords_", format(Sys.time(), "%Y%m%d%H%M%S")))
-    on.exit(dbDrop(db, temp_name, display = FALSE))
+    timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
+    temp_name <- glue::collapse(c("temp_coords_", timestamp))
+    full_coords_name <- glue::collapse(c("temp_full_coords_", timestamp))
+    to_select <- glue::collapse(paste(full_coords_name, paste0("\"", names(d), "\""), sep = "."), ", ")
 
+    db <- sok_db()
+
+    on.exit(dbDrop(db, temp_name, display = FALSE))
     dbWriteTable(db, temp_name, d_to_insert, temporary = TRUE)
+    on.exit(dbDrop(db, full_coords_name, display = FALSE), add = TRUE)
+    dbWriteTable(db, full_coords_name, d_, temporary = TRUE)
+
     dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
     dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
 
@@ -59,14 +66,17 @@ is_within_map_records <- function(d, map_name) {
                         "UPDATE {temp_name} ",
                         "SET within_{map_name} = ST_Contains(map_{map_name}, {temp_name}.geom_point) ",
                         "FROM (SELECT geom_polygon AS map_{map_name} FROM maps WHERE area_id ='map_{map_name}') AS foo;"))
-    q <- dbSendQuery(db, glue::glue("SELECT decimallatitude, decimallongitude, within_{map_name} FROM {temp_name}"))
-    res <- dbFetch(q) %>%
-        add_hash %>%
-        dplyr::select(!!col_nm, hash)
+
+    dbExecute(db, glue::glue("CREATE INDEX ON {full_coords_name} (hash)"))
+    dbExecute(db, glue::glue("CREATE INDEX ON {temp_name} (hash)"))
+
+    q <- dbSendQuery(db, glue::glue("
+           SELECT {to_select}, within_{map_name}  FROM {full_coords_name}
+           LEFT JOIN {temp_name} ON {temp_name}.hash = {full_coords_name}.hash"))
+    res <- dbFetch(q)
     dbClearResult(q)
 
-    dplyr::left_join(d, res, by = "hash") %>%
-        dplyr::select(-hash)
+    res
 }
 
 is_within_eez_records <- function(d) is_within_map_records(d, "eez")
