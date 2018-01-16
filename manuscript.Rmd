@@ -172,10 +172,10 @@ Another indication of the inadequacy of the sampling is the relationship between
 prop_mms_75_85 <- (idigbio_mms_summary_by_year %>%
                    dplyr::filter(year >= 1975 & year <= 1985) %>%
                    dplyr::pull(n) %>%
-                   sum()) / dplyr::pull(idigbio_mms_summary_by_year, n)
+                   sum()) / sum(dplyr::pull(idigbio_mms_summary_by_year, n))
 ```
 
-Biodiversity surveys conducted under the auspices of the Bureau of Land Management (BLM) and the Minerals Management Service (MMS) have contributed significantly to our knowledge of the geographic distribution of marine invertebrates in US waters. In our dataset, we identified at least `r format(sum(idigbio_mms_summary_by_year$n), big.mark=",")` records (or `r sum(idigbio_mms_summary_by_year$n)/nrow(idigbio_us_inverts_records_all)*100`% of all US marine invertebrates in iDigBio) from these surveys, `r format_output(prop_mms_75_85 * 100)`% of which were collected between 1975 and 1985. Of the `r idigbio_mms_records %>% filter(rank %in% c("Species", "Subspecies")) %>% summarize(n = n_distinct(worms_valid_name))` species collected as part of these surveys, `r nrow(idigbio_mms_species_only)` have not been collected outside of these surveys.
+Biodiversity surveys conducted under the auspices of the Bureau of Land Management (BLM) and the Minerals Management Service (MMS) have contributed significantly to our knowledge of the geographic distribution of marine invertebrates in US waters. In our dataset, we identified at least `r format(sum(idigbio_mms_summary_by_year$n), big.mark=",")` records (or `r format_output(sum(idigbio_mms_summary_by_year$n)/nrow(idigbio_us_inverts_records_all)*100)`% of all US marine invertebrates in iDigBio) from these surveys, `r format_output(prop_mms_75_85 * 100)`% of which were collected between 1975 and 1985. Of the `r idigbio_mms_records %>% filter(rank %in% c("Species", "Subspecies")) %>% summarize(n = n_distinct(worms_valid_name)) %>% format(big.mark=",")` species collected as part of these surveys, `r nrow(idigbio_mms_species_only)` have not been collected outside of these surveys.
 
 The strong correlations between (1) the number of samples collected and the species richness (Fig. \@ref(fig:correlation-sampling)), and (2) the number of specimens collected per year and the number of species recorded for the first time (Fig. \@ref(fig:idigbio-through-time)C), suggest that any new sampling effort will lead to new observations and the discovery of new species.
 
