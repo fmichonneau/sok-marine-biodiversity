@@ -39,7 +39,7 @@ We focus on the continental US because the marine biodiversity is extensively do
 
 ### What do we know about marine invertebrates in the US?
 
-We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species (`r n_distinct(na.omit(combined_species$worms_phylum))` phyla) of marine invertebrates in the continental US EEZ by combining  `r format(nrow(idigbio_us_inverts_records_species), big.mark=",")` museum records from iDigBio (`r format(n_distinct(idigbio_us_inverts_records_species$worms_valid_name), big.mark = ",")` species, `r n_distinct(na.omit(idigbio_us_inverts_records_species$worms_phylum))` phyla), and `r format(nrow(obis_us_inverts_records_species), big.mark=",")` records from OBIS (`r format(n_distinct(obis_us_inverts_records_species$worms_valid_name), big.mark=",")` species,
+We retrieved `r format(n_distinct(combined_species$worms_valid_name), big.mark = ",")` species (`r n_distinct(na.omit(combined_species$worms_phylum))` phyla) of marine invertebrates in the continental US EEZ by combining  `r format(nrow(idigbio_us_inverts_records_species), big.mark=",")` museum records from iDigBio (`r format(n_distinct(idigbio_us_inverts_records_species$worms_valid_name), big.mark = ",")` species, `r n_distinct(na.omit(idigbio_us_inverts_records_species$worms_phylum))` phyla), and `r format(nrow(obis_us_inverts_records_species), big.mark=",")` occurence records from OBIS (`r format(n_distinct(obis_us_inverts_records_species$worms_valid_name), big.mark=",")` species,
 `r n_distinct(na.omit(obis_us_inverts_records_species$worms_phylum))` phyla). 
 
 
@@ -96,7 +96,7 @@ print.xtableList(institution_contributions, colnames.format = "multiple",
 ```
 
 
-Marine invertebrates are underrepresented in biodiversity databases. This underrepresentation is manifest in the small proportion of records they represent in the iDigBio database. While marine invertebrates compose between 11% and 18% of the described global diversity (number of described marine inverterbrates species: 200,000-210,000 [@Appeltans2012], total number of described species: 1.2-1.9 million [@Mora2011,@Chapman2009]),
+Given their diversity, marine invertebrates are underrepresented in iDigBio. While marine invertebrates are estimated to represent between 11% and 18% of the described global diversity (number of described marine inverterbrates species: 200,000-210,000 [@Appeltans2012], total number of described species: 1.2-1.9 million [@Mora2011,@Chapman2009]),
 marine invertebrates from the US EEZ only make up `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$total_no_fossil*100)`% of the total number of non-fossil iDigBio records (`r round(idigbio_stats$total_no_fossil/1e6, 1)` million), and `r format_output(nrow(idigbio_us_inverts_records_species)/idigbio_stats$eez_no_fossil*100)`% of the US records (`r round(idigbio_stats$eez_no_fossil/1e6, 1)` million). 
 
 
@@ -141,11 +141,14 @@ prop_obis_continental_shelf <- (
 ```
 
 
-Most samples have been collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A), with `r prop_idigbio_continental_shelf`% (iDigBio) and `r prop_obis_continental_shelf`% (OBIS) of the records collected between 0-200m. More records have been collected from the Atlantic Ocean, than the Gulf of Mexico, and the Pacific Ocean (`r format(sum(combined_records$is_east_coast), big.mark=",")`, `r format(sum(combined_records$is_within_gom), big.mark=",")`, and `r format(sum(combined_records$is_west_coast), big.mark=",")` records respectively). The highest species richness has been recorded from the Gulf of Mexico (`r format(n_spp_gom, big.mark=",")` species), followed by the Atlantic Ocean (`r format(n_spp_east, big.mark=",")` species), and the Pacific Ocean (`r format(n_spp_west, big.mark=",")` species).
+More records have been collected from the Atlantic Ocean, than the Gulf of Mexico, and the Pacific Ocean (`r format(sum(combined_records$is_east_coast), big.mark=",")`, `r format(sum(combined_records$within_gom), big.mark=",")`, and `r format(sum(combined_records$is_west_coast), big.mark=",")` records respectively). The highest species richness has been recorded from the Gulf of Mexico (`r format(n_spp_gom, big.mark=",")` species), followed by the Atlantic Ocean (`r format(n_spp_east, big.mark=",")` species), and the Pacific Ocean (`r format(n_spp_west, big.mark=",")` species).
 
+
+Most samples have been collected on the continental shelf (Fig. \@ref(fig:map-diversity-sampling)A), with `r prop_idigbio_continental_shelf`% (iDigBio) and `r prop_obis_continental_shelf`% (OBIS) of the records collected between 0-200m. 
 
 Spatial distribution of species richness with latitude differ markedly between the Pacific and the Atlantic coasts. On the Pacific coast, richness is lowest around 40° of latitude, whereas on the Atlantic coast, it is highest at the same latitude (Fig. \@ref(fig:map-diversity-sampling)B, Fig. \@ref(fig:latitudinal-gradient)).
 
+Talk about contributions of different institutions here
 
 ```{r map-diversity-sampling, fig.cap='Spatial distribution of the number of samples (A) and species richness (B) for marine invertebrates based on records retrieved from iDigBio and OBIS within the limits of the Exclusive Economic Zone for the continental USA (represented in light gray). (\\#fig:map-diversity-sampling)'}
 knitr::include_graphics("figures/combined_map_sampling.pdf")
@@ -156,13 +159,13 @@ knitr::include_graphics("figures/gradient.pdf")
 ```
 
 
-```{r correlation-sampling, fig.cap='Relation between number of records and number of species for each cell of the map used in Fig. \\@ref(fig:map-diversity-sampling). The black line represents the 1:1 relationship. (\\#fig:correlation-sampling)'}
+```{r correlation-sampling, fig.cap='Relationship between number of records and number of species for each cell of the map used in Fig. \\@ref(fig:map-diversity-sampling). The black line represents the 1:1 relationship. (\\#fig:correlation-sampling)'}
 knitr::include_graphics("figures/plot_sampling_effort.pdf")
 ```
 
 <!-- The median number of cells occupied by species is `r median(rastercell_distribution$n_cell)`. -->
 
-Spatial patterns of species richness are however strongly confounded by sampling effort. There is a tight correlation between the number of samples and number of species per cell used in Fig. \@ref(fig:map-diversity-sampling), and `r format_output(stat_sampling_effort$p * 100)`% (n = `r stat_sampling_effort$n`) of the cells with $\leq$ 500 records have a number of species within 10% of the number of records (Fig. \@ref(fig:correlation-sampling)).
+Spatial patterns of species richness are however strongly confounded by sampling effort. There is a tight correlation between the number of samples and number of species per cell used in Fig. \@ref(fig:map-diversity-sampling), and `r format_output(stat_sampling_effort$p * 100)`% (n = `r format(stat_sampling_effort$n, big.mark=",")`) of the cells with $\leq$ 500 records have a number of species within 10% of the number of records (Fig. \@ref(fig:correlation-sampling)).
 
 Environmental conditions are among the primary determinants of species distributions and can thus be used to estimate the response of organisms to climate change. Predictive ecological models forecasting changes in distributions are trained on environmental conditions encountered by species in their current distributions. To obtain reliable results, models require at least 10, but ideally 30 or more occurrence records per species [@Wisz2008]. Yet at present, `r prop_10_specimens_species`% of species are represented by $\leq$ 10 records, and `r prop_30_specimens_species`%  by $\leq$ 30 records based on the combined records in iDigBio and OBIS. Underscoring the inadequacy of the sampling effort, `r prop_singleton_species`% of the species are known from a single record.
 
