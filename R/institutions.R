@@ -102,7 +102,7 @@ calc_institutions <- function(idig_records, obis_records) {
     )
     x_list_tbl <- xtable::xtableList(
                               list_tbl, align = c("l", "p{11.5cm}", "R{2cm}", "R{2cm}"),
-                              caption = capt
+                              caption = capt, label = "tab:records-table"
                               )
     x_list_tbl
 }
