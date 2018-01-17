@@ -145,7 +145,7 @@ plot_gradient_sampling <- function(lat_data) {
         facet_grid(~ lat_coast) +
         scale_colour_hc() + guides(color = FALSE) +
         scale_y_log10() +
-        xlab("Latitude") + ylab("Number of occurrences")
+        xlab("Latitude") + ylab("Number of observations")
 
 }
 
