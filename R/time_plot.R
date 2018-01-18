@@ -68,7 +68,7 @@ filter_phyla <- function(ktt, n_min = 220) {
     ktt %>%
         group_by(phylum) %>%
         filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
-        filter(cum_n_new_spp > n_min) %>%
+        filter(cum_n_new_spp > n_min, !is.na(phylum)) %>%
         unique(x = .$phylum)
 }
 
