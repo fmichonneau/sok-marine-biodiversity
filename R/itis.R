@@ -160,7 +160,7 @@ add_dbs_info <- function(tbl, combined_species) {
                               n_idigbio_total = nrow(.idig),
                               n_idigbio_no_geo = sum(is.na(.idig$decimallatitude) |
                                                      is.na(.idig$decimallongitude)),
-                              n_idigbio_geo_us = sum(.idig$within_eez),
+                              n_idigbio_geo_us = sum(.idig$within_eez, na.rm = TRUE),
                               n_idigbio_country_us = sum(.idig$country %in% c("united states", "usa"),
                                                          na.rm = TRUE)
                           )
