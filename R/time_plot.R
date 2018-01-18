@@ -66,9 +66,10 @@ calc_n_spp_comparison <- function(idig_time) {
 
 filter_phyla <- function(ktt, n_min = 220) {
     ktt %>%
-        group_by(phylum) %>%
-        filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
-        filter(cum_n_new_spp > n_min, !is.na(phylum)) %>%
+        dplyr::filter(!is.na(phylum)) %>%
+        dplyr::group_by(phylum) %>%
+        dplyr::filter(cum_n_new_spp ==  max(cum_n_new_spp, na.rm = TRUE)) %>%
+        dplyr::filter(cum_n_new_spp > n_min) %>%
         unique(x = .$phylum)
 }
 
