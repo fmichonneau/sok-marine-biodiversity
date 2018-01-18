@@ -162,8 +162,11 @@ add_dbs_info <- function(tbl, combined_species) {
                                                      is.na(.idig$decimallongitude)),
                               n_idigbio_geo_us = sum(.idig$within_eez, na.rm = TRUE),
                               n_idigbio_country_us = sum(.idig$country %in% c("united states", "usa"),
-                                                         na.rm = TRUE)
-                          )
+                                                         na.rm = TRUE),
+                              n_idigbio_country_us_no_geo = sum(.idig$country %in% c("united states", "usa") &
+                                                                (is.na(.idig$decimallatitude) |
+                                                                 is.na(.idig$decimallongitude)), na.rm = TRUE)
+                              )
                       }),
 
                    info_obis = purrr::map(worms_id,
