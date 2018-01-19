@@ -1031,11 +1031,11 @@ targets:
       - idigbio_mms_species_only
       - institution_contributions
       - invert_props
+      - itis_stats
       ## figures
       - figures/plot_kingdom_diversity.pdf
       - figures/combined_map_sampling.pdf
       - figures/gradient.pdf
-
       - figures/plot_sampling_effort.pdf
       - figures/proportion_barcoded.pdf
       - figures/richness_per_db.pdf

@@ -150,7 +150,8 @@ add_dbs_info <- function(tbl, combined_species) {
                                   n_idigbio_total = 0,
                                   n_idigbio_no_geo = 0,
                                   n_idigbio_geo_us = 0,
-                                  n_idigbio_country_us = 0
+                                  n_idigbio_country_us = 0,
+                                  n_idigbio_country_us_no_geo = 0
                               ))
                           .idig <- .idig %>%
                               dplyr::rename(decimallatitude = geopoint.lat,
@@ -263,7 +264,26 @@ molluscs_name_in_dbs <- function(tbl, combined_species) {
 
 get_itis_stats <- function(itis_moll, itis_crust, idig_recs, obis_recs) {
 
-    ## calculate number of species in ITIS lists
+    ## Missing geographic information ------------------------------------------
+    missing_geo <- . %>%
+        dplyr::filter(is_marine, n_idigbio_geo_us == 0) %>%
+        dplyr::distinct(worms_valid_name, .keep_all = TRUE) %>%
+        dplyr::summarize(
+                   n_spp = n(),
+                   prop_us_no_geo = mean(n_idigbio_country_us_no_geo > 0),
+                   prop_us_no_geo_no_obis = mean(n_idigbio_country_us_no_geo > 0 &
+                                                 n_obis_geo_us == 0)
+               )
+
+    ## -- molluscs
+    missing_geo_moll <- itis_moll %>%
+        missing_geo
+
+    ## -- crust
+    missing_geo_crust <- itis_crust %>%
+        missing_geo
+
+    ## calculate number of species in ITIS lists -------------------------------
     calc_nspp <- . %>%
         dplyr::filter(is_marine) %>%
         dplyr::select(worms_valid_name) %>%
@@ -302,7 +322,7 @@ get_itis_stats <- function(itis_moll, itis_crust, idig_recs, obis_recs) {
         dplyr::filter(worms_phylum == "arthropoda") %>%
         dplyr::distinct(worms_valid_name)
 
-    ## figure out intersection
+    ## figure out intersection -------------------------------------------------
     ## -- molluscs
     calc_moll <- . %>%
         dplyr::select(worms_valid_name) %>%
@@ -335,14 +355,17 @@ get_itis_stats <- function(itis_moll, itis_crust, idig_recs, obis_recs) {
                                         by = "worms_valid_name") %>%
         calc_crust
 
-    ## --- output
+
+    ## Output ------------------------------------------------------------------
     list(
         moll_nspp = itis_moll_nspp,
         crust_nspp = itis_crust_nspp,
         prop_moll_idig = prop_moll_idig,
         prop_moll_obis = prop_moll_obis,
         prop_crust_idig = prop_crust_idig,
-        prop_crust_obis = prop_crust_obis
+        prop_crust_obis = prop_crust_obis,
+        missing_geo_moll = missing_geo_moll,
+        missing_geo_crust = missing_geo_crust
     )
 }
 
