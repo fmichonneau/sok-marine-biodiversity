@@ -280,6 +280,9 @@ targets:
   eez_raster:
     command: raster_from_map(map_eez)
 
+  eez_raster_05:
+    command: raster_from_map(map_eez, res=I(.5))
+
   coords_eez:
     command: get_coords_idigbio_query(map_eez)
 
@@ -777,6 +780,22 @@ targets:
     plot:
       height: 8
       width: 6
+
+### clustering -----------------------------------------------------------------
+
+  species_site_matrix:
+    command: make_species_site_matrix(combined_records, eez_raster_05)
+
+  distance_site_matrix:
+    command: make_distance_species_site_matrix(species_site_matrix)
+
+  cells_with_clusters:
+    command: assign_clusters_to_cells(distance_site_matrix, I(100), eez_raster_05)
+
+  figures/cluster_map.pdf:
+    command: plot_map_clusters(cells_with_clusters)
+    plot: true
+
 
 ### plot summary database ------------------------------------------------------
 
