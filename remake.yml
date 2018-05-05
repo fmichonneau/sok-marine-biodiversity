@@ -368,6 +368,12 @@ targets:
   institution_contributions:
     command: calc_institutions(idigbio_us_inverts_records_species, obis_us_inverts_records_species)
 
+  ## Geolocality test ----------------------------------------------------------
+
+  us_idigbio_echinodermata:
+    command: idig_usa_echinodermata()
+
+
   ## Gulf of Mexico ------------------------------------------------------------
 
   map_gom:
