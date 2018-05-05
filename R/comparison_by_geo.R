@@ -469,15 +469,15 @@ get_not_really_in_database <- function(database_overlap) {
                )
 
     idig_gom_n_spp_within_eez <- nrow(idig_gom_within_eez)
-    idig_gom_p_spp_within_eez <- mean(idig_gom_within_eez$within_eez)
+    idig_gom_p_spp_within_eez <- mean(idig_gom_within_eez$within_eez, na.rm = TRUE)
 
     ## WARNING: Here the `n` refers to the denominator for the
     ## proportions, not the actual number of records
     list(
-        idig_gom_n_spp_not_in_db = nrow(idig_gom_not_in_db),
-        idig_gom_p_spp_not_in_db = idig_gom_n_spp_not_in_db/n_distinct(idig_gom_not_in_db$worms_valid_name),
-        idig_gom_n_spp_no_coords = idig_gom_n_spp_no_coords,
-        idig_gom_p_spp_no_coords = idig_gom_p_spp_no_coords,
+        idig_gom_n_spp_not_in_db  = nrow(idig_gom_not_in_db),
+        idig_gom_p_spp_not_in_db  = idig_gom_n_spp_not_in_db/n_distinct(idig_gom_not_in_db$worms_valid_name),
+        idig_gom_n_spp_no_coords  = idig_gom_n_spp_no_coords,
+        idig_gom_p_spp_no_coords  = idig_gom_p_spp_no_coords,
         idig_gom_n_spp_within_eez = idig_gom_n_spp_within_eez,
         idig_gom_p_spp_within_eez = idig_gom_p_spp_within_eez
     )
