@@ -84,6 +84,7 @@ targets:
       - outputs/list_species_gom.csv
       - outputs/list_species_pnw.csv
       - outputs/map_diversity_by_phylum.pdf
+      - outputs/list_species_us_checklist.csv
       #- outputs/bubble_combined_samples.mp4
 
 ### WoRMS stats ----------------------------------------------------------------
@@ -517,6 +518,9 @@ targets:
   outputs/list_species_us.csv:
     command: export_species_list(combined_species, "outputs/list_species_us.csv")
 
+  outputs/list_species_us_checklist.csv:
+    command: export_species_list(combined_species_with_checklist, "outputs/list_species_us_checklist.csv")
+
 ### ITIS list ------------------------------------------------------------------
 
   itis_crustaceans_parsed:
@@ -634,6 +638,9 @@ targets:
 
   combined_species:
     command: combine_species_list(idigbio = idigbio_us_inverts_records_species, obis = obis_us_inverts_records_species)
+
+  combined_species_with_checklist:
+    command: combine_species_list(idigbio = idigbio_us_inverts_records_species, obis = obis_us_inverts_records_species, checklist_crust = itis_crustaceans_geo, checklist_molluscs = itis_molluscs_geo)
 
   combined_data_map:
     command: data_map(combined_records, raster=eez_raster)
