@@ -5,12 +5,12 @@ Work in progress, aiming at synthesizing the publicly available data about marin
 ### Build Docker container
 
 ```shell
-docker build -t sok:latest - < Dockerfile
+docker build -t sok:latest .
 ```
 
 ### Run container
 
 ``` shell
-sudo docker run --rm -it sok:latest /bin/bash
+docker run --rm -it sok:latest /bin/bash
 ```
 

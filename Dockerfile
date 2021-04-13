@@ -13,4 +13,6 @@ RUN pg_ctlcluster 12 main start \
 
 USER root
 
-RUN R -e "remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remake::install_missing_packages()"
+COPY ./remake.yml .
+
+RUN R -e "remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remotes::install_github('ropensci/lawn'); remake::install_missing_packages()"
