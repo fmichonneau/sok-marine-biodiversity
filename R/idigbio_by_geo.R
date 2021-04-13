@@ -117,8 +117,9 @@ create_records_db <- function(coords, db_table) {
     db_begin(sok_db())
     on.exit(db_rollback(sok_db(), db_table))
 
-    if (db_has_table(sok_db(), db_table))
-        db_drop_table(sok_db(), db_table)
+    if (DBI::dbExistsTable(sok_db(), db_table)) {
+      DBI::dbRemoveTable(sok_db(), db_table)
+    }
 
     db_create_table(sok_db(), db_table, types = idig_types, temporary = FALSE)
 

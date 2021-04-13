@@ -162,8 +162,8 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     db_begin(sok_db())
     on.exit(db_rollback(sok_db(), db_table))
 
-    if (db_has_table(sok_db(), db_table))
-        db_drop_table(sok_db(), db_table)
+    if (DBI::dbExistsTable(sok_db(), db_table))
+      DBI::dbRemoveTable(sok_db(), db_table)
 
     db_create_table(sok_db(), db_table, types = obis_types, temporary = FALSE)
 

@@ -2,8 +2,6 @@ insert_worms_ids <- function(wrm_tbl) {
     db <- sok_db()
     on.exit(dbExecute(db, "DISCARD TEMP;"))
 
-    if (!db_has_table(db, "worms_ids")) {
-        dbExecute(db, glue::glue("CREATE TABLE worms_ids (",
                                  ## IS NOT NULL ensures the anti-join will perform
                                  ## as expected
                                  "cleaned_scientificname TEXT NOT NULL,",
@@ -19,6 +17,8 @@ insert_worms_ids <- function(wrm_tbl) {
                                  "phylum TEXT );"
                                  ))
         dbExecute(db, "CREATE INDEX ON worms_ids (cleaned_scientificname);")
+    if (!DBI::dbExistsTable(db, "worms_ids")) {
+      dbExecute(db, glue::glue("CREATE TABLE worms_ids (",
     }
 
     .wrm_tbl <- dplyr::distinct(wrm_tbl, cleaned_scientificname)
