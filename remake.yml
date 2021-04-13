@@ -52,7 +52,6 @@ packages:
   - extrafont
   - rmarkdown
   - bookdown
-  - labmanager
   - progress
   - glue
   - splines
