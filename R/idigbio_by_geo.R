@@ -166,8 +166,8 @@ add_worms_to_db <- function(db_table) {
     db <- sok_db()
 
     ## Drop table if it already exists
-    if (db_has_table(db, glue::glue("{db_table}_worms")))
-        db_drop_table(db, glue::glue("{db_table}_worms"))
+    if (DBI::dbExistsTable(db, glue::glue("{db_table}_worms")))
+      DBI::dbRemoveTable(db, glue::glue("{db_table}_worms"))
 
     v3(glue::glue("Creating {db_table}_worms ... "), appendLF = FALSE)
     dbExecute(db, glue::glue("CREATE TABLE {db_table}_worms AS ",
