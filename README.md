@@ -11,6 +11,6 @@ docker build -t sok:latest .
 ### Run container
 
 ``` shell
-docker run --rm -it sok:latest /bin/bash
+sudo docker run --rm -it -v /home/francois/sok-marine-biodiversity/:/sok -v /home/francois/sok-marine-biodiversity/db/data:/var/lib/postgresql/data sok:latest /bin/bash
 ```
 

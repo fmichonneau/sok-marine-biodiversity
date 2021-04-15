@@ -142,82 +142,70 @@ crust_name_geo <- function(tbl) {
 }
 
 add_dbs_info <- function(tbl, combined_species) {
-  tbl %>%
-    dplyr::left_join(dplyr::select(
-      combined_species,
-      worms_id, idigbio, obis, n_bold_records
-    ),
-    by = "worms_id"
-    ) %>%
-    dplyr::arrange(worms_valid_name) %>%
-    dplyr::mutate(
-      info_idigbio = purrr::map(
-        worms_valid_name,
-        function(wm_nm) {
-          v3("worms name: ", wm_nm)
-          .idig <- store_idigbio_species_occurrences()$get(tolower(wm_nm))
-          if (nrow(.idig) < 1) {
-            return(tibble::tibble(
-              n_idigbio_total = 0,
-              n_idigbio_no_geo = 0,
-              n_idigbio_geo_us = 0,
-              n_idigbio_country_us = 0,
-              n_idigbio_country_us_no_geo = 0
-            ))
-          }
-          .idig <- .idig %>%
-            dplyr::rename(
-              decimallatitude = geopoint.lat,
-              decimallongitude = geopoint.lon
-            ) %>%
-            is_within_eez_records()
-          tibble::tibble(
-            n_idigbio_total = nrow(.idig),
-            n_idigbio_no_geo = sum(is.na(.idig$decimallatitude) |
-              is.na(.idig$decimallongitude)),
-            n_idigbio_geo_us = sum(.idig$within_eez, na.rm = TRUE),
-            n_idigbio_country_us = sum(.idig$country %in% c("united states", "usa"),
-              na.rm = TRUE
-            ),
-            n_idigbio_country_us_no_geo = sum(.idig$country %in% c("united states", "usa") &
-              (is.na(.idig$decimallatitude) |
-                is.na(.idig$decimallongitude)), na.rm = TRUE)
-          )
-        }
-      ),
-      info_obis = purrr::map(
-        worms_id,
-        function(wid) {
-          v3("worms id: ", wid)
-          .obis <- store_obis_occurrences()$get(as.character(wid))
-          if (is.null(.obis)) {
-            return(
-              tibble::tibble(
-                n_obis_total = 0,
-                n_obis_no_geo = 0,
-                n_obis_geo_us = 0
-              )
-            )
-          }
+    tbl %>%
+        dplyr::left_join(dplyr::select(combined_species,
+                                       valid_worms_id, idigbio, obis, n_bold_records),
+                         by = "valid_worms_id") %>%
+        dplyr::arrange(worms_valid_name) %>%
+        dplyr::mutate(
+                   info_idigbio = purrr::map(worms_valid_name,
+                      function(wm_nm) {
+                          v3("worms name: ", wm_nm)
+                          .idig <- store_idigbio_species_occurrences()$get(tolower(wm_nm))
+                          if (nrow(.idig) < 1)
+                              return(tibble::tibble(
+                                  n_idigbio_total = 0,
+                                  n_idigbio_no_geo = 0,
+                                  n_idigbio_geo_us = 0,
+                                  n_idigbio_country_us = 0,
+                                  n_idigbio_country_us_no_geo = 0
+                              ))
+                          .idig <- .idig %>%
+                              dplyr::rename(decimallatitude = geopoint.lat,
+                                            decimallongitude = geopoint.lon) %>%
+                              is_within_eez_records()
+                          tibble::tibble(
+                              n_idigbio_total = nrow(.idig),
+                              n_idigbio_no_geo = sum(is.na(.idig$decimallatitude) |
+                                                     is.na(.idig$decimallongitude)),
+                              n_idigbio_geo_us = sum(.idig$within_eez, na.rm = TRUE),
+                              n_idigbio_country_us = sum(.idig$country %in% c("united states", "usa"),
+                                                         na.rm = TRUE),
+                              n_idigbio_country_us_no_geo = sum(.idig$country %in% c("united states", "usa") &
+                                                                (is.na(.idig$decimallatitude) |
+                                                                 is.na(.idig$decimallongitude)), na.rm = TRUE)
+                              )
+                      }),
 
-          .obis <- .obis %>%
-            dplyr::rename(
-              decimallatitude = decimalLatitude,
-              decimallongitude = decimalLongitude
-            ) %>%
-            is_within_eez_records()
-          ## OBIS doesn't store country info directly, sometimes
-          ## included in locality but difficult to parse.
-          tibble::tibble(
-            n_obis_total = nrow(.obis),
-            n_obis_no_geo = sum(is.na(.obis$decimallatitude) |
-              is.na(.obis$decimallongitude)),
-            n_obis_geo_us = sum(.obis$within_eez)
-          )
-        }
-      )
-    ) %>%
-    tidyr::unnest()
+                   info_obis = purrr::map(valid_worms_id,
+                                          function(wid) {
+                          v3("worms id: ", wid)
+                          .obis <- store_obis_occurrences()$get(as.character(wid))
+                          if (is.null(.obis))
+                              return(
+                                  tibble::tibble(
+                                      n_obis_total = 0,
+                                      n_obis_no_geo = 0,
+                                      n_obis_geo_us = 0
+                                  )
+                              )
+
+                          .obis <- .obis %>%
+                              dplyr::rename(decimallatitude = decimalLatitude,
+                                            decimallongitude = decimalLongitude) %>%
+                              is_within_eez_records()
+                          ## OBIS doesn't store country info directly, sometimes
+                          ## included in locality but difficult to parse.
+                          tibble::tibble(
+                              n_obis_total = nrow(.obis),
+                              n_obis_no_geo = sum(is.na(.obis$decimallatitude) |
+                                                  is.na(.obis$decimallongitude)),
+                              n_obis_geo_us = sum(.obis$within_eez)
+                          )
+                      })
+               ) %>%
+         tidyr::unnest()
+
 }
 
 

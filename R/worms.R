@@ -187,7 +187,9 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
     default_wrms <- tibble::tibble(!!! default_wrms)
 
     spp <- sp_list %>%
-        dplyr::distinct(cleaned_scientificname) %>%
+        dplyr::select(matches("^phyum$"),
+                      cleaned_scientificname) %>%
+        dplyr::distinct() %>%
         dplyr::filter(nchar(cleaned_scientificname) > 3)
 
     wrms <- store_worms_ids()$mget(tolower(spp$cleaned_scientificname)) %>%
@@ -195,23 +197,18 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
                             dplyr::bind_rows() %>%
                             dplyr::select(worms_id = AphiaID,
                                           worms_valid_name = valid_name,
+                                          valid_worms_id = valid_AphiaID,
                                           is_fuzzy = fuzzy,
                                           rank = rank)
 
     wrms <- dplyr::bind_cols(spp, wrms) %>%
-        dplyr::mutate(worms_id = as.character(worms_id)) %>%
-        dplyr::mutate(is_marine = map_lgl(worms_id, worms_is_marine)) %>%
-        dplyr::filter(!is.na(worms_id)) %>%
+        dplyr::mutate(worms_id = as.character(worms_id),
+                      valid_worms_id = as.character(valid_worms_id)) %>%
+        dplyr::mutate(is_marine = map_lgl(valid_worms_id, worms_is_marine)) %>%
+        dplyr::filter(!is.na(valid_worms_id)) %>%
         add_classification()
 
     res <- dplyr::left_join(sp_list, wrms, by = "cleaned_scientificname")
-
-    if (exists("phylum.x", res) &&
-        exists("phylum.y", res)) {
-        res <- res %>%
-            dplyr::select(-phylum.y) %>%
-            dplyr::rename(phylum = `phylum.x`)
-    }
 
     if (remove_vertebrates) {
         res <- res %>%
@@ -219,7 +216,7 @@ add_worms <- function(sp_list, remove_vertebrates = TRUE) {
     }
 
     res %>%
-        dplyr::filter(!is.na(worms_id))
+        dplyr::filter(!is.na(valid_worms_id))
 
 }
 
@@ -232,7 +229,8 @@ keep_marine_species_only <- function(wrm_tbl) {
     if (inherits(wrm_tbl, "tbl_dbi")) {
         stopifnot(length(setdiff(c("rank", "is_marine", "worms_id"),
                                  colnames(wrm_tbl))) == 0L)
-        arth_class_to_rm <- copy_to(sok_db(), arth_class_to_rm, overwrite = TRUE,
+        arth_class_to_rm <- copy_to(sok_db(), arth_class_to_rm,
+                                    overwrite = TRUE,
                                     temporary = TRUE)
 
     } else {
@@ -257,32 +255,34 @@ add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE)
     colnm <- rlang::sym(colname)
 
     tbl %>%
-      dplyr::mutate(wrm_info = map(!!colnm, function(.id) {
-        message("aphia id: ", .id)
-        .info <- store_worms_info()$get(as.character(.id))
-        if (inherits(.info, "logical")) {
-          tibble(
-            worms_id = NA_character_,
-            is_marine = NA_character_,
-            worms_valid_name = NA_character_,
-            rank = NA_character_,
-            is_fuzzy = NA_character_
-          )
-        } else {
-          tibble::tibble(
-            worms_id = as.character(.info$valid_AphiaID) %||% NA,
-            is_marine =
-              if (is.null(.info$valid_AphiaID)) NA
-            else
-              worms_is_marine(as.character(.info$valid_AphiaID)),
-            worms_valid_name = .info$valid_name %||% NA,
-            rank = .info$rank %||% NA,
-            is_fuzzy = .info$match_type %||% NA
-          )
-                          }
-      })) %>%
-      tidyr::unnest(wrm_info) %>%
-      dplyr::filter(is_marine) %>%
-      dplyr::filter(!is.na(worms_id)) %>%
-      add_classification()
+        dplyr::mutate(wrm_info = purrr::map(!!colnm, function(.id) {
+            message("aphia id: ", .id)
+            .info <- store_worms_info()$get(as.character(.id))
+            if (inherits(.info, "logical")) {
+              tibble::tibble(
+                worms_id = NA_character_,
+                is_marine = NA_character_,
+                worms_valid_name = NA_character_,
+                valid_worms_id =  NA_character_,
+                rank = NA_character_,
+                is_fuzzy = NA_character_
+                        )
+            } else {
+                tibble::data_frame(
+                  worms_id = as.character(.info$valid_AphiaID)  %||% NA,
+                    is_marine =
+                      if (is.null(.info$valid_AphiaID)) NA
+                                else
+                                    worms_is_marine(as.character(.info$valid_AphiaID)),
+                            worms_valid_name = .info$valid_name %||% NA,
+                            valid_worms_id = as.character(.info$valid_AphiaID) %||% NA,
+                            rank = .info$rank %||% NA,
+                            is_fuzzy = .info$match_type %||% NA
+                        )
+            }
+        })) %>%
+        tidyr::unnest(wrm_info) %>%
+        dplyr::filter(is_marine) %>%
+        dplyr::filter(!is.na(worms_id)) %>%
+        add_classification()
 }
