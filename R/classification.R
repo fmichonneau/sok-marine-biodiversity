@@ -42,7 +42,12 @@ add_classification <- function(data) {
                    "worms_order", "worms_family"))
 
     if (!DBI::dbExistsTable(sok_db(), wrms_tbl)) {
-      db_create_table(sok_db(), wrms_tbl, types = wrms_types, temporary = FALSE)
+      DBI::dbCreateTable(
+        sok_db(),
+        wrms_tbl,
+        fields = wrms_types,
+        temporary = FALSE
+      )
       dbExecute(sok_db(),
         paste("CREATE UNIQUE INDEX wrms_idx ON", wrms_tbl, "(worms_id)"))
       db_commit(sok_db())

@@ -121,7 +121,12 @@ create_records_db <- function(coords, db_table) {
       DBI::dbRemoveTable(sok_db(), db_table)
     }
 
-    db_create_table(sok_db(), db_table, types = idig_types, temporary = FALSE)
+    DBI::dbCreateTable(
+      sok_db(),
+      db_table,
+      fields = idig_types,
+      temporary = FALSE
+    )
 
     lapply(names(coords), function(q) {
         v2("Getting iDigBio records for ", q, appendLF = FALSE)
