@@ -45,6 +45,7 @@ get_gom_species <- function(pattern = "^biogomx-.+\\.csv$") {
     ) %>%
     dplyr::filter(!Subphylum %in% "Vertebrata") %>%
     dplyr::rename(
+      phylum = Phylum,
       species_number = `Species number`,
       scientificname_verbatim = `Scientific name`,
       above_family = `Above family`,
