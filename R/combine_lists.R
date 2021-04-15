@@ -56,18 +56,22 @@ combine_species_list <- function(...) {
   d %>%
     purrr::map_df(function(dt) {
       dt %>%
-        dplyr::filter(is_marine) %>% # needed for itis lists
-        dplyr::distinct(worms_phylum,
+        dplyr::filter(is_marine) %>%
+        # needed for itis lists
+        dplyr::distinct(
+          worms_phylum,
           worms_class, worms_order, worms_family,
-          worms_valid_name, valid_worms_id) %>%
+          worms_valid_name, valid_worms_id
+        ) %>%
         dplyr::filter(!is.na(worms_phylum) |
-                        !is.na(valid_worms_id))
-        }, .id = "data_source") %>%
-    dplyr::count(data_source, worms_phylum, worms_class, worms_order,
-      worms_family, worms_valid_name, valid_worms_id) %>%
+          !is.na(valid_worms_id))
+    }, .id = "data_source") %>%
+    dplyr::count(
+      data_source, worms_phylum, worms_class, worms_order,
+      worms_family, worms_valid_name, valid_worms_id
+    ) %>%
     tidyr::spread(data_source, n) %>%
     find_bold_records(col_nm = "worms_valid_name")
-
 }
 
 

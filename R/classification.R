@@ -39,63 +39,72 @@ get_classification_from_wid <- function(wid) {
 
 
 add_classification <- function(data) {
+  stopifnot(exists("worms_id", data))
 
-    stopifnot(exists("worms_id", data))
+  wrms_tbl <- "worms_classification"
+  wrms_types <- structure(c(
+    "INT", "TEXT", "TEXT", "TEXT", "TEXT"
+  ),
+  .Names = c(
+    "valid_worms_id", "worms_phylum", "worms_class",
+    "worms_order", "worms_family"
+  )
+  )
 
-    wrms_tbl <- "worms_classification"
-    wrms_types <- structure(c(
-        "INT", "TEXT", "TEXT", "TEXT", "TEXT"),
-        .Names = c("valid_worms_id", "worms_phylum", "worms_class",
-                   "worms_order", "worms_family"))
+  if (!DBI::dbExistsTable(sok_db(), wrms_tbl)) {
+    DBI::dbCreateTable(
+      sok_db(),
+      wrms_tbl,
+      fields = wrms_types,
+      temporary = FALSE
+    )
+    dbExecute(
+      sok_db(),
+      paste("CREATE UNIQUE INDEX wrms_idx ON", wrms_tbl, "(valid_worms_id)")
+    )
+    db_commit(sok_db())
+  }
 
-    if (!DBI::dbExistsTable(sok_db(), wrms_tbl)) {
-      DBI::dbCreateTable(
-        sok_db(),
-        wrms_tbl,
-        fields = wrms_types,
-        temporary = FALSE
-      )
-      dbExecute(sok_db(),
-        paste("CREATE UNIQUE INDEX wrms_idx ON", wrms_tbl, "(valid_worms_id)"))
-      db_commit(sok_db())
-    }
+  wid_tbl <- tbl(sok_db(), wrms_tbl)
 
-    wid_tbl <- tbl(sok_db(), wrms_tbl)
+  wid_in_db <- wid_tbl %>%
+    dplyr::distinct(valid_worms_id) %>%
+    dplyr::collect(n = Inf)
 
-    wid_in_db <- wid_tbl %>%
-        dplyr::distinct(valid_worms_id) %>%
-        dplyr::collect(n = Inf)
+  wid_to_match <- unique(na.omit(data$worms_id))
+  wid_to_classify <- tibble(valid_worms_id = setdiff(wid_to_match, wid_in_db$valid_worms_id)) %>%
+    filter(!is.na(valid_worms_id))
 
-    wid_to_match <- unique(na.omit(data$worms_id))
-    wid_to_classify <- tibble(valid_worms_id = setdiff(wid_to_match, wid_in_db$valid_worms_id)) %>%
-      filter(!is.na(valid_worms_id))
+  if (nrow(wid_to_classify) > 0) {
+    to_add_to_db <- wid_to_classify %>%
+      dplyr::mutate(classif = purrr::map(
+        valid_worms_id,
+        get_classification_from_wid
+      )) %>%
+      tidyr::unnest(classif)
+    to_add_to_db$valid_worms_id <- as.integer(to_add_to_db$valid_worms_id)
+    dbWriteTable(sok_db(), wrms_tbl, to_add_to_db,
+      append = TRUE,
+      field.types = wrms_types, row.names = FALSE
+    )
+  }
 
-    if (nrow(wid_to_classify) > 0) {
-        to_add_to_db <- wid_to_classify %>%
-            dplyr::mutate(classif = purrr::map(valid_worms_id,
-                                               get_classification_from_wid)) %>%
-            tidyr::unnest(classif)
-        to_add_to_db$valid_worms_id <- as.integer(to_add_to_db$valid_worms_id)
-        dbWriteTable(sok_db(), wrms_tbl, to_add_to_db, append = TRUE,
-                     field.types = wrms_types, row.names = FALSE)
-    }
+  wid_tbl_mem <- tbl(sok_db(), wrms_tbl) %>%
+    dplyr::filter(valid_worms_id %in% wid_to_match) %>%
+    dplyr::collect(n = Inf) %>%
+    dplyr::mutate(valid_worms_id = as.character(valid_worms_id))
 
-    wid_tbl_mem <- tbl(sok_db(), wrms_tbl) %>%
-        dplyr::filter(valid_worms_id %in% wid_to_match) %>%
-        dplyr::collect(n = Inf) %>%
-        dplyr::mutate(valid_worms_id = as.character(valid_worms_id))
+  res <- data %>%
+    dplyr::left_join(wid_tbl_mem, by = "valid_worms_id")
 
-    res <- data %>%
-        dplyr::left_join(wid_tbl_mem, by = "valid_worms_id")
-
-    ## for Kozloff's list, that's how we're getting the phylum info,
-    ## so we need to add a `phylum` column that will be used
-    ## downstream.
-    if(!exists("phylum", res))
-        res <- res %>%
-            dplyr::mutate(phylum = worms_phylum)
-    res
-
+  ## for Kozloff's list, that's how we're getting the phylum info,
+  ## so we need to add a `phylum` column that will be used
+  ## downstream.
+  if (!exists("phylum", res)) {
+    res <- res %>%
+      dplyr::mutate(phylum = worms_phylum)
+  }
+  res
 }
 
 add_kingdom <- function(wid) {
