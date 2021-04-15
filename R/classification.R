@@ -2,8 +2,8 @@ get_classification_from_wid <- function(wid) {
     wid <- as.character(wid)
     if (is.na(wid) || identical(wid, "0") || identical(wid, "1")) {
         return(
-            data_frame(worms_phylum = NA_character_,
-                       worms_class = NA_character_,
+          tibble(worms_phylum = NA_character_,
+            worms_class = NA_character_,
                        worms_order = NA_character_,
                        worms_family = NA_character_)
         )
@@ -11,8 +11,8 @@ get_classification_from_wid <- function(wid) {
     v2("getting classification for aphiaid ", wid)
     classif <- store_worms_classification()$get(wid)
 
-    empty_classif <- data_frame(phylum = character(0),
-                                class  = character(0),
+    empty_classif <- tibble(phylum = character(0),
+      class  = character(0),
                                 order  = character(0),
                                 family = character(0))
     names(empty_classif) <- paste0("worms_", names(empty_classif))

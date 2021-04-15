@@ -8,8 +8,8 @@ extract_itis_names <- function(url) {
         xml_find_all(".//td/table/tbody/tr//a")
 
     res <- purrr::map_df(all_links, function(x) {
-        data_frame(name = xml_text(x),
-                   tsn_id = xml_find_all(x, "@href") %>%
+      tibble(name = xml_text(x),
+        tsn_id = xml_find_all(x, "@href") %>%
                        xml_text() %>%
                        gsub(".+=([0-9]+)$", "\\1", .)
                    )

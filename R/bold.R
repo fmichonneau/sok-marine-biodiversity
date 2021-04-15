@@ -57,8 +57,8 @@ find_bold_records <- function(res, col_nm, show_progress = TRUE) {
         bold <- store_bold_specimens_per_species()$get(tolower(res[[col_nm]][i]))
 
         if (inherits(bold, "data.frame") && nrow(bold) > 0) {
-            coord_data <- data_frame(decimallatitude = bold$lat,
-                                     decimallongitude = bold$lon) %>%
+          coord_data <- tibble(decimallatitude = bold$lat,
+            decimallongitude = bold$lon) %>%
                 dplyr::filter(!is.na(decimallatitude) |
                               !is.na(decimallongitude))
             if (nrow(coord_data) > 0) {

@@ -8,15 +8,15 @@ compare_with_geo <- function(spp_list, geo_list, verbose = FALSE) {
     list(
         ## in spp_list but not in geo_list
         not_in_list =
-            as_data_frame(geo_list) %>%
-            dplyr::anti_join(spp_list, by = "worms_valid_name") %>%
-            prepare()
+          as_tibble(geo_list) %>%
+          dplyr::anti_join(spp_list, by = "worms_valid_name") %>%
+          prepare()
        ,
         ## in geo_list but not in spp_list
         not_in_geo =
-            as_data_frame(spp_list) %>%
-            dplyr::anti_join(geo_list, by = "worms_valid_name") %>%
-            prepare()
+          as_tibble(spp_list) %>%
+          dplyr::anti_join(geo_list, by = "worms_valid_name") %>%
+          prepare()
     ) %>% dplyr::bind_rows(.id = "data_source")
 }
 

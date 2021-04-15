@@ -47,10 +47,10 @@ sample_richness_in_cells <- function(cells, lr, n_samples = 200) {
         sample(x$n_species[!is.na(x[, 1])], size = n_samples,
                replace = TRUE)
     }) %>%
-        data_frame()
+      tibble()
     names(res) <- "richness"
-    data_frame(resl = seq(0.2, 2, by = .2),
-               surf = area_from_resolution(resl)) %>%
+    tibble(resl = seq(0.2, 2, by = .2),
+      surf = area_from_resolution(resl)) %>%
         bind_cols(sample_richness = res) %>%
         unnest()
 }
@@ -67,7 +67,7 @@ if (FALSE) {
     tt <- us_sampled_richness
     rr <- tt %>% group_by(surf) %>% summarize(mean_spp = mean(richness))
     gom_sar_nls <- nls(richness ~ a * surf ^ z, data = tt, start = list(a = 5, z = .2))
-    preds <- data_frame(surf = 1:1e6)
+    preds <- tibble(surf = 1:1e6)
     preds$n_spp <- predict(gom_sar_nls, preds)
 
     plot(tt$surf, tt$richness)
@@ -106,8 +106,8 @@ spp_from_cells <- function(recs, rstr) {
                    dplyr::filter(recs, cell %in% .c) %>%
                    distinct(worms_valid_name) %>%
                    nrow) %>%
-            data_frame(
-                n_spp = .
+          tibble(
+            n_spp = .
             ) %>%
             unnest() %>%
             dplyr::mutate(
@@ -117,9 +117,9 @@ spp_from_cells <- function(recs, rstr) {
         area_df <- purrr::map(x, function(.c) {
                               sum(raster_area@data@values[.c])
                           }) %>%
-            data_frame(
-                area = .
-            ) %>%
+          tibble(
+            area = .
+          ) %>%
             unnest()
         dplyr::bind_cols(n_spp_df, area_df)
     })

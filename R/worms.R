@@ -261,7 +261,6 @@ add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE)
                            message("aphia id: ", .id)
                           .info <- store_worms_info()$get(as.character(.id))
                           if (inherits(.info, "logical")) {
-                              tibble::data_frame(
                                           worms_id = NA_character_,
                                           is_marine = NA_character_,
                                           worms_valid_name = NA_character_,
@@ -281,6 +280,7 @@ add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE)
                                       )
                           }
                       })) %>%
+              tibble::tibble(
         tidyr::unnest(wrm_info) %>%
         dplyr::filter(is_marine) %>%
         dplyr::filter(!is.na(worms_id)) %>%

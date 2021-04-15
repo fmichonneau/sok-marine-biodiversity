@@ -67,9 +67,9 @@ n_spp_per_lat <- function(lat_data) {
                                        (min_latitude < lat_degrees + slice_size &
                                         max_latitude >=  lat_degrees
                                         ))
-                          data_frame(
-                              n_spp = nrow(.r),
-                              n_records = sum(.r$n_records)
+                          tibble(
+                            n_spp = nrow(.r),
+                            n_records = sum(.r$n_records)
                           )
                       })) %>%
         tidyr::unnest() %>%

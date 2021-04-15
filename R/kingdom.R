@@ -67,8 +67,8 @@ get_kingdom_worms_stats <- function(worms_stats) {
              n_spp = sum(accepted_species_marine_non_fossil)
            ) %>%
     dplyr::bind_rows(
-             data_frame(
-               sub_kingdom =  "animalia - vertebrates",
+      tibble(
+        sub_kingdom =  "animalia - vertebrates",
                n_spp = n_vertebrates)
            )
   wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - n_vertebrates

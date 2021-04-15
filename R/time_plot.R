@@ -133,14 +133,14 @@ plot_samples_vs_spp_through_time <- function(knowledge_through_time) {
     res %>%
         ggplot(aes(x = n_samples, y = n_spp, colour = period)) +
         geom_point() +
-        geom_line(data = data_frame(samples = 1:100000, species = samples),
-                  aes(x = samples, y = species), color = "#2b2b2b", linetype = 2,
+      geom_line(data = tibble(samples = 1:100000, species = samples),
+        aes(x = samples, y = species), color = "#2b2b2b", linetype = 2,
                   inherit.aes = FALSE) +
-        geom_line(data = data_frame(samples = 1:100000, species = samples/100),
-                  aes(x = samples, y = species), color = "#2b2b2b", linetype = 3,
+      geom_line(data = tibble(samples = 1:100000, species = samples/100),
+        aes(x = samples, y = species), color = "#2b2b2b", linetype = 3,
                   inherit.aes = FALSE) +
-        geom_text(data = data_frame(x = c(1.39, 139), y = c(1.5, 1.5),
-                                    label = c("1:1", "1:100")),
+      geom_text(data = tibble(x = c(1.39,  139), y = c(1.5, 1.5),
+        label = c("1:1", "1:100")),
                   aes(x = x, y = y, label = label),
                   angle = 45, hjust = 0,  vjust = 0, size = 3,
                   color = "#2b2b2b", family = "Ubuntu Condensed") +
