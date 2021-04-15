@@ -51,7 +51,7 @@ fetch_spp_from_idigbio <- function(wrm) {
   wrm %>%
     dplyr::filter(!is.na(worms_valid_name)) %>%
     dplyr::pull(worms_valid_name) %>%
-    purrr::map_df(function(worms_valid_name) {
+    purrr::map(function(worms_valid_name) {
       r <- store_idigbio_species_occurrences()$get(tolower(worms_valid_name)) %>%
         dplyr::rename(
           decimallatitude = geopoint.lat,
@@ -60,6 +60,8 @@ fetch_spp_from_idigbio <- function(wrm) {
       names(r) <- gsub("^.+:", "", names(r))
       r
     }) %>%
+    purrr::keep(~ nrow(.) > 0) %>%
+    dplyr::bind_rows() %>%
     dplyr::distinct(uuid, .keep_all = TRUE)
 }
 
