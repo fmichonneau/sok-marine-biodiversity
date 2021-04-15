@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 ## start postgres and create database
 USER postgres
-RUN pg_ctlcluster 12 main start \
+RUN  /etc/init.d/postgresql start \
     && psql --command "CREATE USER marinediversity WITH SUPERUSER PASSWORD 'password';" \
     && createdb -O marinediversity sok
 
@@ -15,4 +15,8 @@ USER root
 
 COPY ./remake.yml .
 
+VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
+
 RUN R -e "remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remotes::install_github('ropensci/lawn'); remake::install_missing_packages()"
+
+RUN /etc/init.d/postgresql start
