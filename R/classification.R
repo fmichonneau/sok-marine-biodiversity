@@ -62,7 +62,7 @@ add_classification <- function(data) {
       sok_db(),
       paste("CREATE UNIQUE INDEX wrms_idx ON", wrms_tbl, "(valid_worms_id)")
     )
-    db_commit(sok_db())
+    DBI::dbCommit(sok_db())
   }
 
   wid_tbl <- tbl(sok_db(), wrms_tbl)

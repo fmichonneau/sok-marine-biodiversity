@@ -227,8 +227,8 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     unique = FALSE
   )
   dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
-  db_analyze(sok_db(), db_table)
-  db_commit(sok_db())
+  dbplyr::sql_table_analyze(sok_db(), db_table)
+  DBI::dbCommit(sok_db())
   add_within_polygon_to_db(db_table)
   on.exit(NULL)
 }

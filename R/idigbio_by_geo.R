@@ -173,8 +173,8 @@ create_records_db <- function(coords, db_table) {
     unique = FALSE
   )
   dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
-  db_analyze(sok_db(), db_table)
-  db_commit(sok_db())
+  dbplyr::sql_table_analyze(sok_db(), db_table)
+  DBI::dbCommit(sok_db())
   add_within_polygon_to_db(db_table)
   on.exit(NULL)
 }
@@ -285,7 +285,7 @@ add_worms_to_db <- function(db_table) {
     "        worms_phylum, worms_class, worms_order, worms_family ",
     " FROM {db_table}_species ", " {join_q} );"
   ))
-  db_analyze(db, glue::glue("{db_table}_worms"))
+  dbplyr::sql_table_analyze(db, glue::glue("{db_table}_worms"))
   v3("DONE.")
 }
 
