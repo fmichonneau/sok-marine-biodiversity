@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
 USER postgres
 RUN  /etc/init.d/postgresql start \
     && psql --command "CREATE USER marinediversity WITH SUPERUSER PASSWORD 'password';" \
-    && createdb -O marinediversity sok
+    && createdb -O marinediversity sok \
+    && psql -d sok -c "CREATE EXTENSION postgis;"
 
 USER root
 
