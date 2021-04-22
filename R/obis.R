@@ -1,7 +1,7 @@
 ## key the OBIS occurrences from the AphiaID (worms_id)
 fetch_hook_obis_occurrences <- function(key, namespace) {
   if (!is.na(key)) {
-    res <- try(robis::occurrence(aphiaid = key), silent = TRUE)
+    res <- try(robis::occurrence(taxonid = key), silent = TRUE)
   } else {
     return(NULL)
   }
@@ -40,7 +40,7 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
     dplyr::distinct(uuid, .keep_all = TRUE) %>%
     dplyr::select(
       uuid, decimallatitude, decimallongitude, depth, phylum,
-      family, genus, species, scientificname, yearcollected,
+      family, genus, species, scientificname, year,
       depth, minimumdepthinmeters, maximumdepthinmeters
     )
 
