@@ -30,7 +30,10 @@ fetch_spp_from_obis <- function(wrm, feather_out) {
   res <- vector("list", length(w_id))
   for (i in seq_along(w_id)) {
     v2("getting obis for ", w_id[i], appendLF = FALSE)
-    res[[i]] <- store_obis_occurrences()$get(as.character(w_id[i]))
+    r <- store_obis_occurrences()$get(as.character(w_id[i]))
+    r$id <- as.character(r$id)
+    r <- sok_as_character(r, c("individualCount", "coordinatePrecision"))
+    res[[i]] <- r
     v2(" DONE.")
   }
   res <- dplyr::bind_rows(res)

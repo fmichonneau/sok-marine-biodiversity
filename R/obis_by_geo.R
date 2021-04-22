@@ -57,8 +57,9 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
   res <- store_obis_by_geo()$get(k)
   phyla_to_keep <- na.omit(list_phyla$phylum[list_phyla$common_phylum != "to_drop"])
   if (nrow(res) > 0) {
-    res[tolower(res$phylum) %in% phyla_to_keep &
-      (!tolower(res$class) %in% chordata_classes_to_rm()), ]
+    res <- res[tolower(res$phylum) %in% phyla_to_keep &
+                 (!tolower(res$class) %in% chordata_classes_to_rm()), ]
+    res <- sok_as_character(res, c("recordedBy", "identifiedBy", "behavior"))
   } else {
     NULL
   }

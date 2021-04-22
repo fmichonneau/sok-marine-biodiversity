@@ -249,3 +249,21 @@ combine_upsetr_plots <- function(gom_plot, pnw_plot, output) {
 
   combine_plots(gom_annot, pnw_annot, output = output)
 }
+
+
+##' convert column from data frame to character
+int_sok_as_character <- function(.d, colname) {
+  stopifnot(rlang::is_scalar_character(colname))
+  if (exists(colname, .d)) {
+    .d[[colname]] <- as.character(.d[[colname]])
+  }
+  .d
+}
+
+sok_as_character <- function(.d, colnames) {
+  stopifnot(rlang::is_character(colnames) && length(colnames) > 0)
+  for (i in seq_along(colnames)) {
+    .d <- int_sok_as_character(.d, colnames[i])
+  }
+  .d
+}
