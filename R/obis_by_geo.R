@@ -171,8 +171,8 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ## }
 
   ## Then we can do what we were doing with iDigBio records
-  db_begin(sok_db())
-  on.exit(db_rollback(sok_db(), db_table))
+  DBI::dbBegin(sok_db())
+  on.exit(DBI::dbRollback(sok_db(), db_table))
 
   if (DBI::dbExistsTable(sok_db(), db_table)) {
     DBI::dbRemoveTable(sok_db(), db_table)
@@ -207,7 +207,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
         ))) %>%
         ## to make it comparable to iDigBio, content gets lowercased
         dplyr::mutate_if(is.character, tolower)
-      db_insert_into(sok_db(), db_table, r)
+      DBI::dbWriteTable(sok_db(), name = db_table, value = r, append = TRUE)
     }
     v2(" DONE.")
   })

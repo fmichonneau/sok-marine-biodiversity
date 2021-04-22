@@ -126,8 +126,8 @@ create_records_db <- function(coords, db_table) {
     "within_eez", "within_gom", "within_pnw"
   )
   )
-  db_begin(sok_db())
-  on.exit(db_rollback(sok_db(), db_table))
+  DBI::dbBegin(sok_db())
+  on.exit(DBI::dbRollback(sok_db(), db_table))
 
   if (DBI::dbExistsTable(sok_db(), db_table)) {
     DBI::dbRemoveTable(sok_db(), db_table)
@@ -154,7 +154,7 @@ create_records_db <- function(coords, db_table) {
       ) %>%
       dplyr::mutate_if(is.character, tolower)
     v2(" DONE.")
-    db_insert_into(sok_db(), db_table, r)
+    DBI::dbWriteTable(conn = sok_db(), name = db_table, value = r, append = TRUE, row.names = FALSE)
   })
 
   dbExecute(sok_db(), glue::glue("DELETE FROM {db_table} a USING (
