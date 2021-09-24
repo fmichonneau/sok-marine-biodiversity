@@ -18,5 +18,4 @@ COPY ./remake.yml .
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-RUN R -e "remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remotes::install_github('ropensci/lawn'); remake::install_missing_packages()"
-
+RUN R -e "remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remotes::install_github('ropensci/lawn'); remotes::install_github('iobis/robis'); remake::install_missing_packages()"
