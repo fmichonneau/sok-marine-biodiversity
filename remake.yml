@@ -1065,7 +1065,7 @@ targets:
       - figures/combined_pnw_sampling.pdf
       - figures/idigbio_map_sampling.pdf
       - figures/obis_map_sampling.pdf
-      - figures/rank_abundance.pdf
+      - figures/plot_rank_abundance.pdf
       ## attributions
       #- idigbio_records_attributions
       #- idigbio_gom_records_attributions
