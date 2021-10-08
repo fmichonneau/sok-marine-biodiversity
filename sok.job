@@ -7,7 +7,7 @@
 #$ -o 2021-10-08-sok.log
 #$ -e 2021-10-08-sok.err
 #$ -cwd
-#$ -pe mthread 4
+#$ -pe mthread 8
 #$ -l mres=24G,h_data=6G,h_vmem=6G
 #$ -m bea
 #$ -M francois.michonneau@gmail.com

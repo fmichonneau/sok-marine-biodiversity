@@ -1,4 +1,4 @@
-n_cores <- function(auto = TRUE) {
+n_cores <- function(auto = FALSE) {
   if (auto) {
     message("Using auto detection of the number of cores")
     options("mc.cores" = parallel::detectCores())
@@ -9,6 +9,8 @@ n_cores <- function(auto = TRUE) {
       options("mc.cores" = 8)
     } else if (identical(cmptr_name, "ryanlab.whitney.ufl.edu")) {
       options("mc.cores" = 12)
+    } else if (grepl("compute", cmptr_name)) {
+      options("mc.cores" = 8)
     } else {
       options("mc.cores" = 1)
       message("no parallelization")
