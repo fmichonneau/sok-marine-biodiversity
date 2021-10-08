@@ -20,4 +20,4 @@ module load singularity
 
 #singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
 
-singularity exec --userns sok.simg ls /sok
+singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-marine-biodiversity/db/data:/var/lib/postgresql/data sok.simg ls /sok
