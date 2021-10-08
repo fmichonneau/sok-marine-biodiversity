@@ -23,4 +23,4 @@ mkdir -p /pool/genomics/michonneauf/sok-db
 
 #singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
 
-singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-db:/var/lib/postgresql/data sok.simg ls /sok
+singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-db:/var/lib/postgresql/data sok.simg Rscript -e "remake::make('idigbio_stats')"
