@@ -18,6 +18,6 @@ echo + `date` $JOB_NAME started on $HOST in $QUEUE jobID=$JOB_ID
 
 module load singularity
 
-singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
+#singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
 
-singularity exec sok.img --userns ls /sok
+singularity exec sok.simg --userns ls /sok
