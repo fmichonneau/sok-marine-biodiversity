@@ -18,6 +18,7 @@ packages:
   - maptools
   - maps
   - geojsonio
+  - geojsonlint
   - lawn
   ## data manipulation
   - dplyr
