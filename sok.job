@@ -20,4 +20,4 @@ module load singularity
 
 #singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
 
-singularity exec sok.simg --userns ls /sok
+singularity exec --userns sok.simg ls /sok
