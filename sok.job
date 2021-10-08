@@ -1,0 +1,21 @@
+# /bin/sh
+#
+# --- Parameters ---------------------------------------------------------------
+#$ -S /bin/sh
+#$ -q sThC.q@@containers-hosts
+#$ -N 2021-10-08-sok
+#$ -o 2021-10-08-sok.log
+#$ -e 2021-10-08-sok.err
+#$ -cwd
+#$ -m bea
+#$ -M francois.michonneau@gmail.com
+
+echo + `date` $JOB_NAME started on $HOST in $QUEUE jobID=$JOB_ID
+
+# --- Modules ------------------------------------------------------------------
+
+module load singularity
+
+singularity pull --name sok.simg --userns https://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
+
+singularity exec sok.img --userns ls /sok
