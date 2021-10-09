@@ -19,14 +19,15 @@ echo + `date` $JOB_NAME started on $HOST in $QUEUE jobID=$JOB_ID
 module load singularity
 
 # --- Preparation --------------------------------------------------------------
-mkdir -p /pool/genomics/michonneauf/sok-db
 
-if test -f sok.simg; then
-   rm sok.simg
-fi
+# mkdir -p /pool/genomics/michonneauf/sok-db
 
-singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
+# if test -f sok.simg; then
+#    rm sok.simg
+# fi
+
+# singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodiversity:add-docker
 
 # --- Run Script ---------------------------------------------------------------
 
-singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-db:/var/lib/postgresql/data sok.simg /etc/init.d/postgresql start && Rscript -e "setwd('/sok'); remake::make()"
+singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-db:/var/lib/postgresql/data sok.simg singularity_script.sh
