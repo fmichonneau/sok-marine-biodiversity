@@ -29,4 +29,4 @@ singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodive
 
 # --- Run Script ---------------------------------------------------------------
 
-singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-db:/var/lib/postgresql/data sok.simg Rscript -e "setwd('/sok'); remake::make()"
+singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-db:/var/lib/postgresql/data sok.simg /etc/init.d/postgresql start && Rscript -e "setwd('/sok'); remake::make()"
