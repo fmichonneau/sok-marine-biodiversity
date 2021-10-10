@@ -5,13 +5,6 @@ RUN apt-get update && apt-get install -y \
     postgresql-12-postgis-3 \
     && rm -rf /var/lib/apt/lists/*
 
-## start postgres and create database
-USER postgres
-RUN  /etc/init.d/postgresql start \
-    && psql --command "CREATE USER marinediversity WITH SUPERUSER PASSWORD 'password';" \
-    && createdb -O marinediversity sok \
-    && psql -d sok -c "CREATE EXTENSION postgis;"
-
 USER root
 
 COPY ./remake.yml .
@@ -21,3 +14,11 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 ## we freeze the CRAN package version to 2021-10-08
 
 RUN R -e "options(repos = c(RSPM = 'https://packagemanager.rstudio.com/all/2021-10-08+Y3JhbjoyMDIxLTEwLTA3LDI6NDUyNjIxNTtCNjY2MDZGOQ')); remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remotes::install_github('ropensci/lawn@10c7c526cd29a2522c7105702a69404e389d5018'); remake::install_missing_packages()"
+
+
+## start postgres and create database
+USER postgres
+RUN  /etc/init.d/postgresql start \
+    && psql --command "CREATE USER marinediversity WITH SUPERUSER PASSWORD 'password';" \
+    && createdb -O marinediversity sok \
+    && psql -d sok -c "CREATE EXTENSION postgis;"
