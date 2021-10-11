@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 USER root
 
-
+RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/12/main/pg_hba.conf
 RUN echo "listen_addresses = '*'" >> /etc/postgresql/12/main/postgresql.conf
 
 COPY ./remake.yml .
@@ -18,8 +18,11 @@ RUN R -e "options(repos = c(RSPM = 'https://packagemanager.rstudio.com/all/2021-
 
 ## start postgres and create database
 USER postgres
+
+VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
+
 RUN  /etc/init.d/postgresql start \
     && psql --command "CREATE USER marinediversity WITH SUPERUSER PASSWORD 'password';" \
     && createdb -O marinediversity sok \
-    && psql -d sok -c "CREATE EXTENSION postgis;"
-VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
+    && psql -d sok -c "CREATE EXTENSION postgis;" \
+    && /etc/init.d/postgresql restart
