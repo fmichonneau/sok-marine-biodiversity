@@ -23,7 +23,6 @@ VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
 RUN  /etc/init.d/postgresql start \
     && psql --command "CREATE USER marinediversity WITH SUPERUSER PASSWORD 'password';" \
-    && psql --command "CREATE USER rstudio WITH SUPERUSER PASSWORD 'rstudio';" \
-    && createdb -O rstudio sok \
+    && createdb -O marinediversity sok \
     && psql -d sok -c "CREATE EXTENSION postgis;" \
     && /etc/init.d/postgresql restart
