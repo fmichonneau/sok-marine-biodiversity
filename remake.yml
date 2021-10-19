@@ -7,7 +7,7 @@ packages:
   - readr
   - feather
   - DBI
-  - RPostgreSQL
+  - RPostgres
   - rpostgis
   - storr
   - tibble
