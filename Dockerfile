@@ -1,4 +1,4 @@
-FROM rocker/geospatial:4.0.4
+FROM rocker/geospatial:4.0.5
 
 RUN apt-get update && apt-get install -y \
     postgresql-12 \
