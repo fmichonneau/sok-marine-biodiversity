@@ -1,7 +1,8 @@
 ## the database is called sok
 connect_db <- function(env) {
   sok_db <- DBI::dbConnect(
-    drv = RPostgreSQL::PostgreSQL(), dbname = "sok",
+    drv = RPostgres::Postgres(),
+    dbname = "sok",
     user = "rstudio"
     ##     host = "localhost", user = "marinediversity",
     ##    password = "password"
