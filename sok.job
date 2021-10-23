@@ -20,10 +20,13 @@ module load singularity
 
 # --- Preparation --------------------------------------------------------------
 
+SOK_WD=/pool/genomics/michonneauf/sok-marine-diversity
+
 SOK_DB_DATA=/pool/genomics/michonneauf/sok-db-pg_data
 SOK_DB_RUN=/pool/genomics/michonneauf/sok-db-pg_run
 SOK_DB_LOG=/pool/genomics/michonneauf/sok-db-pg_log
 SOK_DB_ETC=/pool/genomics/michonneauf/sok-db-pg_etc
+
 
 mkdir -p /pool/genomics/michonneauf/sok-db
 mkdir -p $SOK_DB_DATA
@@ -39,11 +42,10 @@ singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodive
 
 # --- Run Script ---------------------------------------------------------------
 
-singularity exec --userns --bind /pool/genomics/michonneauf/sok-marine-biodiversity:/sok,/pool/genomics/michonneauf/sok-db:/var/lib/postgresql/data sok.simg /sok/./singularity_script.sh
-
 singularity exec --userns \
   -B $SOK_DB_DATA:/var/lib/postgresql \
   -B $SOK_DB_RUN:/var/run/postgresql \
   -B $SOK_DB_LOG/:/var/log/postgresql \
   -B $SOK_DB_ETC:/etc/postgresql \
+  -B $SOK_WD:/sok \
   sok.simg /sok/./singularity_script.sh
