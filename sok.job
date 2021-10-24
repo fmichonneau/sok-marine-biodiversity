@@ -43,6 +43,8 @@ singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodive
 
 export PGSSLMODE=disable
 
+cp postgresql.conf $SOK_DB_ETC/12/main/postgresql.conf
+
 singularity exec --userns \
   -B $SOK_DB_DATA:/var/lib/postgresql \
   -B $SOK_DB_RUN:/var/run/postgresql \
