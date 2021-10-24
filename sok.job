@@ -27,13 +27,11 @@ SOK_DB_RUN=/pool/genomics/michonneauf/sok-db-pg_run
 SOK_DB_LOG=/pool/genomics/michonneauf/sok-db-pg_log
 SOK_DB_ETC=/pool/genomics/michonneauf/sok-db-pg_etc
 
-
 mkdir -p /pool/genomics/michonneauf/sok-db
 mkdir -p $SOK_DB_DATA
 mkdir -p $SOK_DB_RUN
 mkdir -p $SOK_DB_LOG
 mkdir -p $SOK_DB_ETC
-mkdir -p /pool/genomics/michonneauf/etc/ssl/private
 
 if test -f sok.simg; then
    rm sok.simg
@@ -43,11 +41,12 @@ singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodive
 
 # --- Run Script ---------------------------------------------------------------
 
+export PGSSLMODE=disable
+
 singularity exec --userns \
   -B $SOK_DB_DATA:/var/lib/postgresql \
   -B $SOK_DB_RUN:/var/run/postgresql \
   -B $SOK_DB_LOG/:/var/log/postgresql \
   -B $SOK_DB_ETC:/etc/postgresql \
-  -B /pool/genomics/michonneauf/etc/ssl/private:/etc/ssl/private \
   -B $SOK_WD:/sok \
   sok.simg /sok/./singularity_script.sh
