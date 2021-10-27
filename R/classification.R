@@ -33,7 +33,7 @@ get_classification_from_wid <- function(wid) {
     dplyr::distinct(rank, .keep_all = TRUE) %>%
     dplyr::select(-AphiaID) %>%
     tidyr::spread(rank, scientificname) %>%
-    dplyr::select_(.dots = to_keep) %>%
+    dplyr::select(to_keep) %>%
     dplyr::bind_rows(empty_classif)
 }
 
