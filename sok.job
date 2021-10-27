@@ -41,8 +41,6 @@ singularity pull --name sok.simg docker://ghcr.io/fmichonneau/sok-marine-biodive
 
 # --- Run Script ---------------------------------------------------------------
 
-export PGSSLMODE=disable
-
 cp postgresql.conf $SOK_DB_ETC/12/main/postgresql.conf
 
 singularity exec --userns \

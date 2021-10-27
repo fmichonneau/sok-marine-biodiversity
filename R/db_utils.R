@@ -3,9 +3,8 @@ connect_db <- function(env) {
   sok_db <- DBI::dbConnect(
     drv = RPostgres::Postgres(),
     dbname = "sok",
-    user = "rstudio"
-    ##     host = "localhost", user = "marinediversity",
-    ##    password = "password"
+    user = "michonneauf",
+    port = 5435
   )
   assign("sok_db_con", sok_db, envir = env)
 }
