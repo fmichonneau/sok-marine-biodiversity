@@ -87,9 +87,12 @@ add_classification <- function(data) {
       )) %>%
       tidyr::unnest(classif)
     to_add_to_db$valid_worms_id <- as.integer(to_add_to_db$valid_worms_id)
-    DBI::dbWriteTable(sok_db(), wrms_tbl, to_add_to_db,
+    DBI::dbWriteTable(
+      sok_db(),
+      wrms_tbl,
+      to_add_to_db,
       append = TRUE,
-      field.types = wrms_types, row.names = FALSE
+      row.names = FALSE
     )
   }
 
