@@ -52,6 +52,10 @@ add_classification <- function(data) {
   )
 
   if (!DBI::dbExistsTable(sok_db(), wrms_tbl)) {
+
+    DBI::dbBegin(sok_db())
+    on.exit(DBI::dbRollback(sok_db(), db_table))
+
     DBI::dbCreateTable(
       sok_db(),
       wrms_tbl,
