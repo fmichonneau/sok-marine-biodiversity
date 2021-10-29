@@ -1,5 +1,5 @@
 get_map_eez <- function(file) {
-  res <- geojsonio::geojson_read(x = file, method = "local", what = "sp")
+  res <- geojsonio::geojson_read(x = file, what = "sp")
   geojsonio::geojson_json(res)
 }
 
