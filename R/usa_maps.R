@@ -51,9 +51,9 @@ is_within_map_records <- function(d, map_name) {
   db <- sok_db()
 
   on.exit(dbDrop(db, temp_name, display = FALSE))
-  dbWriteTable(db, temp_name, d_to_insert, temporary = TRUE)
+  dbCreateTable(db, temp_name, d_to_insert, temporary = TRUE)
   on.exit(dbDrop(db, full_coords_name, display = FALSE), add = TRUE)
-  dbWriteTable(db, full_coords_name, d_, temporary = TRUE)
+  dbCreateTable(db, full_coords_name, d_, temporary = TRUE)
 
   dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
   dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
