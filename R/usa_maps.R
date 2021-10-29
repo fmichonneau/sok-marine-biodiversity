@@ -95,6 +95,9 @@ is_within_map_records <- function(d, map_name) {
   res <- dbFetch(q)
   dbClearResult(q)
 
+  dbRemoveTable(sok_db(), temp_name)
+  dbRemoveTable(sok_db(), full_coords_name)
+
   res
 }
 
