@@ -49,21 +49,11 @@ is_within_map_records <- function(d, map_name) {
   to_select <- glue::glue_collapse(paste(full_coords_name, paste0("\"", names(d), "\""), sep = "."), ", ")
 
   message("Creating table: ", temp_name, " ... ", appendLF = FALSE)
-  on.exit({
-    message("Droping ", temp_name, " ... ", appendLF = FALSE)
-    dbDrop(sok_db(), temp_name, display = FALSE)
-    message("DONE.")
-  }, add = TRUE)
   dbCreateTable(sok_db(), temp_name, d_to_insert, temporary = TRUE)
   message("DONE.")
 
 
   message("Creating table: ", full_coords_name, " ... ", appendLF = FALSE)
-  on.exit({
-    message("Dropping ", full_coords_name, " ... ", appendLF = FALSE)
-    dbDrop(sok_db(), full_coords_name, display = FALSE)
-    message("DONE.")
-  }, add = TRUE)
   dbCreateTable(sok_db(), full_coords_name, d_, temporary = TRUE)
   message("DONE.")
 
@@ -72,12 +62,12 @@ is_within_map_records <- function(d, map_name) {
     paste("- ", DBI::dbListTables(sok_db()), sep = "\n")
   )
 
-  dbExecute(sok_db(), glue::glue_sql("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
-  dbExecute(sok_db(), glue::glue_sql("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
+  dbExecute(sok_db(), glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
+  dbExecute(sok_db(), glue::glue("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
 
   dbExecute(
     sok_db(),
-    glue::glue_sql(
+    glue::glue(
       "UPDATE {temp_name} ",
       "SET ",
       "  geom_point = ST_SetSRID(ST_MakePoint(decimallongitude, decimallatitude), 4326);"
@@ -86,18 +76,18 @@ is_within_map_records <- function(d, map_name) {
 
   dbExecute(
     sok_db(),
-    glue::glue_sql(
+    glue::glue(
       "UPDATE {temp_name} ",
       "SET within_{map_name} = ST_Contains(map_{map_name}, {temp_name}.geom_point) ",
       "FROM (SELECT geom_polygon AS map_{map_name} FROM maps WHERE area_id ='map_{map_name}') AS foo;"
     )
   )
 
-  dbExecute(sok_db(), glue::glue_sql("CREATE INDEX ON {full_coords_name} (hash)"))
-  dbExecute(sok_db(), glue::glue_sql("CREATE INDEX ON {temp_name} (hash)"))
+  dbExecute(sok_db(), glue::glue("CREATE INDEX ON {full_coords_name} (hash)"))
+  dbExecute(sok_db(), glue::glue("CREATE INDEX ON {temp_name} (hash)"))
 
   q <- dbSendQuery(
-    sok_db(), glue::glue_sql("
+    sok_db(), glue::glue("
            SELECT {to_select}, within_{map_name}  FROM {full_coords_name}
            LEFT JOIN {temp_name} ON {temp_name}.hash = {full_coords_name}.hash"
     )
