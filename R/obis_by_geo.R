@@ -207,7 +207,11 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
         ))) %>%
         ## to make it comparable to iDigBio, content gets lowercased
         dplyr::mutate_if(is.character, tolower)
-      DBI::dbWriteTable(sok_db(), name = db_table, value = r, append = TRUE)
+      DBI::dbAppendTable(
+        sok_db(),
+        name = db_table,
+        value = r
+      )
     }
     v2(" DONE.")
   })

@@ -154,7 +154,12 @@ create_records_db <- function(coords, db_table) {
       ) %>%
       dplyr::mutate_if(is.character, tolower)
     v2(" DONE.")
-    DBI::dbWriteTable(conn = sok_db(), name = db_table, value = r, append = TRUE, row.names = FALSE)
+    DBI::dbAppendTable(
+      conn = sok_db(),
+      name = db_table,
+      value = r,
+      row.names = NULL
+    )
   })
 
   dbExecute(sok_db(), glue::glue("DELETE FROM {db_table} a USING (
