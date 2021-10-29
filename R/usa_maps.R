@@ -48,15 +48,21 @@ is_within_map_records <- function(d, map_name) {
   full_coords_name <- glue::glue_collapse(c("temp_full_coords_", timestamp))
   to_select <- glue::glue_collapse(paste(full_coords_name, paste0("\"", names(d), "\""), sep = "."), ", ")
 
-  db <- sok_db()
+  message("Creating table: ", temp_name, " ... ", appendLF = FALSE)
+  on.exit(dbDrop(sok_db(), temp_name, display = FALSE))
+  dbCreateTable(sok_db(), temp_name, d_to_insert, temporary = TRUE)
+  message("DONE.")
+  message("Creating table: ", full_coords_name, " ... ", appendLF = FALSE)
+  on.exit(dbDrop(sok_db(), full_coords_name, display = FALSE), add = TRUE)
+  dbCreateTable(sok_db(), full_coords_name, d_, temporary = TRUE)
+  message("DONE.")
 
-  on.exit(dbDrop(db, temp_name, display = FALSE))
-  dbCreateTable(db, temp_name, d_to_insert, temporary = TRUE)
-  on.exit(dbDrop(db, full_coords_name, display = FALSE), add = TRUE)
-  dbCreateTable(db, full_coords_name, d_, temporary = TRUE)
+  message(
+    DBI::dbListTables(sok_db())
+  )
 
-  dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
-  dbExecute(db, glue::glue("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
+  dbExecute(sok_db(), glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
+  dbExecute(sok_db(), glue::glue("ALTER TABLE {temp_name} ADD COLUMN within_{map_name} BOOL DEFAULT NULL;"))
 
   dbExecute(
     db,
