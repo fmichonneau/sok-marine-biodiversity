@@ -87,7 +87,7 @@ calc_institutions <- function(idig_records, obis_records) {
     res_obis
   )
   attr(list_tbl, "subheadings") <- c("A. iDigBio", "B. OBIS")
-  attr(list_tbl, "message") <- strwrap(glue::collapse(
+  attr(list_tbl, "message") <- strwrap(glue::glue_collapse(
     c(
       "¹also includes data from the Smithsonian ",
       "Environmental Research Center. ",

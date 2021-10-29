@@ -70,7 +70,7 @@ add_unique_coords_to_db <- function(db, src_table) {
       "PRIMARY KEY (decimallatitude, decimallongitude)",
       ");"
     )
-    dbExecute(db, glue::collapse(q_create))
+    dbExecute(db, glue::glue_collapse(q_create))
   }
 
   ## The join takes a long time, but it is way slower to calculate st_contains

@@ -44,9 +44,9 @@ is_within_map_records <- function(d, map_name) {
 
   col_nm <- rlang::sym(glue::glue("within_{map_name}"))
   timestamp <- format(Sys.time(), "%Y%m%d%H%M%S")
-  temp_name <- glue::collapse(c("temp_coords_", timestamp))
-  full_coords_name <- glue::collapse(c("temp_full_coords_", timestamp))
-  to_select <- glue::collapse(paste(full_coords_name, paste0("\"", names(d), "\""), sep = "."), ", ")
+  temp_name <- glue::glue_collapse(c("temp_coords_", timestamp))
+  full_coords_name <- glue::glue_collapse(c("temp_full_coords_", timestamp))
+  to_select <- glue::glue_collapse(paste(full_coords_name, paste0("\"", names(d), "\""), sep = "."), ", ")
 
   db <- sok_db()
 
