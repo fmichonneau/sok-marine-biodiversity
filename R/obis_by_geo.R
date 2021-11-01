@@ -67,7 +67,7 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
         "insitutionCode", "collectionCode", "catalogNumber", "locality",
         "sex", "individualCount", "datasetName", "phylum", "order",
         "family", "genus", "scientificName", "originalScientificName",
-        "species", "dynamicProperties", "accessRights", "collectionID", ,
+        "species", "dynamicProperties", "accessRights", "collectionID",
         "continent", "countryCode", "fieldNumber", "geodeticDatum",
         "habitat", "higherClassification", "higherGeography",
         "identificationQualifier", "institutionID", "island", "islandGroup",
