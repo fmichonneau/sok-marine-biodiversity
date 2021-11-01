@@ -74,7 +74,7 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
         "occurrenceRemarks", "occurrenceStatus", "recordedBy", "references",
         "scientificNameID", "specificEpithet", "stateProvince", "taxonRank",
         "type", "typeStatus", "vernacularName", "waterBody", "class",
-        "georeferencedBy", "dateIdentified"
+        "georeferencedBy", "dateIdentified", "georeferencedDate"
       )
     )
     return(res)
