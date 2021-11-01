@@ -63,7 +63,7 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
     res <- sok_as_character(
       res,
       c("recordedBy", "identifiedBy", "behavior", "lifeStage",
-        "verbatimDepth")
+        "verbatimDepth", "typeStatus")
     )
     return(res)
   }
