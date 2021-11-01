@@ -62,19 +62,19 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
                  (!tolower(res$class) %in% chordata_classes_to_rm()), ]
     res <- sok_as_character(
       res,
-      c("recordedBy", "identifiedBy", "behavior", "lifeStage",
-        "verbatimDepth", "typeStatus", "county", "basisOfRecord",
-        "insitutionCode", "collectionCode", "catalogNumber", "locality",
-        "sex", "individualCount", "datasetName", "phylum", "order",
-        "family", "genus", "scientificName", "originalScientificName",
-        "species", "dynamicProperties", "accessRights", "collectionID",
-        "continent", "countryCode", "fieldNumber", "geodeticDatum",
-        "habitat", "higherClassification", "higherGeography",
-        "identificationQualifier", "institutionID", "island", "islandGroup",
-        "language", "modified", "occurrenceID", "occurrenceRemarks",
-        "occurrenceStatus", "recordedBy", "references", "scientificNameID",
-        "specificEpithet", "stateProvince", "taxonRank", "type", "typeStatus",
-        "vernacularName", "waterBody", "class", "georeferencedBy"
+      c("recordedBy", "identifiedBy", "behavior", "lifeStage", "verbatimDepth",
+        "typeStatus", "county", "basisOfRecord", "insitutionCode",
+        "collectionCode", "catalogNumber", "locality", "sex", "individualCount",
+        "datasetName", "phylum", "order", "family", "genus", "scientificName",
+        "originalScientificName", "species", "dynamicProperties",
+        "accessRights", "collectionID", "continent", "countryCode",
+        "fieldNumber", "geodeticDatum", "habitat", "higherClassification",
+        "higherGeography", "identificationQualifier", "institutionID", "island",
+        "islandGroup", "language", "modified", "occurrenceID",
+        "occurrenceRemarks", "occurrenceStatus", "recordedBy", "references",
+        "scientificNameID", "specificEpithet", "stateProvince", "taxonRank",
+        "type", "typeStatus", "vernacularName", "waterBody", "class",
+        "georeferencedBy", "dateIdentified"
       )
     )
     return(res)
