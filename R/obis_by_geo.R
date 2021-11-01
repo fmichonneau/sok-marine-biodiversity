@@ -60,7 +60,10 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
   if (nrow(res) > 0) {
     res <- res[tolower(res$phylum) %in% phyla_to_keep &
                  (!tolower(res$class) %in% chordata_classes_to_rm()), ]
-    res <- sok_as_character(res, c("recordedBy", "identifiedBy", "behavior"))
+    res <- sok_as_character(
+      res,
+      c("recordedBy", "identifiedBy", "behavior", "lifeStage")
+    )
     return(res)
   }
   NULL
@@ -70,10 +73,6 @@ fill_store_obis_by_geo <- function(map_geojson, list_phyla, cellsize = .5) {
   map_grid <- make_grid(map_geojson, cellsize)
 
   res <- lapply(map_grid$key, internal_fill_store_obis_by_geo, list_phyla)
-  res <- lapply(res, function(x) {
-    x$lifeStage <- as.character(x$lifeStage)
-    x
-  })
 
   dplyr::bind_rows(res) %>%
     dplyr::mutate_if(is.character, tolower) %>%
