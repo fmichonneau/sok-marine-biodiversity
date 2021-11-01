@@ -62,7 +62,8 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
                  (!tolower(res$class) %in% chordata_classes_to_rm()), ]
     res <- sok_as_character(
       res,
-      c("recordedBy", "identifiedBy", "behavior", "lifeStage")
+      c("recordedBy", "identifiedBy", "behavior", "lifeStage",
+        "verbatimDepth")
     )
     return(res)
   }
