@@ -60,6 +60,19 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
   if (nrow(res) > 0) {
     res <- res[tolower(res$phylum) %in% phyla_to_keep &
                  (!tolower(res$class) %in% chordata_classes_to_rm()), ]
+
+    if (file.exists("dt_class.rds")) {
+      st_dt_class <- readRDS("dt_class.rds")
+    } else {
+      st_dt_class <- character(0)
+    }
+    dt_class <- purrr::imap_dfr(res,
+      function(x, y) {
+        tibble(nm = y, class = class(x))
+      }) %>%
+      distinct(nm, class)
+    saveRDS(dt_class, "dt_class.rds")
+
     res <- sok_as_character(
       res,
       c("rightsHolder", "infraphylum", "country", "scientificNameID",
@@ -86,7 +99,7 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
         "identificationQualifier", "institutionID", "island", "islandGroup",
         "language", "references", "georeferencedBy", "eventRemarks",
         "infraspecificEpithet", "georeferenceRemarks", "locationRemarks",
-        "associatedMedia")
+        "associatedMedia", "associatedSequences")
     )
     return(res)
   }
