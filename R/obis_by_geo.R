@@ -62,25 +62,30 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
                  (!tolower(res$class) %in% chordata_classes_to_rm()), ]
     res <- sok_as_character(
       res,
-      c("recordedBy", "identifiedBy", "behavior", "lifeStage", "verbatimDepth",
-        "typeStatus", "county", "basisOfRecord", "insitutionCode",
-        "collectionCode", "catalogNumber", "locality", "sex", "individualCount",
-        "datasetName", "phylum", "order", "family", "genus", "scientificName",
-        "originalScientificName", "species", "dynamicProperties",
-        "accessRights", "collectionID", "continent", "countryCode",
-        "fieldNumber", "geodeticDatum", "habitat", "higherClassification",
-        "higherGeography", "identificationQualifier", "institutionID", "island",
-        "islandGroup", "language", "modified", "occurrenceID",
-        "occurrenceRemarks", "occurrenceStatus", "references",
-        "scientificNameID", "specificEpithet", "stateProvince", "taxonRank",
-        "type", "vernacularName", "waterBody", "class", "georeferencedBy",
-        "dateIdentified", "georeferencedDate", "eventRemarks",
-        "infraspecificEpithet", "georeferenceRemarks", "id", "parvphylum",
-        "recordNumber", "dataset_id", "license", "eventDate", "subfamily",
-        "institutionCode", "kingdom", "subphylum", "subclass", "node_id",
-        "flags", "coordinateUncertaintyInMeters", "scientificNameAuthorship",
-        "superorder", "suborder", "superclass", "infraorder", "rightsHolder",
-        "infraphylum", "country", "gigaclass")
+      c("rightsHolder", "infraphylum", "country", "scientificNameID",
+        "scientificName", "type", "gigaclass", "catalogNumber",
+        "occurrenceStatus", "basisOfRecord", "id", "parvphylum", "order",
+        "recordNumber", "dataset_id", "locality", "collectionCode",
+        "occurrenceID", "license", "genus", "collectionID", "eventDate",
+        "coordinateUncertaintyInMeters", "originalScientificName",
+        "institutionCode", "class", "kingdom", "recordedBy", "phylum",
+        "species", "subphylum", "subclass", "family", "node_id", "flags",
+        "subfamily", "fieldNumber", "stateProvince", "scientificNameAuthorship",
+        "waterBody", "occurrenceRemarks", "infraclass", "suborder", "category",
+        "superclass", "infraorder", "superorder", "individualCount",
+        "associatedReferences", "taxonRemarks", "modified", "georeferencedDate",
+        "verbatimEventDate", "superfamily", "organismID", "dateIdentified",
+        "ownerInstitutionCode", "bibliographicCitation", "taxonRank",
+        "vernacularName", "eventTime", "identificationRemarks",
+        "nomenclaturalCode", "sex", "footprintWKT", "datasetName",
+        "geodeticDatum", "taxonomicStatus", "specificEpithet", "lifeStage",
+        "coordinatePrecision", "organismRemarks", "datasetID", "identifiedBy",
+        "behavior", "verbatimDepth", "typeStatus", "county", "insitutionCode",
+        "dynamicProperties", "accessRights", "continent", "countryCode",
+        "habitat", "higherClassification", "higherGeography",
+        "identificationQualifier", "institutionID", "island", "islandGroup",
+        "language", "references", "georeferencedBy", "eventRemarks",
+        "infraspecificEpithet", "georeferenceRemarks")
     )
     return(res)
   }
@@ -92,7 +97,6 @@ fill_store_obis_by_geo <- function(map_geojson, list_phyla, cellsize = .5) {
 
   res <- lapply(map_grid$key, internal_fill_store_obis_by_geo, list_phyla)
 
-  message(glimpse(res))
   dplyr::bind_rows(res) %>%
     dplyr::mutate_if(is.character, tolower) %>%
     dplyr::mutate(
