@@ -75,7 +75,7 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
         "scientificNameID", "specificEpithet", "stateProvince", "taxonRank",
         "type", "typeStatus", "vernacularName", "waterBody", "class",
         "georeferencedBy", "dateIdentified", "georeferencedDate",
-        "eventRemarks", "infraspecificEpithet")
+        "eventRemarks", "infraspecificEpithet", "georeferenceRemarks")
     )
     return(res)
   }
@@ -87,6 +87,7 @@ fill_store_obis_by_geo <- function(map_geojson, list_phyla, cellsize = .5) {
 
   res <- lapply(map_grid$key, internal_fill_store_obis_by_geo, list_phyla)
 
+  message(glimpse(res))
   dplyr::bind_rows(res) %>%
     dplyr::mutate_if(is.character, tolower) %>%
     dplyr::mutate(
