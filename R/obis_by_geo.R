@@ -85,7 +85,7 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
         "habitat", "higherClassification", "higherGeography",
         "identificationQualifier", "institutionID", "island", "islandGroup",
         "language", "references", "georeferencedBy", "eventRemarks",
-        "infraspecificEpithet", "georeferenceRemarks")
+        "infraspecificEpithet", "georeferenceRemarks", "locationRemarks")
     )
     return(res)
   }
