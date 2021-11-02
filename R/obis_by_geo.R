@@ -66,12 +66,13 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
     } else {
       st_dt_class <- character(0)
     }
-    dt_class <- purrr::imap_dfr(res,
+    st_dt_class <- purrr::imap_dfr(res,
       function(x, y) {
         tibble(nm = y, class = class(x))
       }) %>%
+      bind_rows(st_dt_class) %>%
       distinct(nm, class)
-    saveRDS(dt_class, "dt_class.rds")
+    saveRDS(st_dt_class, "dt_class.rds")
 
     res <- sok_as_character(
       res,
@@ -99,7 +100,7 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
         "identificationQualifier", "institutionID", "island", "islandGroup",
         "language", "references", "georeferencedBy", "eventRemarks",
         "infraspecificEpithet", "georeferenceRemarks", "locationRemarks",
-        "associatedMedia", "associatedSequences")
+        "associatedMedia", "associatedSequences", "georeferenceSources")
     )
     return(res)
   }
