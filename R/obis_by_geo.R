@@ -71,11 +71,16 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
         "fieldNumber", "geodeticDatum", "habitat", "higherClassification",
         "higherGeography", "identificationQualifier", "institutionID", "island",
         "islandGroup", "language", "modified", "occurrenceID",
-        "occurrenceRemarks", "occurrenceStatus", "recordedBy", "references",
+        "occurrenceRemarks", "occurrenceStatus", "references",
         "scientificNameID", "specificEpithet", "stateProvince", "taxonRank",
-        "type", "typeStatus", "vernacularName", "waterBody", "class",
-        "georeferencedBy", "dateIdentified", "georeferencedDate",
-        "eventRemarks", "infraspecificEpithet", "georeferenceRemarks")
+        "type", "vernacularName", "waterBody", "class", "georeferencedBy",
+        "dateIdentified", "georeferencedDate", "eventRemarks",
+        "infraspecificEpithet", "georeferenceRemarks", "id", "parvphylum",
+        "recordNumber", "dataset_id", "license", "eventDate", "subfamily",
+        "institutionCode", "kingdom", "subphylum", "subclass", "node_id",
+        "flags", "coordinateUncertaintyInMeters", "scientificNameAuthorship",
+        "superorder", "suborder", "superclass", "infraorder", "rightsHolder",
+        "infraphylum", "country", "gigaclass")
     )
     return(res)
   }
