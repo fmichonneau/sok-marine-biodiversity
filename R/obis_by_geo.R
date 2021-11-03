@@ -264,14 +264,13 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
       ) dups
       WHERE a.uuid = dups.uuid
       AND a.ctid <> dups.ctid"))
-  db_create_indexes(sok_db(), db_table,
+  sok_db_create_indexes(sok_db(), db_table,
     indexes = list(
       c("phylum", "class", "order", "family", "scientificname"),
       c("phylum"), c("class"), c("family"), c("order"),
       c("scientificname"), c("decimallatitude", "decimallongitude"),
       c("uuid")
-    ),
-    unique = FALSE
+    )
   )
   dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
   dbplyr::sql_table_analyze(sok_db(), db_table)

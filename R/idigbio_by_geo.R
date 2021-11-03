@@ -169,13 +169,12 @@ create_records_db <- function(coords, db_table) {
       ) dups
       WHERE a.uuid = dups.uuid
       AND a.ctid <> dups.ctid"))
-  db_create_indexes(sok_db(), db_table,
+  sok_db_create_indexes(sok_db(), db_table,
     indexes = list(
       c("phylum", "class", "family", "scientificname"),
       c("country"), c("uuid"),
       c("decimallatitude", "decimallongitude")
-    ),
-    unique = FALSE
+    )
   )
   dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
   dbplyr::sql_table_analyze(sok_db(), db_table)

@@ -28,3 +28,20 @@ sok_db <- function() {
   }
   get("sok_db_con", envir = sok_db_env)
 }
+
+## db_create_indexes dropped from dbplyr, quik rewrite
+sok_db_create_index <- function(con, table, index) {
+  stopifnot(rlang::is_character(index))
+  qry <- glue::glue(
+    "CREATE INDEX ON {table} ({ cols });",
+    cols = glue::glue_collapse(index, sep = ", ")
+  )
+  message("running: ", qry)
+  dbExecute(con, qry)
+}
+
+sok_db_create_indexes <- function(con, table, indexes) {
+  purrr::walk(indexes, function(idx) {
+    sok_db_create_index(con, table, idx)
+  })
+}
