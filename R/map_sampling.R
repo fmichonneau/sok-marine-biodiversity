@@ -145,11 +145,11 @@ limits_from_map <- function(map) {
 
 bathy_from_map <- function(map) {
   limits <- limits_from_map(map)
-  suppressMessages(getNOAA.bathy(
+  getNOAA.bathy(
     lon1 = limits$lon1, lon2 = limits$lon2,
     lat1 = limits$lat1, lat2 = limits$lat2,
     keep = TRUE
-  ))
+  )
 }
 
 
