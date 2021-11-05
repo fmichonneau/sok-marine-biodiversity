@@ -3,7 +3,8 @@ add_depth <- function(tbl, map) {
     dplyr::distinct(decimallongitude, decimallatitude) %>%
     dplyr::select(decimallongitude, decimallatitude)
 
-  bathys <- marmap::get.depth(bathy_from_map(map),
+  bathys <- marmap::get.depth(
+    bathy_from_map(map),
     uniq_depths,
     locator = FALSE
   ) %>%
