@@ -231,13 +231,12 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     v2("Getting OBIS records for ", q, appendLF = FALSE)
     r <- store_obis_by_geo()$get(q)
     if (!is.null(r)) {
-      browser()
       r <- r %>%
         dplyr::rename_all(tolower) %>%
         ## harmonize fields across databases
         dplyr::rename(uuid = id) %>% ## rename id --> uuid
         dplyr::rename_if(
-          grepl("eventdate", names(.)),
+          grepl("^eventdate$", names(.)),
           function(x) { ## rename "eventdate" -> "datecollected"
             gsub(".+", "datecollected", x)
           }
