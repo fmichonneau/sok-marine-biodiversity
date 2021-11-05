@@ -231,6 +231,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     v2("Getting OBIS records for ", q, appendLF = FALSE)
     r <- store_obis_by_geo()$get(q)
     if (!is.null(r)) {
+      browser()
       r <- r %>%
         dplyr::rename_all(tolower) %>%
         ## harmonize fields across databases
@@ -257,7 +258,8 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     }
     v2(" DONE.")
   })
-  dbExecute(sok_db(), glue::glue("DELETE FROM {db_table} a USING (
+  dbExecute(sok_db(),
+    glue::glue("DELETE FROM {db_table} a USING (
       SELECT MIN(ctid) as ctid, uuid
         FROM {db_table}
         GROUP BY uuid HAVING COUNT(*) > 1
