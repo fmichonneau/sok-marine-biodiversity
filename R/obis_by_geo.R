@@ -248,7 +248,11 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
           names(obis_types)
         ))) %>%
         ## to make it comparable to iDigBio, content gets lowercased
-        dplyr::mutate_if(is.character, tolower)
+        dplyr::mutate_if(is.character, tolower) %>%
+        ## make sure all dates are parsed
+        dplyr::mutate(
+          eventdate = anytime::anydate(eventdate)
+        )
       DBI::dbAppendTable(
         sok_db(),
         name = db_table,

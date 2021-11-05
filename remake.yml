@@ -28,6 +28,7 @@ packages:
   - purrr
   - rlang
   - RcppRoll
+  - anytime
   ## data visualization
   - grid
   - ggplot2
