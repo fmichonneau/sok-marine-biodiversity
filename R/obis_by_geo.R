@@ -123,7 +123,7 @@ fill_store_obis_by_geo <- function(map_geojson, list_phyla, cellsize = .5) {
 obis_data_types <- function() {
   tibble::tribble(
     ~name, ~type,
-    "uuid", "INT", ## is `id` in OBIS
+    "uuid", "TEXT", ## is `id` in OBIS
     "decimalLongitude", "REAL",
     "decimalLatitude", "REAL",
     ## "lifestage", "TEXT",
