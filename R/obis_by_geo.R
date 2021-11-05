@@ -251,7 +251,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
         dplyr::mutate_if(is.character, tolower) %>%
         ## make sure all dates are parsed
         dplyr::mutate(
-          eventdate = anytime::anydate(eventdate)
+          eventdate = anytime::anydate(datecollected)
         )
       DBI::dbAppendTable(
         sok_db(),
