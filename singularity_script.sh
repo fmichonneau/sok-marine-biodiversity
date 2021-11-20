@@ -13,8 +13,11 @@
 
 # pg_ctlcluster 12 main status
 
-pg_ctlcluster 12 main start && \
-    pg_ctlcluster 12 main status
+pg_ctlcluster 12 main start
+
+timeout 15m bash -c 'until pg_isready; do sleep 5; done'; echo -e \\a
+
+pg_ctlcluster 12 main status
 
 Rscript -e "con = DBI::dbConnect(RPostgres::Postgres(), dbname='sok', user='michonneauf', port=5435); con"
 
