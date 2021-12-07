@@ -261,6 +261,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     }
     v2(" DONE.")
   })
+  message("complete lapply")
   dbExecute(sok_db(),
     glue::glue("DELETE FROM {db_table} a USING (
       SELECT MIN(ctid) as ctid, uuid
@@ -269,6 +270,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
       ) dups
       WHERE a.uuid = dups.uuid
       AND a.ctid <> dups.ctid"))
+  message("complete remove duplicates")
   sok_db_create_indexes(sok_db(), db_table,
     indexes = list(
       c("phylum", "class", "order", "family", "scientificname"),
@@ -277,9 +279,14 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
       c("uuid")
     )
   )
+  message("complete creating indexes")
   dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
+  message("complete adding primary key")
   dbplyr::sql_table_analyze(sok_db(), db_table)
+  message("complete table analysis")
   DBI::dbCommit(sok_db())
+  message("complete db commit")
   add_within_polygon_to_db(db_table)
+  message("complete within polygon operation")
   on.exit(NULL)
 }
