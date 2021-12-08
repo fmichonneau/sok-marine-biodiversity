@@ -21,4 +21,4 @@ pg_ctlcluster 12 main status
 
 Rscript -e "con = DBI::dbConnect(RPostgres::Postgres(), dbname='sok', user='michonneauf', port=5435); con"
 
-Rscript -e "setwd('/sok'); remake::make()"
+Rscript -e "setwd('/sok'); remake::make('obis_database')"
