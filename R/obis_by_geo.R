@@ -277,7 +277,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ## Instead, using temporary table copy
   DBI::dbExecute(
     sok_db(),
-    "DELETE FROM {db_table}
+    glue::glue("DELETE FROM {db_table}
      WHERE ctid IN
      (
      SELECT ctid
@@ -290,7 +290,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     ) dup_records
     WHERE dup_records.row_num > 1
     )"
-  )
+    ))
   v3("complete remove duplicates")
   DBI::dbCommit(sok_db())
   v3("complete commit after removing duplicates")
