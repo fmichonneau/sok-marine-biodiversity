@@ -261,12 +261,10 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     }
     v2(" DONE.")
   })
+  v3("complete lapply")
   DBI::dbCommit(sok_db())
-  message("complete commit")
-  on.exit(NULL)
-  return(NULL)
-
-  ## message("complete lapply")
+  v3("complete commit")
+  ## this approach led to memory issue, maybe the sub-query was too large?
   ## dbExecute(sok_db(),
   ##   glue::glue("DELETE FROM {db_table} a USING (
   ##     SELECT MIN(ctid) as ctid, uuid
@@ -275,23 +273,43 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ##     ) dups
   ##     WHERE a.uuid = dups.uuid
   ##     AND a.ctid <> dups.ctid"))
-  ## message("complete remove duplicates")
-  ## sok_db_create_indexes(sok_db(), db_table,
-  ##   indexes = list(
-  ##     c("phylum", "class", "order", "family", "scientificname"),
-  ##     c("phylum"), c("class"), c("family"), c("order"),
-  ##     c("scientificname"), c("decimallatitude", "decimallongitude"),
-  ##     c("uuid")
-  ##   )
-  ## )
-  ## message("complete creating indexes")
-  ## dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
-  ## message("complete adding primary key")
-  ## dbplyr::sql_table_analyze(sok_db(), db_table)
-  ## message("complete table analysis")
-  ## DBI::dbCommit(sok_db())
-  ## message("complete db commit")
-  ## add_within_polygon_to_db(db_table)
-  ## message("complete within polygon operation")
-  ## on.exit(NULL)
+
+  ## Instead, using temporary table copy
+  DBI::dbExecute(
+    sok_db(),
+    "DELETE FROM {db_table}
+     WHERE ctid IN
+     (
+     SELECT ctid
+     FROM(
+         SELECT
+            *,
+            ctid,
+            row_number() OVER (PARTITION BY uuid ORDER BY ctid) as row_num
+        FROM {db_table}
+    ) dup_records
+    WHERE dup_records.row_num > 1
+    )"
+  )
+  v3("complete remove duplicates")
+  DBI::dbCommit(sok_db())
+  v3("complete commit after removing duplicates")
+  sok_db_create_indexes(sok_db(), db_table,
+    indexes = list(
+      c("phylum", "class", "order", "family", "scientificname"),
+      c("phylum"), c("class"), c("family"), c("order"),
+      c("scientificname"), c("decimallatitude", "decimallongitude"),
+      c("uuid")
+    )
+  )
+  v3("complete creating indexes")
+  dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
+  v3("complete adding primary key")
+  dbplyr::sql_table_analyze(sok_db(), db_table)
+  v3("complete table analysis")
+  DBI::dbCommit(sok_db())
+  v3("complete db commit")
+  add_within_polygon_to_db(db_table)
+  v3("complete within polygon operation")
+  on.exit(NULL)
 }
