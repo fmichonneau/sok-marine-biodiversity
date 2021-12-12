@@ -8,7 +8,7 @@
 #$ -e 2021-10-27-sok.err
 #$ -cwd
 #$ -pe mthread 8
-#$ -l mres=48G,h_data=12G,h_vmem=12G
+#$ -l mres=40G,h_data=10G,h_vmem=10G
 #$ -m bea
 #$ -M francois.michonneau@gmail.com
 
