@@ -274,7 +274,30 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ##     WHERE a.uuid = dups.uuid
   ##     AND a.ctid <> dups.ctid"))
 
-  ## Instead, using temporary table copy
+  ## try another approach
+  sok_db_create_indexes(sok_db(), db_table,
+    indexes = list(
+      c("phylum", "class", "order", "family", "scientificname"),
+      c("phylum"), c("class"), c("family"), c("order"),
+      c("scientificname"), c("decimallatitude", "decimallongitude"),
+      c("uuid")
+    )
+  )
+  v3("complete creating indexes")
+  DBI::dbExecute(
+    sok_db(),
+    glue::glue(
+      "CLUSTER {db_table} ON uuid"
+    )
+  )
+  v3("done clustering")
+  DBI::dbExecute(
+    sok_db(),
+    glue::glue(
+      "VACUUM {db_table}"
+    )
+  )
+  v3("done vacuuming")
   DBI::dbExecute(
     sok_db(),
     glue::glue("DELETE FROM {db_table}
@@ -294,15 +317,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   v3("complete remove duplicates")
   DBI::dbCommit(sok_db())
   v3("complete commit after removing duplicates")
-  sok_db_create_indexes(sok_db(), db_table,
-    indexes = list(
-      c("phylum", "class", "order", "family", "scientificname"),
-      c("phylum"), c("class"), c("family"), c("order"),
-      c("scientificname"), c("decimallatitude", "decimallongitude"),
-      c("uuid")
-    )
-  )
-  v3("complete creating indexes")
+
   dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
   v3("complete adding primary key")
   dbplyr::sql_table_analyze(sok_db(), db_table)
