@@ -264,22 +264,10 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   v3("complete lapply")
   DBI::dbCommit(sok_db())
   v3("complete commit")
-  ## this approach led to memory issue, maybe the sub-query was too large?
-  ## dbExecute(sok_db(),
-  ##   glue::glue("DELETE FROM {db_table} a USING (
-  ##     SELECT MIN(ctid) as ctid, uuid
-  ##       FROM {db_table}
-  ##       GROUP BY uuid HAVING COUNT(*) > 1
-  ##     ) dups
-  ##     WHERE a.uuid = dups.uuid
-  ##     AND a.ctid <> dups.ctid"))
 
-  ## try another approach
+  ## create indexes on uuid before removing duplicates
   sok_db_create_indexes(sok_db(), db_table,
     indexes = list(
-      c("phylum", "class", "order", "family", "scientificname"),
-      c("phylum"), c("class"), c("family"), c("order"),
-      c("scientificname"), c("decimallatitude", "decimallongitude"),
       c("uuid")
     )
   )
@@ -298,22 +286,32 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     )
   )
   v3("done vacuuming")
-  DBI::dbExecute(
-    sok_db(),
-    glue::glue("DELETE FROM {db_table}
-     WHERE ctid IN
-     (
-     SELECT ctid
-     FROM(
-         SELECT
-            *,
-            ctid,
-            row_number() OVER (PARTITION BY uuid ORDER BY ctid) as row_num
+  ## DBI::dbExecute(
+  ##   sok_db(),
+  ##   glue::glue("DELETE FROM {db_table}
+  ##    WHERE ctid IN
+  ##    (
+  ##    SELECT ctid
+  ##    FROM(
+  ##        SELECT
+  ##           *,
+  ##           ctid,
+  ##           row_number() OVER (PARTITION BY uuid ORDER BY ctid) as row_num
+  ##       FROM {db_table}
+  ##   ) dup_records
+  ##   WHERE dup_records.row_num > 1
+  ##   )"
+  ##   ))
+  ## this approach led to memory issue, maybe the sub-query was too large?
+  dbExecute(sok_db(),
+    glue::glue("DELETE FROM {db_table} a USING (
+      SELECT MIN(ctid) as ctid, uuid
         FROM {db_table}
-    ) dup_records
-    WHERE dup_records.row_num > 1
-    )"
-    ))
+        GROUP BY uuid HAVING COUNT(*) > 1
+      ) dups
+      WHERE a.uuid = dups.uuid
+      AND a.ctid <> dups.ctid"))
+
   v3("complete remove duplicates")
   DBI::dbCommit(sok_db())
   v3("complete commit after removing duplicates")
