@@ -275,7 +275,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   DBI::dbExecute(
     sok_db(),
     glue::glue(
-      "CLUSTER {db_table}"
+      "CLUSTER {db_table} USING uuid"
     )
   )
   v3("done clustering")
