@@ -265,13 +265,13 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ## DBI::dbCommit(sok_db())
   ## v3("complete commit")
 
-  ## ## create indexes on uuid before removing duplicates
-  ## sok_db_create_indexes(sok_db(), db_table,
-  ##   indexes = list(
-  ##     c("uuid")
-  ##   )
-  ## )
-  ## v3("complete creating indexes")
+  ## create indexes on uuid before removing duplicates
+  sok_db_create_indexes(sok_db(), db_table,
+    indexes = list(
+      c("uuid")
+    )
+  )
+  v3("complete creating indexes")
   DBI::dbExecute(
     sok_db(),
     glue::glue(
@@ -286,6 +286,9 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
     )
   )
   v3("done vacuuming")
+  DBI::dbCommit(sok_db())
+  v3("complete commit")
+
   ## DBI::dbExecute(
   ##   sok_db(),
   ##   glue::glue("DELETE FROM {db_table}
