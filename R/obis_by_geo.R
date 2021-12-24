@@ -216,66 +216,66 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   DBI::dbBegin(sok_db())
   on.exit(DBI::dbRollback(sok_db(), db_table))
 
-  if (DBI::dbExistsTable(sok_db(), db_table)) {
-    DBI::dbRemoveTable(sok_db(), db_table)
-  }
+  ## if (DBI::dbExistsTable(sok_db(), db_table)) {
+  ##   DBI::dbRemoveTable(sok_db(), db_table)
+  ## }
 
-  DBI::dbCreateTable(
-    sok_db(),
-    db_table,
-    fields = obis_types,
-    temporary = FALSE
-  )
+  ## DBI::dbCreateTable(
+  ##   sok_db(),
+  ##   db_table,
+  ##   fields = obis_types,
+  ##   temporary = FALSE
+  ## )
 
-  lapply(names(coords), function(q) {
-    v2("Getting OBIS records for ", q, appendLF = FALSE)
-    r <- store_obis_by_geo()$get(q)
-    if (!is.null(r)) {
-      r <- r %>%
-        dplyr::rename_all(tolower) %>%
-        ## harmonize fields across databases
-        dplyr::rename(uuid = id) %>% ## rename id --> uuid
-        dplyr::rename_if(
-          grepl("^eventdate$", names(.)),
-          function(x) { ## rename "eventdate" -> "datecollected"
-            gsub(".+", "datecollected", x)
-          }
-        ) %>%
-        ## apparently some records are missing some fields, so
-        ## we standardize them to their intersect
-        dplyr::select(UQ(intersect(
-          names(.),
-          names(obis_types)
-        ))) %>%
-        ## to make it comparable to iDigBio, content gets lowercased
-        dplyr::mutate_if(is.character, tolower) %>%
-        ## make sure all dates are parsed
-        dplyr::mutate(
-          datecollected = anytime::anydate(datecollected)
-        )
-      DBI::dbAppendTable(
-        sok_db(),
-        name = db_table,
-        value = r
-      )
-    }
-    v2(" DONE.")
-  })
-  v3("complete lapply")
-  DBI::dbCommit(sok_db())
-  v3("complete commit")
+  ## lapply(names(coords), function(q) {
+  ##   v2("Getting OBIS records for ", q, appendLF = FALSE)
+  ##   r <- store_obis_by_geo()$get(q)
+  ##   if (!is.null(r)) {
+  ##     r <- r %>%
+  ##       dplyr::rename_all(tolower) %>%
+  ##       ## harmonize fields across databases
+  ##       dplyr::rename(uuid = id) %>% ## rename id --> uuid
+  ##       dplyr::rename_if(
+  ##         grepl("^eventdate$", names(.)),
+  ##         function(x) { ## rename "eventdate" -> "datecollected"
+  ##           gsub(".+", "datecollected", x)
+  ##         }
+  ##       ) %>%
+  ##       ## apparently some records are missing some fields, so
+  ##       ## we standardize them to their intersect
+  ##       dplyr::select(UQ(intersect(
+  ##         names(.),
+  ##         names(obis_types)
+  ##       ))) %>%
+  ##       ## to make it comparable to iDigBio, content gets lowercased
+  ##       dplyr::mutate_if(is.character, tolower) %>%
+  ##       ## make sure all dates are parsed
+  ##       dplyr::mutate(
+  ##         datecollected = anytime::anydate(datecollected)
+  ##       )
+  ##     DBI::dbAppendTable(
+  ##       sok_db(),
+  ##       name = db_table,
+  ##       value = r
+  ##     )
+  ##   }
+  ##   v2(" DONE.")
+  ## })
+  ## v3("complete lapply")
+  ## DBI::dbCommit(sok_db())
+  ## v3("complete commit")
 
-  ## create indexes on uuid before removing duplicates
-  sok_db_create_indexes(sok_db(), db_table,
-    indexes = list(
-      c("uuid")
-    )
-  )
-  v3("complete creating indexes")
+  ## ## create indexes on uuid before removing duplicates
+  ## sok_db_create_indexes(sok_db(), db_table,
+  ##   indexes = list(
+  ##     c("uuid")
+  ##   )
+  ## )
+  ## v3("complete creating indexes")
   DBI::dbExecute(
     sok_db(),
     glue::glue(
-      "CLUSTER {db_table} ON uuid"
+      "CLUSTER {db_table}"
     )
   )
   v3("done clustering")
