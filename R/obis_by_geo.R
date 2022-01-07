@@ -274,7 +274,6 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ## DBI::dbCommit(sok_db())
   ## v3("complete commit")
 
-  DBI::dbBegin(sok_db())
   DBI::dbExecute(
     sok_db(),
     glue::glue(
