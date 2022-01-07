@@ -2,13 +2,13 @@
 #
 # --- Parameters ---------------------------------------------------------------
 #$ -S /bin/sh
-#$ -q sThM.q@@containers-hosts
+#$ -q sThC.q@@containers-hosts
 #$ -N sok-2021-10-27
 #$ -o 2021-10-27-sok.log
 #$ -e 2021-10-27-sok.err
 #$ -cwd
 #$ -pe mthread 8
-#$ -l mres=48G,h_data=12G,h_vmem=12G,himem
+#$ -l mres=24G,h_data=6G,h_vmem=6G
 #$ -m bea
 #$ -M francois.michonneau@gmail.com
 
