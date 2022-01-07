@@ -266,13 +266,13 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ## v3("complete commit")
 
   ## create indexes on uuid before removing duplicates
-  DBI::dbExecute(
-    sok_db(),
-    glue::glue("CREATE INDEX uuid_idx ON {db_table} (uuid)")
-  )
-  v3("complete creating indexes")
-  DBI::dbCommit(sok_db())
-  v3("complete commit")
+  ## DBI::dbExecute(
+  ##   sok_db(),
+  ##   glue::glue("CREATE INDEX uuid_idx ON {db_table} (uuid)")
+  ## )
+  ## v3("complete creating indexes")
+  ## DBI::dbCommit(sok_db())
+  ## v3("complete commit")
 
   DBI::dbBegin(sok_db())
   DBI::dbExecute(
