@@ -273,6 +273,7 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   v3("complete creating indexes")
   DBI::dbCommit(sok_db())
   v3("complete commit")
+
   DBI::dbBegin(sok_db())
   DBI::dbExecute(
     sok_db(),
@@ -287,23 +288,6 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   )
   v3("Done analyzing")
 
-  ## DBI::dbExecute(
-  ##   sok_db(),
-  ##   glue::glue("DELETE FROM {db_table}
-  ##    WHERE ctid IN
-  ##    (
-  ##    SELECT ctid
-  ##    FROM(
-  ##        SELECT
-  ##           *,
-  ##           ctid,
-  ##           row_number() OVER (PARTITION BY uuid ORDER BY ctid) as row_num
-  ##       FROM {db_table}
-  ##   ) dup_records
-  ##   WHERE dup_records.row_num > 1
-  ##   )"
-  ##   ))
-  ## this approach led to memory issue, maybe the sub-query was too large?
   dbExecute(sok_db(),
     glue::glue("DELETE FROM {db_table} a USING (
       SELECT MIN(ctid) as ctid, uuid
@@ -317,13 +301,16 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   DBI::dbCommit(sok_db())
   v3("complete commit after removing duplicates")
 
-  dbExecute(sok_db(), glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);"))
-  v3("complete adding primary key")
+  DBI::dbBegin(sok_db())
   dbplyr::sql_table_analyze(sok_db(), db_table)
   v3("complete table analysis")
-  DBI::dbCommit(sok_db())
-  v3("complete db commit")
+  dbExecute(
+    sok_db(),
+    glue::glue("ALTER TABLE {db_table} ADD PRIMARY KEY (uuid);")
+  )
+  v3("complete adding primary key")
   add_within_polygon_to_db(db_table)
   v3("complete within polygon operation")
+  DBI::dbCommit(sok_db())
   on.exit(NULL)
 }
