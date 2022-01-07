@@ -266,30 +266,26 @@ create_obis_db <- function(coords, db_table, gom_phyla) {
   ## v3("complete commit")
 
   ## create indexes on uuid before removing duplicates
-  sok_db_create_indexes(sok_db(), db_table,
-    indexes = list(
-      c("uuid")
-    )
+  DBI::dbExecute(
+    sok_db(),
+    glue::glue("CREATE INDEX uuid_idx ON {db_table} (uuid)")
   )
   v3("complete creating indexes")
   DBI::dbCommit(sok_db())
   v3("complete commit")
+  DBI::dbBegin(sok_db())
   DBI::dbExecute(
     sok_db(),
     glue::glue(
-      "CLUSTER {db_table} USING uuid"
+      "CLUSTER {db_table} USING uuid_idx"
     )
   )
   v3("done clustering")
   DBI::dbExecute(
     sok_db(),
-    glue::glue(
-      "VACUUM {db_table}"
-    )
+    glue::glue("ANALYZE {db_table}")
   )
-  v3("done vacuuming")
-  DBI::dbCommit(sok_db())
-  v3("complete commit")
+  v3("Done analyzing")
 
   ## DBI::dbExecute(
   ##   sok_db(),
