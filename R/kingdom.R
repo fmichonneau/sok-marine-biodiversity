@@ -80,6 +80,7 @@ get_kingdom_worms_stats <- function(worms_stats) {
     )
   wrm[wrm$sub_kingdom == "animalia", "n_spp"] <- wrm[wrm$sub_kingdom == "animalia", "n_spp"] - n_vertebrates
   wrm[wrm$sub_kingdom == "animalia", "sub_kingdom"] <- "animalia - invertebrates"
+  wrm$n_spp <- as.integer(wrm$n_spp)
   wrm
 }
 

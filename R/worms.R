@@ -306,7 +306,7 @@ add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE)
           is_fuzzy = NA_character_
         )
       } else {
-        tibble::data_frame(
+        tibble::tibble(
           worms_id = as.character(.info$valid_AphiaID) %||% NA,
           is_marine =
             if (is.null(.info$valid_AphiaID)) {
