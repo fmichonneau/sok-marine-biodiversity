@@ -164,7 +164,7 @@ calc_kingdom_stats <- function() {
     idigbio = tbl(db, "us_idigbio_worms") %>%
       add_sub_kingdom() %>%
       get_median(),
-    obis = tbl(db, "us_obis_clean") %>%
+    obis = tbl(db, "us_obis") %>%
       add_sub_kingdom() %>%
       get_median(),
     .id = "database"
