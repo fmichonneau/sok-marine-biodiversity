@@ -23,6 +23,7 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode == "ansp" ~ "The Academy of Natural Sciences of Drexel University",
       institutioncode == "cmn" ~ "Canadian Museum of Nature",
       institutioncode ==  "sbmnh" ~ "Santa Barbara Museum of Natural History",
+      institutioncode == "sio" ~ "Scripps Oceanographic Collections",
       TRUE ~ "problem"
     )) %>%
     purrr::pwalk(function(institutioncode, Institution, ...) {
@@ -32,8 +33,9 @@ calc_institutions <- function(idig_records, obis_records) {
           inst = Institution
         ) %>%
           filter(inst == "problem") %>%
-          distinct()
-        message(err)
+          distinct() %>%
+          pull(code)
+        message(paste(err, collapse = ", "))
         stop("unknown collection in idigbio")
       }
     }) %>%
