@@ -128,7 +128,7 @@ plot_database_overlap <- function(comp_db) {
       position = position_dodge(width = dodge_width)
     ) +
     geom_text(aes(x = phylum, label = phylum, y = 0),
-      family = "Ubuntu Condensed",
+      ## family = "Ubuntu Condensed",
       inherit.aes = FALSE,
       size = 4
     ) +
@@ -141,7 +141,9 @@ plot_database_overlap <- function(comp_db) {
       labels = c(abs(seq(-1500, 0, by = 250)), seq(0, 1500, by = 250))
     ) +
     facet_wrap(~region, labeller = as_labeller(c(gom = "Gulf of Mexico", pnw = "Pacific NW"))) +
-    theme_ipsum(base_family = "Ubuntu Condensed") +
+    theme_ipsum(
+      ##  base_family = "Ubuntu Condensed"
+    ) +
     scale_color_manual(values = c("#C0DA4C", "#3F1A52")) +
     ylab("Number of species") +
     theme(
@@ -157,13 +159,12 @@ plot_database_overlap <- function(comp_db) {
       axis.text.y = element_blank(),
       strip.text = element_text(size = 18, face = "bold", hjust = 0.030),
       plot.background = element_blank(),
-      legend.text = element_text(family = "Ubuntu Condensed", size = 10),
+      ##legend.text = element_text(family = "Ubuntu Condensed", size = 10),
       panel.spacing.x = unit(5, "lines")
     ) +
     annotation_custom(
       grob = grid::textGrob(
-        label = "Not in list", hjust = -1,
-        gp = gpar(fontfamily = "Ubuntu Condensed")
+        label = "Not in list", hjust = -1#, gp = gpar(fontfamily = "Ubuntu Condensed")
       ),
       ymin = 100,
       ymax = 100,
@@ -172,8 +173,8 @@ plot_database_overlap <- function(comp_db) {
     ) +
     annotation_custom(
       grob = grid::textGrob(
-        label = "Not in databases", hjust = 1,
-        gp = gpar(fontfamily = "Ubuntu Condensed")
+        label = "Not in databases", hjust = 1 #,
+        ## gp = gpar(fontfamily = "Ubuntu Condensed")
       ),
       ymin = -100 - offset,
       ymax = -100 - offset,
@@ -269,11 +270,13 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
     ) +
     geom_text(aes(x = phylum, y = -offset + not_in_geo - .05, label = nspp_not_in_geo),
       position = position_dodge(width = dodge_width),
-      family = "Ubuntu Condensed", hjust = "outward", size = 2.75
+      ## family = "Ubuntu Condensed",
+      hjust = "outward", size = 2.75
     ) +
     geom_text(aes(x = phylum, y = offset + not_in_list + .05, label = nspp_not_in_list),
       position = position_dodge(width = dodge_width),
-      family = "Ubuntu Condensed", hjust = "outward", size = 2.75
+      ##family = "Ubuntu Condensed",
+      hjust = "outward", size = 2.75
     ) +
     coord_flip() +
     facet_wrap(~region, labeller = as_labeller(c(
@@ -287,7 +290,9 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
       ),
       labels = c(abs(seq(-1, 0, by = .2)), seq(0, 1, by = .2))
     ) +
-    theme_ipsum(base_family = "Ubuntu Condensed") +
+    theme_ipsum(
+      ##  base_family = "Ubuntu Condensed"
+    ) +
     scale_color_manual(values = c("#C0DA4C", "#3F1A52")) +
     ylab("Number of species") +
     theme(
@@ -303,13 +308,16 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
       axis.text.y = element_blank(),
       strip.text = element_text(size = 18, face = "bold", hjust = 0.030),
       plot.background = element_blank(),
-      legend.text = element_text(family = "Ubuntu Condensed", size = 10),
+      legend.text = element_text(
+        ## family = "Ubuntu Condensed",
+        size = 10
+      ),
       panel.spacing.x = unit(5, "lines")
     ) +
     annotation_custom(
       grob = grid::textGrob(
-        label = "Not in list", hjust = -1,
-        gp = gpar(fontfamily = "Ubuntu Condensed")
+        label = "Not in list", hjust = -1 ##,
+        ## gp = gpar(fontfamily = "Ubuntu Condensed")
       ),
       ymin = .1,
       ymax = .1,
@@ -318,8 +326,8 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
     ) +
     annotation_custom(
       grob = grid::textGrob(
-        label = "Not in databases", hjust = 1,
-        gp = gpar(fontfamily = "Ubuntu Condensed")
+        label = "Not in databases", hjust = 1 ##,
+        ## gp = gpar(fontfamily = "Ubuntu Condensed")
       ),
       ymin = -.1 - offset,
       ymax = -.1 - offset,

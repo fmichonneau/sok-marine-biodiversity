@@ -250,6 +250,8 @@ plot_richness_per_db <- function(smry_db, region = c("gom", "pnw")) {
       name = "Data source", option = "viridis", discrete = TRUE,
       guide = guide_legend(reverse = TRUE)
     ) +
-    theme_bw(base_family = "Ubuntu Condensed") +
+    theme_bw(
+    ##  base_family = "Ubuntu Condensed"
+    ) +
     coord_flip()
 }

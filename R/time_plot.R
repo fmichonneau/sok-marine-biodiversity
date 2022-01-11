@@ -79,7 +79,9 @@ plot_cum_samples_through_time <- function(knowledge_through_time, facet = TRUE) 
     xlim(c(1850, 2017)) +
     ylab("Cumulative Number of Samples") +
     xlab("Year") +
-    theme_ipsum(base_family = "Ubuntu Condensed") +
+    theme_ipsum(
+      ##  base_family = "Ubuntu Condensed"
+    ) +
     scale_colour_hc(name = "", labels = capitalize(phy_to_keep))
 
   if (facet) {
@@ -102,7 +104,9 @@ plot_cum_spp_through_time <- function(knowledge_through_time, facet = TRUE) {
     xlim(c(1850, 2017)) +
     ylab("Cumulative Number of Species") +
     xlab("Year") +
-    theme_ipsum(base_family = "Ubuntu Condensed") +
+    theme_ipsum(
+      ##  base_family = "Ubuntu Condensed"
+    ) +
     scale_colour_hc()
 
   if (facet) {
@@ -154,13 +158,15 @@ plot_samples_vs_spp_through_time <- function(knowledge_through_time) {
       ),
       aes(x = x, y = y, label = label),
       angle = 45, hjust = 0, vjust = 0, size = 3,
-      color = "#2b2b2b", family = "Ubuntu Condensed"
+      color = "#2b2b2b" #, family = "Ubuntu Condensed"
     ) +
     scale_x_log10() +
     scale_y_log10(limits = c(1, 600)) +
     xlab("Number of Samples") +
     ylab("Number of Species Recorded for the First Time") +
-    theme_ipsum(base_family = "Ubuntu Condensed") +
+    theme_ipsum(
+    ##  base_family = "Ubuntu Condensed"
+    ) +
     scale_color_viridis(name = "", discrete = TRUE)
 }
 

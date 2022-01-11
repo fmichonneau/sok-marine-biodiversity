@@ -222,7 +222,8 @@ plot_bold_status <- function(bold_data) {
     geom_col(position = "dodge") +
     geom_text(aes(y = p_has_bold + .01, label = n_has_bold),
       position = position_dodge(.9),
-      hjust = .1, family = "Ubuntu Condensed"
+      ## family = "Ubuntu Condensed",
+      hjust = .1
     ) +
     xlab("") +
     ylab("Proportion of species with available DNA barcodes") +
@@ -232,7 +233,9 @@ plot_bold_status <- function(bold_data) {
       breaks = c("all_idigbio", "gom", "koz"),
       labels = c("US EEZ", "Gulf of Mexico", "Pacific Northwest")
     ) +
-    theme_ipsum(base_family = "Ubuntu Condensed") +
+    theme_ipsum(
+    ##  base_family = "Ubuntu Condensed"
+    ) +
     coord_flip()
 }
 

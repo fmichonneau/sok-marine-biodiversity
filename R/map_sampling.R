@@ -201,7 +201,9 @@ make_heatmap <- function(gg_r, title, base_map) {
       xlim = c(limits$lon1, limits$lon2),
       ylim = c(limits$lat1, limits$lat2)
     ) +
-    theme_bw(base_family = "Ubuntu Condensed") +
+    theme_bw(
+      ##  base_family = "Ubuntu Condensed"
+    ) +
     theme(legend.title = element_blank()) +
     ggtitle(title) +
     xlab("Longitude") +
@@ -394,7 +396,9 @@ bubble_map <- function(tf, file = "/tmp/sampling_map.mp4") {
     scale_colour_identity(guide = FALSE) +
     scale_alpha(guide = FALSE) +
     coord_quickmap(xlim = c(-128, -60), ylim = c(22, 51)) +
-    theme_bw(base_family = "Ubuntu Condensed") +
+    theme_bw(
+    ##  base_family = "Ubuntu Condensed"
+    ) +
     theme(legend.title = element_blank()) +
     xlab("Longitude") +
     ylab("Latitude")
