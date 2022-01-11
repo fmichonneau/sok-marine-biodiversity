@@ -24,8 +24,17 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode == "cmn" ~ "Canadian Museum of Nature",
       TRUE ~ "problem"
     )) %>%
-    purrr::pwalk(function(Institution, ...) {
-      if (any(grepl("problem", Institution))) stop("unknown collection in idigbio")
+    purrr::pwalk(function(institutioncode, Institution, ...) {
+      if (any(grepl("problem", Institution))) {
+        err <- tibble::tibble(
+          code = institutioncode,
+          inst = Institutioncode
+        ) %>%
+          filter(inst == "problem") %>%
+          distinct()
+        message(err)
+        stop("unknown collection in idigbio")
+      }
     }) %>%
     dplyr::mutate(
       n = format(n, big.mark = ","),
