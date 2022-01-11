@@ -26,28 +26,26 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode == "sio" ~ "Scripps Oceanographic Collections",
       insitutioncode == "lacm" ~ "Natural History Museum Los Angeles County",
       TRUE ~ "problem"
-    )) %>%
-    purrr::pwalk(function(institutioncode, Institution, ...) {
-      if (any(grepl("problem", Institution))) {
-        err <- tibble::tibble(
-          code = institutioncode,
-          inst = Institution
-        ) %>%
-          filter(inst == "problem") %>%
-          distinct() %>%
-          pull(code)
-        message(paste(err, collapse = ", "))
-        stop("unknown collection in idigbio")
-      }
-    }) %>%
+    ))
+
+  issues_idig <- res_idig %>%
+    dplyr::filter(Institution == "problem") %>%
+    dplyr::distinct() %>%
+    dplyr::pull(institutioncode)
+
+  if (length(issues_idig) > 0) {
+    stop("unknown collection in idigbio: ", paste(issues_idig, collapse = ", "))
+  }
+  
+  res_idig <- res_idig %>%
     dplyr::mutate(
       n = format(n, big.mark = ","),
       n_spp = format(n_spp, big.mark = ",")
     ) %>%
-    dplyr::select(Institution,
-      "Number of records" = n,
-      "Number of species" = n_spp
-    )
+   dplyr::select(Institution,
+     "Number of records" = n,
+     "Number of species" = n_spp
+   )
 
   res_obis <- obis_records %>%
     ## regroup all noaa records
@@ -82,10 +80,18 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode_simple == "woodsholebiosurvey" ~ "Woods Hole Biological Survey",
       institutioncode_simple == "hex" ~ "Hexacorallians of the World, Kansas University Natural History Museum",
       TRUE ~ "problem"
-    )) %>%
-    purrr::pwalk(function(Institution, ...) {
-      if (any(grepl("problem", Institution))) stop("unknown collection in obis")
-    }) %>%
+    ))
+
+  issues_obis <- res_obis %>%
+    dplyr::filter(Institution == "problem") %>%
+    dplyr::distinct() %>%
+    dplyr::pull(institutioncode)
+
+  if (length(issues_obis) > 0) {
+    stop("unknown collection in obis: ", paste(issues_obis, collapse = ", "))
+  }
+
+  res_obis <- res_obis %>%
     dplyr::mutate(
       n = format(n, big.mark = ","),
       n_spp = format(n_spp, big.mark = ",")
