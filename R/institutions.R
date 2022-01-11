@@ -85,7 +85,7 @@ calc_institutions <- function(idig_records, obis_records) {
   issues_obis <- res_obis %>%
     dplyr::filter(Institution == "problem") %>%
     dplyr::distinct() %>%
-    dplyr::pull(institutioncode)
+    dplyr::pull(institutioncode_simple)
 
   if (length(issues_obis) > 0) {
     stop("unknown collection in obis: ", paste(issues_obis, collapse = ", "))
