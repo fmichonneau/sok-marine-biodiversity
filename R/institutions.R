@@ -24,6 +24,7 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode == "cmn" ~ "Canadian Museum of Nature",
       institutioncode ==  "sbmnh" ~ "Santa Barbara Museum of Natural History",
       institutioncode == "sio" ~ "Scripps Oceanographic Collections",
+      insitutioncode == "lacm" ~ "Natural History Museum Los Angeles County",
       TRUE ~ "problem"
     )) %>%
     purrr::pwalk(function(institutioncode, Institution, ...) {
