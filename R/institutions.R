@@ -28,7 +28,7 @@ calc_institutions <- function(idig_records, obis_records) {
       if (any(grepl("problem", Institution))) {
         err <- tibble::tibble(
           code = institutioncode,
-          inst = Institutioncode
+          inst = institutioncode
         ) %>%
           filter(inst == "problem") %>%
           distinct()
