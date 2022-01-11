@@ -3,6 +3,7 @@ FROM rocker/geospatial:4.0.5
 RUN apt-get update && apt-get install -y \
     postgresql-12 \
     postgresql-12-postgis-3 \
+    ttf-ubuntu-font-family \
     && rm -rf /var/lib/apt/lists/*
 
 USER root
