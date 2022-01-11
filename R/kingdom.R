@@ -130,10 +130,10 @@ plot_kingdom_diversity <- function(kng) {
     scale_fill_hc(name = "Source", labels = c("iDigBio", "OBIS", "Global diversity (WoRMS)")) +
     ylim(c(0, .85)) +
     xlab(NULL) +
-    ylab("Proportion of total diversity (per source)") +
-    theme_ipsum(
-    ##  base_family = "Ubuntu Condensed"
-    )
+    ylab("Proportion of total diversity (per source)") ## +
+    ## theme_ipsum(
+    ## ##  base_family = "Ubuntu Condensed"
+    ## )
 }
 
 plot_kingdom_samples <- function(kng) {
