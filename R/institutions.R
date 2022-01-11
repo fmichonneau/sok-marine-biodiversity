@@ -22,6 +22,7 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode == "inhs" ~ "Illinois Natural History Survey",
       institutioncode == "ansp" ~ "The Academy of Natural Sciences of Drexel University",
       institutioncode == "cmn" ~ "Canadian Museum of Nature",
+      institutioncode ==  "sbmnh" ~ "Santa Barbara Museum of Natural History",
       TRUE ~ "problem"
     )) %>%
     purrr::pwalk(function(institutioncode, Institution, ...) {
