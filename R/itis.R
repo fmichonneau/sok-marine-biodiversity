@@ -249,7 +249,7 @@ moll_name_geo <- function(tbl) {
   geo_dict <- c(
     "North America" = "north_america",
     "South America" =  "south_america",
-    "Carribbean" =  "carribean",
+    "Caribbean" =  "carribean",
     "Western Atlantic Ocean" = "us_atlantic",
     "East Pacific" = "us_pacific",
     "Europe & Northern Asia (excluding China)" = "eurasia",
