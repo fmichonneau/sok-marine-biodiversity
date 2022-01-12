@@ -256,7 +256,8 @@ moll_name_geo <- function(tbl) {
     "Middle America" = "middle_america",
     "Indo-West Pacific" = "indowp",
     "Eastern Atlantic Ocean" = "europe_atlantic",
-    "Australia" = "australia"
+    "Australia" = "australia",
+    "Southern Asia" = "south_asia"
   )
   default <- set_names(
     as.list(rep(NA, length(geo_dict))),
