@@ -264,7 +264,7 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
       position = position_dodge(width = dodge_width)
     ) +
     geom_text(aes(x = phylum, label = phylum, y = 0),
-      family = "Ubuntu Condensed",
+      ## family = "Ubuntu Condensed",
       inherit.aes = FALSE,
       size = 4
     ) +
