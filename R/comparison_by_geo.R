@@ -141,7 +141,7 @@ plot_database_overlap <- function(comp_db) {
       labels = c(abs(seq(-1500, 0, by = 250)), seq(0, 1500, by = 250))
     ) +
     facet_wrap(~region, labeller = as_labeller(c(gom = "Gulf of Mexico", pnw = "Pacific NW"))) +
-    theme_ipsum(
+    theme_minimal(
       ##  base_family = "Ubuntu Condensed"
     ) +
     scale_color_manual(values = c("#C0DA4C", "#3F1A52")) +
@@ -290,7 +290,7 @@ plot_database_overlap_percent <- function(comp_db, full_list) {
       ),
       labels = c(abs(seq(-1, 0, by = .2)), seq(0, 1, by = .2))
     ) +
-    theme_ipsum(
+    theme_minimal(
       ##  base_family = "Ubuntu Condensed"
     ) +
     scale_color_manual(values = c("#C0DA4C", "#3F1A52")) +
