@@ -248,6 +248,8 @@ moll_name_details <- function(tbl) {
 moll_name_geo <- function(tbl) {
   geo_dict <- c(
     "North America" = "north_america",
+    "South America" =  "south_america",
+    "Carribbean" =  "carribean",
     "Western Atlantic Ocean" = "us_atlantic",
     "East Pacific" = "us_pacific",
     "Europe & Northern Asia (excluding China)" = "eurasia",
@@ -262,17 +264,27 @@ moll_name_geo <- function(tbl) {
   )
   tbl %>%
     dplyr::filter(is_itis_species(tsn_id, classification)) %>%
-    dplyr::mutate(geo = map(geo, function(x) {
+    dplyr::mutate(geo = purrr::map(geo, function(x) {
       if (!exists("geographicValue", x)) {
         return(as_tibble(default))
       }
       geo_val <- dplyr::pull(x, geographicValue)
-      if (length(geo_val) < 1) browser()
-      default[geo_dict[geo_val]] <- TRUE
+      if (length(geo_val) < 1) {
+        stop("error, something is wrong with geo_val")
+      }
+      idx_geo <- match(geo_val, names(geo_dict))
+      if (any(is.na(idx_geo))) {
+        stop(
+          "missing entries in geo_doc: ",
+          paste(geo_val[is.na(idx_geo)], collapse = ", "),
+          call. = FALSE
+        )
+      }
+      default[idx_geo] <- TRUE
       as_tibble(default)
     })) %>%
     dplyr::select(-classification) %>%
-    tidyr::unnest() %>%
+    tidyr::unnest(cols = c(geo)) %>%
     dplyr::mutate(
       cleaned_scientificname = remove_subspecies(cleanup_species_names(name)),
       is_binomial = is_binomial(cleaned_scientificname)
