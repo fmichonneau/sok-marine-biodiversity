@@ -1,6 +1,7 @@
 FROM rocker/geospatial:4.0.5
 
-RUN apt-get update && apt-get install -y \
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections \
+    && apt-get update && apt-get install -y \
     postgresql-12 \
     postgresql-12-postgis-3 \
     ttf-ubuntu-font-family \
