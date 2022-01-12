@@ -4,7 +4,9 @@ RUN apt-get update && apt-get install -y \
     postgresql-12 \
     postgresql-12-postgis-3 \
     ttf-ubuntu-font-family \
+    ttf-mscorefonts-installer \
     ## texlive-extra-utils \
+    && fc-cache -f \
     && rm -rf /var/lib/apt/lists/*
 
 USER root
