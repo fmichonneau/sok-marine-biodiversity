@@ -78,7 +78,7 @@ combine_species_list <- function(...) {
 export_species_list <- function(d, file) {
   d %>%
     generate_species_list() %>%
-    readr::write_csv(path = file)
+    readr::write_csv(file = file)
 
   file
 }
@@ -88,7 +88,7 @@ generate_species_list <- function(d) {
     dplyr::mutate(bold = as.integer(n_bold_records > 0)) %>%
     dplyr::select(-starts_with("n_")) %>%
     dplyr::select(-starts_with("bold_within_north_")) %>%
-    dplyr::mutate_if(is.integer, funs(if_else(is.na(.) | . == 0L, 0L, 1L))) %>%
+    dplyr::mutate_if(is.integer, ~ if_else(is.na(.) | . == 0L, 0L, 1L)) %>%
     dplyr::arrange(worms_phylum)
 }
 
