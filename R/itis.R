@@ -154,6 +154,15 @@ add_dbs_info <- function(tbl, combined_species) {
       info_idigbio = purrr::map(
         worms_valid_name,
         function(wm_nm) {
+          if (is.na(wm_nm)) {
+            return(tibble::tibble(
+              n_idigbio_total = NA_real_,
+              n_idigbio_no_geo = NA_real_,
+              n_idigbio_geo_us = NA_real_,
+              n_idigbio_country_us = NA_real_,
+              n_idigbio_country_us_no_geo = NA_real_
+            ))
+          }
           v3("worms name: ", wm_nm)
           .idig <- store_idigbio_species_occurrences()$get(tolower(wm_nm))
           if (nrow(.idig) < 1) {
