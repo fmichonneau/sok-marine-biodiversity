@@ -58,8 +58,8 @@ is_within_map_records <- function(d, map_name) {
   message("DONE.")
 
   message(
-    "Tables: ",
-    paste("- ", DBI::dbListTables(sok_db()), sep = "\n")
+    "Tables:\n",
+    paste("- ", DBI::dbListTables(sok_db()), collapse = "\n")
   )
 
   dbExecute(sok_db(), glue::glue("ALTER TABLE {temp_name} ADD COLUMN geom_point geometry DEFAULT NULL;"))
