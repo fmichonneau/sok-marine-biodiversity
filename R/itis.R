@@ -226,7 +226,7 @@ add_dbs_info <- function(tbl, combined_species) {
         }
       )
     ) %>%
-    tidyr::unnest()
+  tidyr::unnest(cols = c(info_idigbio, info_obis))
 }
 
 
