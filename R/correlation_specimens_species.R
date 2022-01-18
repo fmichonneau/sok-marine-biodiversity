@@ -33,9 +33,10 @@ plot_sampling_effort <- function(id) {
     scale_x_log10() +
     scale_y_log10() +
     scale_shape(name = "", labels = c("Atlantic Ocean", "Gulf of Mexico", "Pacific Ocean")) +
-    theme_ipsum(
-    ##  base_family = "Ubuntu Condensed"
-    )
+    theme_minimal()
+  ## theme_ipsum(
+  ##   ##  base_family = "Ubuntu Condensed"
+  ## )
 }
 
 ## proportion of cells with less than 500 observations, where the number of

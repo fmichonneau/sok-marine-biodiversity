@@ -233,9 +233,10 @@ plot_bold_status <- function(bold_data) {
       breaks = c("all_idigbio", "gom", "koz"),
       labels = c("US EEZ", "Gulf of Mexico", "Pacific Northwest")
     ) +
-    theme_ipsum(
-    ##  base_family = "Ubuntu Condensed"
-    ) +
+    theme_minimal() +
+    ## theme_ipsum(
+    ##   ##  base_family = "Ubuntu Condensed"
+    ## ) +
     coord_flip()
 }
 
