@@ -17,6 +17,7 @@ n_cores <- function(auto = FALSE) {
     }
   }
   message("number of cores ", getOption("mc.cores"))
+  getOption("mc.cores")
 }
 
 init <- function() {
