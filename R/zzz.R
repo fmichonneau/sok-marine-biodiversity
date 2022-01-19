@@ -6,13 +6,13 @@ n_cores <- function(auto = FALSE) {
     cmptr_name <- system("uname -n", intern = TRUE)
     if (identical(cmptr_name, "francois-laptop") ||
           identical(cmptr_name, "francois-XPS-15-9560")) {
-      options("mc.cores" = 8)
+      options("mc.cores" = 8L)
     } else if (identical(cmptr_name, "ryanlab.whitney.ufl.edu")) {
-      options("mc.cores" = 12)
+      options("mc.cores" = 12L)
     } else if (grepl("compute", cmptr_name)) {
-      options("mc.cores" = 8)
+      options("mc.cores" = 8L)
     } else {
-      options("mc.cores" = 1)
+      options("mc.cores" = 1L)
       message("no parallelization")
     }
   }

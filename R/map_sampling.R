@@ -80,7 +80,8 @@ n_rastercell_per_species <- function(recs, raster) {
   recs %>%
     dplyr::group_by(phylum, worms_valid_name) %>%
     dplyr::summarize(
-      n_cell = n_distinct(rastercell)
+      n_cell = n_distinct(rastercell),
+      .groups = "drop"
     ) %>%
     dplyr::arrange(desc(n_cell))
 }
@@ -229,7 +230,8 @@ make_heatmap_by_phylum <- function(recs, file, raster, base_map) {
     }
     ggr <- data_map(recs_sub, raster) %>% data_map_diversity()
     ggr
-  }, mc.cores = getOption("mc.cores"))
+  }, mc.cores = n_cores()
+  )
 
   has_data <- !vapply(res, is.null, logical(1))
   res <- res[has_data]
@@ -241,7 +243,7 @@ make_heatmap_by_phylum <- function(recs, file, raster, base_map) {
     function(gg) {
       make_heatmap(res[[gg]], names(res)[gg], base_map = base_map)
     },
-    mc.cores = 8L
+    mc.cores = n_cores()
   )
   pdf(file = file)
   on.exit(dev.off())
@@ -304,7 +306,7 @@ get_bubble_map_data <- function(recrds, raster, out = "data/bubble_map_data.csv"
     tibble::as_tibble(tf) %>%
       dplyr::filter(!is.na(value) |
         cum_n_samples > 0L)
-  }, mc.cores = getOption("mc.cores") - 1)
+  }, mc.cores = n_cores() - 1)
 
   dplyr::bind_rows(ts_l, .id = "year_frame") %>%
     dplyr::mutate_if(is.factor, as.character) %>%
