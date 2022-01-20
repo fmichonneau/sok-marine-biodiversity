@@ -88,16 +88,16 @@ n_rastercell_per_species <- function(recs, raster) {
 
 abundance_sample_species <- function(recs) {
   recs %>%
-    dplyr::count(worms_phylum, worms_valid_name) %>%
-    dplyr::filter(worms_phylum %in% c(
+    dplyr::count(phylum, worms_valid_name) %>%
+    dplyr::filter(phylum %in% c(
       "arthropoda", "annelida", "mollusca",
       "echinodermata", "cnidaria", "porifera"
     )) %>%
-    dplyr::group_by(worms_phylum) %>%
+    dplyr::group_by(phylum) %>%
     dplyr::mutate(rank_n = max(dplyr::min_rank(n)) - dplyr::min_rank(n)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(worms_phylum = capitalize(worms_phylum)) %>%
-    ggplot(aes(x = rank_n, y = n, colour = worms_phylum)) +
+    dplyr::mutate(phylum = capitalize(phylum)) %>%
+    ggplot(aes(x = rank_n, y = n, colour = phylum)) +
     geom_line() +
     geom_point(size = .2) +
     scale_y_log10() +
