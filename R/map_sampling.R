@@ -108,15 +108,15 @@ abundance_sample_species <- function(recs) {
 
 plot_rank_abundance <- function(recs) {
   recs %>%
-    dplyr::filter(worms_phylum %in% c(
+    dplyr::filter(phylum %in% c(
       "arthropoda", "annelida", "mollusca",
       "echinodermata", "cnidaria", "porifera"
     )) %>%
-    dplyr::group_by(worms_phylum) %>%
+    dplyr::group_by(phylum) %>%
     dplyr::mutate(rank_n = max(dplyr::min_rank(n_cell)) - dplyr::min_rank(n_cell)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(worms_phylum = capitalize(worms_phylum)) %>%
-    ggplot(aes(x = rank_n, y = n_cell, colour = worms_phylum)) +
+    dplyr::mutate(phylum = capitalize(phylum)) %>%
+    ggplot(aes(x = rank_n, y = n_cell, colour = phylum)) +
     geom_line() +
     geom_point(size = .2) +
     scale_y_log10() +
