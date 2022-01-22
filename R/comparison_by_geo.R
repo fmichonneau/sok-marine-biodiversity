@@ -381,15 +381,22 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
     add_worms() %>%
     filter(!is.na(year))
 
-  .obis <- . %>%
-    fetch_spp_from_obis(feather_out = NULL) %>%
-    dplyr::rename(year = yearcollected) %>%
-    dplyr::filter(!is.na(year)) %>%
-    dplyr::mutate(
-      cleaned_scientificname = cleanup_species_names(scientificname),
-      is_binomial = is_binomial(cleaned_scientificname)
-    ) %>%
-    add_worms()
+  .obis <- function(..data) {
+    ..data <- ..data %>%
+      fetch_spp_from_obis(feather_out = NULL)
+
+    browser()
+
+    ..data <- ..data %>%
+      dplyr::rename(year = yearcollected) %>%
+      dplyr::filter(!is.na(year)) %>%
+      dplyr::mutate(
+        cleaned_scientificname = cleanup_species_names(scientificname),
+        is_binomial = is_binomial(cleaned_scientificname)
+      ) %>%
+      add_worms()
+    ..data
+  }
 
   .gom <- . %>%
     is_within_gom_records() %>%
