@@ -383,13 +383,9 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
 
   .obis <- function(..data) {
     ..data <- ..data %>%
-      fetch_spp_from_obis(feather_out = NULL)
-
-    browser()
-
-    ..data <- ..data %>%
-      dplyr::rename(year = yearcollected) %>%
+      fetch_spp_from_obis(feather_out = NULL) %>%
       dplyr::filter(!is.na(year)) %>%
+      dplyr::mutate(year = as.numeric(year)) %>%
       dplyr::mutate(
         cleaned_scientificname = cleanup_species_names(scientificname),
         is_binomial = is_binomial(cleaned_scientificname)
