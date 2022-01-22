@@ -405,8 +405,7 @@ not_in_list_collected_recently <- function(database_overlap, map_gom, map_pnw) {
 
   .keep_min <- . %>%
     dplyr::group_by(worms_valid_name) %>%
-    dplyr::filter(min_year == min(min_year)) %>%
-    dplyr::slice(1) %>%
+    dplyr::slice_min(min_year) %>%
     dplyr::ungroup()
 
   ## for Gulf of Mexico
