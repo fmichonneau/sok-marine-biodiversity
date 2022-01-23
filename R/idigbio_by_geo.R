@@ -214,7 +214,7 @@ add_worms_to_db <- function(db_table) {
       all_idigbio_species_name_cleanup() %>%
       dplyr::mutate(cleaned_scientificname = cleanup_species_names(cleaned_scientificname)) %>%
       dplyr::distinct(cleaned_scientificname, .keep_all = TRUE) %>%
-      add_worms(remove_vertebrates = FALSE)
+      add_worms(remove_vertebrates = TRUE)
     join_q <- glue::glue("WHERE {db_table}_worms.scientificname = {db_table}_species.scientificname")
     idx <- list("cleaned_scientificname")
     types <- structure(c(
@@ -235,7 +235,7 @@ add_worms_to_db <- function(db_table) {
     wrm_res <- dbSendQuery(db, glue::glue("SELECT DISTINCT aphiaid FROM {db_table}_worms;")) %>%
       dbFetch() %>%
       dplyr::filter(!is.na(aphiaid)) %>%
-      add_worms_by_id(remove_vertebrates = FALSE)
+      add_worms_by_id(remove_vertebrates = TRUE)
     join_q <- glue::glue("WHERE {db_table}_worms.aphiaid = {db_table}_species.worms_id")
     idx <- list("worms_id")
     types <- structure(c(

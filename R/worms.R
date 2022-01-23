@@ -292,7 +292,7 @@ add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE)
 
   colnm <- rlang::sym(colname)
 
-  tbl %>%
+  res <- tbl %>%
     dplyr::mutate(wrm_info = purrr::map(!!colnm, function(.id) {
       message("aphia id: ", .id)
       .info <- store_worms_info()$get(as.character(.id))
@@ -325,4 +325,12 @@ add_worms_by_id <- function(tbl, colname = "aphiaid", remove_vertebrates = TRUE)
     dplyr::filter(is_marine) %>%
     dplyr::filter(!is.na(worms_id)) %>%
     add_classification()
+
+  if (remove_vertebrates) {
+    res <- res %>%
+      dplyr::filter(!worms_class %in% chordata_classes_to_rm())
+  }
+
+  res
+
 }
