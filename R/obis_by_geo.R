@@ -61,18 +61,27 @@ internal_fill_store_obis_by_geo <- function(k, list_phyla) {
     res <- res[tolower(res$phylum) %in% phyla_to_keep &
                  (!tolower(res$class) %in% chordata_classes_to_rm()), ]
 
-    if (file.exists("dt_class.rds")) {
-      st_dt_class <- readRDS("dt_class.rds")
-    } else {
-      st_dt_class <- character(0)
-    }
-    st_dt_class <- purrr::imap_dfr(res,
-      function(x, y) {
-        tibble(nm = y, class = class(x))
-      }) %>%
-      bind_rows(st_dt_class) %>%
-      distinct(nm, class)
-    saveRDS(st_dt_class, "dt_class.rds")
+
+    ## ## this was useful to debug, it creates a complete list of all the
+    ## ## fields returned by OBIS over each call (as empty ones aren't
+    ## ## present)
+    ## if (file.exists("dt_class.rds")) {
+    ##   st_dt_class <- readRDS("dt_class.rds")
+    ## } else {
+    ##   st_dt_class <- tibble(
+    ##     nm = character(0),
+    ##     class = character(0)
+    ##   )
+    ## }
+    ##
+    ## st_dt_class <- purrr::imap_dfr(res,
+    ##   function(x, y) {
+    ##     tibble(nm = y, class = class(x))
+    ##   }) %>%
+    ##   bind_rows(st_dt_class) %>%
+    ##   distinct(nm, class)
+    ## saveRDS(st_dt_class, "dt_class.rds"
+    ## )
 
     res <- sok_as_character(
       res,
