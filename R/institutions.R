@@ -25,6 +25,7 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode ==  "sbmnh" ~ "Santa Barbara Museum of Natural History",
       institutioncode == "sio" ~ "Scripps Oceanographic Collections",
       institutioncode == "lacm" ~ "Natural History Museum Los Angeles County",
+      institutioncode == "dmns" ~ "Denver Museum of Nature & Science",
       TRUE ~ "problem"
     ))
 
