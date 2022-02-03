@@ -83,6 +83,7 @@ calc_institutions <- function(idig_records, obis_records) {
       institutioncode_simple == "mcz" ~ "Museum of Comparative Zoology, Harvard University",
       institutioncode_simple == "cas" ~ "California Academy of Sciences",
       institutioncode_simple == "tcwc" ~ "The Texas A&M Biodiversity Research and Teaching Collections",
+      institutioncode_simple == "suffolk university - biology department" ~ "Suffolk University - Biology Department",
       TRUE ~ "problem"
     ))
 
