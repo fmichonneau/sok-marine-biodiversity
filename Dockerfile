@@ -22,7 +22,7 @@ RUN mkdir -p /var/run/postgresql/12-main.pg_stat_tmp
 RUN chown postgres.postgres /var/run/postgresql/12-main.pg_stat_tmp -R
 
 # download cpdf
-RUN wget https://github.com/coherentgraphics/cpdf-binaries/blob/d4e7ae79f65ef3f085d09e3c876eb9a8ed1ced34/Linux-Intel-64bit/cpdf \
+RUN wget https://github.com/coherentgraphics/cpdf-binaries/raw/d4e7ae79f65ef3f085d09e3c876eb9a8ed1ced34/Linux-Intel-64bit/cpdf \
     && chmod +x cpdf \
     && mv cpdf /usr/local/bin/cpdf
 
