@@ -7,6 +7,7 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
     ttf-ubuntu-font-family \
     ttf-mscorefonts-installer \
     texlive-base \
+    texlive-latex-recommended \
     texlive-binaries \
     texlive-extra-utils \
     && fc-cache -f \
