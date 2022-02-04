@@ -35,7 +35,8 @@ plot_upsetr <- function(csv_file, ...) {
     UpSetR::upset(
       order.by = "freq", mainbar.y.label = "Number of species (intersection size)",
       sets.x.label = "Number of species \n (set size)", ...
-    )
+    ) %>%
+    print()
 }
 
 
