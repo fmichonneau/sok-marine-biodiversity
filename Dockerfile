@@ -8,6 +8,7 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
     ttf-mscorefonts-installer \
     texlive-base \
     texlive-latex-base \
+    texlive-latex-extra \
     texlive-latex-recommended \
     texlive-binaries \
     texlive-extra-utils \
