@@ -6,12 +6,6 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
     postgresql-12-postgis-3 \
     ttf-ubuntu-font-family \
     ttf-mscorefonts-installer \
-    texlive-base \
-    texlive-latex-base \
-    texlive-latex-extra \
-    texlive-latex-recommended \
-    texlive-binaries \
-    texlive-extra-utils \
     && fc-cache -f \
     && rm -rf /var/lib/apt/lists/*
 
