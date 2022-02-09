@@ -28,5 +28,8 @@ RUN wget https://github.com/coherentgraphics/cpdf-binaries/raw/d4e7ae79f65ef3f08
     && chmod +x cpdf \
     && mv cpdf /usr/local/bin/cpdf
 
+ENV PATH /root/bin:${PATH}
+RUN echo "${PATH}" >> /etc/bash.bashrc
+
 ## we freeze the CRAN package version to 2021-10-08
-RUN R -e "options(repos = c(RSPM = 'https://packagemanager.rstudio.com/all/__linux__/focal/2021-10-08+Y3JhbiwyOjQ1MjYyMTU7MzM5MTJFREY')); install.packages('tinytex'); tinytex::install_tinytex(); tinytex::tlmgr_install(c('amsmath', 'latex-amsmath-dev')); system('echo $PATH'); system('echo PATH=/root/bin:$PATH >> /root/.bashrc'); system('source /root/.bashrc');  message('.bashrc:'); system('cat /root/.bashrc'); system('echo $PATH'); system('tlmgr conf'); remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remotes::install_github('ropensci/lawn@10c7c526cd29a2522c7105702a69404e389d5018'); remake::install_missing_packages()"
+RUN R -e "options(repos = c(RSPM = 'https://packagemanager.rstudio.com/all/__linux__/focal/2021-10-08+Y3JhbiwyOjQ1MjYyMTU7MzM5MTJFREY')); install.packages('tinytex'); tinytex::install_tinytex(); tinytex::tlmgr_install(c('amsmath', 'latex-amsmath-dev')); system('echo $PATH'); system('tlmgr conf'); remotes::install_github('richfitz/remake@e29028b548950a3132ea2d045b7f67344ce22a6b'); remotes::install_github('ropensci/lawn@10c7c526cd29a2522c7105702a69404e389d5018'); remake::install_missing_packages()"
