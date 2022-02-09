@@ -20,6 +20,4 @@ pg_ctlcluster 12 main status
 
 Rscript -e "con = DBI::dbConnect(RPostgres::Postgres(), dbname='sok', user='michonneauf', port=5435); con"
 
-Rscript -e "install.packages('tinytex'); tinytex::install_tinytex()"
-
 Rscript -e "setwd('/sok'); remake::make()"

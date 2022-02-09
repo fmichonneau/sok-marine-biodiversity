@@ -26,6 +26,7 @@ SOK_DB_DATA=/pool/genomics/michonneauf/sok-db-pg_data
 SOK_DB_RUN=/pool/genomics/michonneauf/sok-db-pg_run
 SOK_DB_LOG=/pool/genomics/michonneauf/sok-db-pg_log
 SOK_DB_ETC=/pool/genomics/michonneauf/sok-db-pg_etc
+SOK_TEX=/pool/genomics/michonneauf/sok-tex
 
 mkdir -p /pool/genomics/michonneauf/sok-db
 mkdir -p $SOK_DB_DATA
@@ -48,5 +49,6 @@ singularity exec --userns \
   -B $SOK_DB_RUN:/var/run/postgresql \
   -B $SOK_DB_LOG/:/var/log/postgresql \
   -B $SOK_DB_ETC:/etc/postgresql \
+  -B $SOK_TEX:/root/.TinyTex \
   -B $SOK_WD:/sok \
   sok.simg /sok/./singularity_script.sh
