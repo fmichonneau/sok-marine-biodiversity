@@ -1,99 +1,117 @@
 deduplicate_records <- function(data) {
-    data %>%
-        dplyr::mutate(approx_lat = round(decimallatitude, 4),
-                      approx_lon = round(decimallongitude, 4)) %>%
-        dplyr::distinct(worms_phylum, worms_class, worms_order,
-                        worms_valid_name, approx_lat, approx_lon,
-                        datecollected, .keep_all = TRUE) %>%
-        dplyr::select(worms_phylum, worms_class, worms_order, worms_family,
-                      worms_valid_name, rank, decimallatitude,
-                      decimallongitude, datecollected, year,
-                      within_eez, within_gom, within_pnw) %>%
-        dplyr::rename(phylum = worms_phylum)
+  data %>%
+    dplyr::mutate(
+      approx_lat = round(decimallatitude, 4),
+      approx_lon = round(decimallongitude, 4)
+    ) %>%
+    dplyr::distinct(worms_phylum, worms_class, worms_order,
+      worms_valid_name, approx_lat, approx_lon,
+      datecollected,
+      .keep_all = TRUE
+    ) %>%
+    dplyr::select(
+      worms_phylum, worms_class, worms_order, worms_family,
+      worms_valid_name, rank, decimallatitude,
+      decimallongitude, datecollected, year,
+      within_eez, within_gom, within_pnw
+    ) %>%
+    dplyr::rename(phylum = worms_phylum)
 }
 
 combine_records <- function(...) {
-    d <- list(...)
-    d <- year_as_integer(d)
-    d %>%
-        dplyr::bind_rows() %>%
-        deduplicate_records() %>%
-        add_geo()
+  d <- list(...)
+  d <- year_as_integer(d)
+  d %>%
+    dplyr::bind_rows() %>%
+    deduplicate_records() %>%
+    add_geo()
 }
 
 ## add info on whether a record is on the East coast, West coast, or the Gulf of
 ## Mexico.  In this function, if a record is in the GOM, it is not on the East
 ## coast
 add_geo <- function(d) {
-    d <- d %>%
-        dplyr::mutate(is_east_coast = if_else(decimallongitude > -100 &
-                                             !within_gom, TRUE, FALSE),
-                      is_west_coast = if_else(decimallongitude < -100,
-                                             TRUE, FALSE))
+  d <- d %>%
+    dplyr::mutate(
+      is_east_coast = if_else(decimallongitude > -100 &
+        !within_gom, TRUE, FALSE),
+      is_west_coast = if_else(decimallongitude < -100,
+        TRUE, FALSE
+      )
+    )
 
-    ## check that no record gets assigned more than one geographic area
-    if (any(d$within_gom + d$is_east_coast + d$is_west_coast) > 3)
-        stop("something's wrong!")
-    d
+  ## check that no record gets assigned more than one geographic area
+  if (any(d$within_gom + d$is_east_coast + d$is_west_coast) > 3) {
+    stop("something's wrong!")
+  }
+  d
 }
 
 combine_species_list <- function(...) {
-    d <- list(...)
-    if (is.null(names(d)) && !all(nzchar(names(names(d))))) {
-        stop("arguments need to be named")
-    }
+  d <- list(...)
+  if (is.null(names(d)) && !all(nzchar(names(names(d))))) {
+    stop("arguments need to be named")
+  }
 
-    d %>%
-        purrr::map_df(function(dt) {
-            dt %>%
-                dplyr::filter(is_marine) %>% # needed for itis lists
-                dplyr::distinct(worms_phylum,
-                                worms_class, worms_order, worms_family,
-                                worms_valid_name, worms_id) %>%
-                dplyr::filter(!is.na(worms_phylum) |
-                              !is.na(worms_id))
-        }, .id = "data_source") %>%
-        dplyr::count(data_source, worms_phylum, worms_class, worms_order,
-                     worms_family, worms_valid_name, worms_id) %>%
-        tidyr::spread(data_source, n) %>%
-        find_bold_records(col_nm = "worms_valid_name")
+  d %>%
+    purrr::map_df(function(dt) {
+      dt %>%
+        dplyr::filter(is_marine) %>%
+        # needed for itis lists
+        dplyr::distinct(
+          worms_phylum,
+          worms_class, worms_order, worms_family,
+          worms_valid_name, valid_worms_id
+        ) %>%
+        dplyr::filter(!is.na(worms_phylum) |
+          !is.na(valid_worms_id))
+    }, .id = "data_source") %>%
+    dplyr::count(
+      data_source, worms_phylum, worms_class, worms_order,
+      worms_family, worms_valid_name, valid_worms_id
+    ) %>%
+    tidyr::spread(data_source, n) %>%
+    find_bold_records(col_nm = "worms_valid_name")
 }
 
 
 export_species_list <- function(d, file) {
+  d %>%
+    generate_species_list() %>%
+    readr::write_csv(file = file)
 
-    d %>%
-        generate_species_list() %>%
-        readr::write_csv(path = file)
-
-    file
+  file
 }
 
 generate_species_list <- function(d) {
-     d %>%
-        dplyr::mutate(bold = as.integer(n_bold_records > 0)) %>%
-        dplyr::select(-starts_with("n_")) %>%
-        dplyr::select(-starts_with("bold_within_north_")) %>%
-        dplyr::mutate_if(is.integer, funs(if_else(is.na(.) | . == 0L, 0L, 1L))) %>%
-        dplyr::arrange(worms_phylum)
+  d %>%
+    dplyr::mutate(bold = as.integer(n_bold_records > 0)) %>%
+    dplyr::select(-starts_with("n_")) %>%
+    dplyr::select(-starts_with("bold_within_north_")) %>%
+    dplyr::mutate_if(is.integer, ~ if_else(is.na(.) | . == 0L, 0L, 1L)) %>%
+    dplyr::arrange(worms_phylum)
 }
 
 ## create the taxonomic backbone of full species list to score pelagic/benthic
 ## intended to be run manually
 ## takes a list of file names (the CSV files generated by export_list_species)
 total_higher_classification <- function(...) {
-    list(...) %>%
-        purrr::map_df(read_csv) %>%
-        dplyr::distinct(worms_phylum,
-                        worms_class,
-                        worms_order,
-                        worms_family) %>%
-        dplyr::arrange(worms_phylum, worms_class, worms_order, worms_family)
+  list(...) %>%
+    purrr::map_df(read_csv) %>%
+    dplyr::distinct(
+      worms_phylum,
+      worms_class,
+      worms_order,
+      worms_family
+    ) %>%
+    dplyr::arrange(worms_phylum, worms_class, worms_order, worms_family)
 }
 
 if (FALSE) {
-    total_higher_classification("outputs/list_species_us.csv",
-                                "outputs/list_species_pnw.csv",
-                                "outputs/list_species_gom.csv") %>%
-        write_csv("data/total_higher_classification.csv")
+  total_higher_classification(
+    "outputs/list_species_us.csv",
+    "outputs/list_species_pnw.csv",
+    "outputs/list_species_gom.csv"
+  ) %>%
+    write_csv("data/total_higher_classification.csv")
 }

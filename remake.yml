@@ -6,7 +6,8 @@ packages:
   - readxl
   - readr
   - feather
-  - RPostgreSQL
+  - DBI
+  - RPostgres
   - rpostgis
   - storr
   - tibble
@@ -17,6 +18,7 @@ packages:
   - maptools
   - maps
   - geojsonio
+  - geojsonlint
   - lawn
   ## data manipulation
   - dplyr
@@ -26,6 +28,7 @@ packages:
   - purrr
   - rlang
   - RcppRoll
+  - anytime
   ## data visualization
   - grid
   - ggplot2
@@ -52,7 +55,6 @@ packages:
   - extrafont
   - rmarkdown
   - bookdown
-  - labmanager
   - progress
   - glue
   - splines
@@ -492,7 +494,7 @@ targets:
     depends: map_eez_db
 
   figures/database_coverage.pdf:
-    command: combine_upsetr_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
+     command: combine_upsetr_plots("figures/gom_database_coverage.pdf", "figures/kozloff_database_coverage.pdf", output="figures/database_coverage.pdf")
 
   species_in_common:
     command: get_species_in_common(gom_worms_species, idigbio_gom_records, obis_gom_records, kozloff_worms_species, idigbio_pnw_records, obis_pnw_records)
@@ -1064,7 +1066,7 @@ targets:
       - figures/combined_pnw_sampling.pdf
       - figures/idigbio_map_sampling.pdf
       - figures/obis_map_sampling.pdf
-      - figures/rank_abundance.pdf
+      - figures/plot_rank_abundance.pdf
       ## attributions
       #- idigbio_records_attributions
       #- idigbio_gom_records_attributions

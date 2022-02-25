@@ -1,0 +1,7 @@
+Bootstrap: docker
+From: postgis/postgis:12-master
+IncludeCmd: yes
+
+%files
+  postgres.conf
+  postgres.conf /etc/postgresql/12/main/postgresql.conf
